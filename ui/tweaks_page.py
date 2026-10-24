@@ -80,6 +80,7 @@ class TweaksMixin:
 
     def _build_tweak_page(self, box, cat):
         page = ctk.CTkFrame(box, fg_color="transparent")
+        self._progress_row(page, cat)
         scroll = self._scroll(page)
 
         def make(t):

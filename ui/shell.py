@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 import time
+import tkinter
 
 import customtkinter as ctk
 
@@ -13,6 +14,7 @@ import i18n
 from ui.theme import *  # noqa: F403 — палитра, шрифты, иконки, кнопки, tr
 
 GWL_EXSTYLE, WS_EX_LAYERED = -20, 0x80000
+GCL_STYLE, CS_REDRAW = -26, 0x3  # CS_VREDRAW | CS_HREDRAW
 RDW_INVALIDATE, RDW_ERASE, RDW_ALLCHILDREN, RDW_FRAME = 0x1, 0x4, 0x80, 0x400
 
 
@@ -88,6 +90,21 @@ class ShellMixin:
             if ex & WS_EX_LAYERED:
                 u.SetWindowLongW(hwnd, GWL_EXSTYLE, ex & ~WS_EX_LAYERED)
                 u.RedrawWindow(hwnd, None, None, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN)
+        except Exception:
+            pass
+
+    def _no_full_redraw(self):
+        """Снять CS_HREDRAW/CS_VREDRAW с классов окон Tk (TkTopLevel и TkChild — общие для всех виджетов).
+        С ними Windows при каждом шаге растягивания перерисовывает все ~450 дочерних окон customtkinter
+        (~300 мс на шаг); виджеты Tk и так перерисовывают себя сами, когда меняется их размер."""
+        try:
+            u = ctypes.windll.user32
+            u.GetClassLongPtrW.restype = u.SetClassLongPtrW.restype = ctypes.c_ssize_t
+            u.SetClassLongPtrW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_ssize_t]
+            for hwnd in (u.GetParent(self.winfo_id()), self.winfo_id()):
+                style = u.GetClassLongPtrW(hwnd, GCL_STYLE)
+                if style & CS_REDRAW:
+                    u.SetClassLongPtrW(hwnd, GCL_STYLE, style & ~CS_REDRAW)
         except Exception:
             pass
 
@@ -203,9 +220,9 @@ class ShellMixin:
         item = self.nav[cat]
         item["btn"].configure(text_color=TEXT if selected else MUTED,
                               image=icon(item["icon"], ACCENT if selected else MUTED, 18))
-        wrap = item["wrap"]
-        a, b = (SIDEBAR, SELECTED) if selected else (SELECTED, SIDEBAR)
-        self._animate(f"nav:{cat}", 200, lambda t: wrap.configure(fg_color=mix(a, b, t)))
+        # без плавного перекрашивания: CTkFrame перекрашивает и всех детей, ~11 мс на кадр — анимация
+        # тормозила переключение вкладок; движение даёт выезжающий индикатор
+        item["wrap"].configure(fg_color=SELECTED if selected else SIDEBAR)
 
     # ---------- шапка и область страниц ----------
 
@@ -219,15 +236,6 @@ class ShellMixin:
         self.subtitle_lbl.grid(row=1, column=0, sticky="w")
         self.refresh_btn = button(header, tr("Обновить"), "secondary", self._refresh, width=100, height=32)
         self.refresh_btn.grid(row=0, column=1, rowspan=2, sticky="e")
-
-        self.progress_box = ctk.CTkFrame(header, fg_color="transparent")
-        self.progress_box.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(12, 0))
-        self.counter_lbl = ctk.CTkLabel(self.progress_box, text="", text_color=MUTED, font=font(12, True))
-        self.counter_lbl.pack(side="left")
-        self.progress = ctk.CTkProgressBar(self.progress_box, height=6, corner_radius=3,
-                                           fg_color="#232938", progress_color=ACCENT)
-        self.progress.pack(side="left", fill="x", expand=True, padx=(16, 0))
-        self.progress.set(0)
 
     def _banner(self, main, text, fg, bg):
         autowrap(ctk.CTkLabel(main, text=text, text_color=fg, fg_color=bg, corner_radius=10, wraplength=700,
@@ -244,12 +252,20 @@ class ShellMixin:
         if cat == self.current:
             return
         page = self._page(cat)
-        if self.current:
-            self.pages[self.current].pack_forget()
-            if self.current in self.nav:
-                self._style_nav(self.current, False)
+        if self.current in self.nav:
+            self._style_nav(self.current, False)
+        prev = self.pages.get(self.current)
+        if prev is not None:  # скрытая страница замирает в своём размере и не перекладывается вместе с окном
+            tkinter.Place.place_configure(prev, relwidth=0, relheight=0,
+                                          width=prev.winfo_width(), height=prev.winfo_height())
         self.current = cat
-        page.pack(fill="both", expand=True)
+        # построенные страницы лежат стопкой и остаются разложенными: поднять нужную наверх вдвое дешевле,
+        # чем убирать одну и заново раскладывать ~200 окон другой
+        tkinter.Place.place_configure(page, x=0, y=0, relwidth=1, relheight=1, width="", height="")
+        page.tkraise()
+        for scroll in [s for s in self._fit_pending if self._on_current(s)]:
+            self._fit_pending.discard(scroll)  # окно растягивали, пока страница была скрыта
+            self._fit_scroll(scroll)
         if cat in self.nav:
             self._style_nav(cat, True)
             self._move_indicator(cat)
@@ -271,24 +287,35 @@ class ShellMixin:
             on_show()
         self._update_header()
 
+    def _progress_row(self, page, cat):
+        """Строка «N из M включено» с полосой — внутри вкладки с твиками, а не в шапке: иначе шапка меняла бы
+        высоту при переходе на другие вкладки и сдвигала (перерисовывала) всю страницу."""
+        box = ctk.CTkFrame(page, fg_color="transparent", height=24)
+        box.pack(fill="x", padx=(0, 26), pady=(0, 8))
+        label = ctk.CTkLabel(box, text="", text_color=MUTED, font=font(12, True), height=24)
+        label.pack(side="left")
+        bar = ctk.CTkProgressBar(box, height=6, corner_radius=3, fg_color="#232938", progress_color=ACCENT)
+        bar.pack(side="left", fill="x", expand=True, padx=(16, 0))
+        bar.set(0)
+        self.progress_rows[cat] = {"label": label, "bar": bar, "on": 0}
+
     def _update_header(self):
-        if self.current not in self.cats:  # полоса прогресса только у вкладок с твиками
-            self.progress_box.grid_remove()
+        row = self.progress_rows.get(self.current)  # полоса прогресса только у вкладок с твиками
+        if row is None:
             return
-        self.progress_box.grid()
         if not self.loaded:
-            self.counter_lbl.configure(text=tr("Читаю состояние…"))
-            self.progress.set(0)
+            row["label"].configure(text=tr("Читаю состояние…"))
+            row["bar"].set(0)
             return
         on, total = self._cat_count(self.current)
-        p_from, p_to = self.progress.get(), on / total if total else 0
-        n_from = self._counter_on
+        p_from, p_to = row["bar"].get(), on / total if total else 0
+        n_from = row["on"]
         template = tr("{on} из {total} включено")
 
         def step(t):  # полоса и число плавно доезжают до нового значения
-            self.progress.set(p_from + (p_to - p_from) * t)
-            self._counter_on = round(n_from + (on - n_from) * t)
-            self.counter_lbl.configure(text=template.format(on=self._counter_on, total=total))
+            row["bar"].set(p_from + (p_to - p_from) * t)
+            row["on"] = round(n_from + (on - n_from) * t)
+            row["label"].configure(text=template.format(on=row["on"], total=total))
         self._animate("progress", 450, step)
 
     def _cat_count(self, cat):
@@ -350,12 +377,41 @@ class ShellMixin:
 
     # ---------- помощники для страниц ----------
 
-    @staticmethod
-    def _scroll(page):
+    def _scroll(self, page):
         scroll = ctk.CTkScrollableFrame(page, fg_color="transparent", scrollbar_button_color="#2a3040",
                                         scrollbar_button_hover_color="#3a4358")
         scroll.pack(fill="both", expand=True)
+        # пока окно растягивают, содержимое держит прежнюю ширину и подстраивается один раз, когда
+        # растягивание закончилось: иначе каждый шаг мыши перекладывал бы все карточки страницы
+        scroll._parent_canvas.bind("<Configure>", lambda _e: self._fit_scroll(scroll))
         return scroll
+
+    def _fit_scroll(self, scroll):
+        job = self._fit_jobs.pop(scroll, None)
+        if job:
+            self.after_cancel(job)
+        if not self._on_current(scroll):  # скрытые страницы подгоним, когда их откроют
+            self._fit_pending.add(scroll)
+            return
+        wait = self._resizing_until - time.perf_counter()
+        if wait > 0:
+            self._fit_jobs[scroll] = self.after(int(wait * 1000) + 20, lambda: self._fit_scroll(scroll))
+            return
+        try:
+            scroll._fit_frame_dimensions_to_canvas(None)
+        except Exception:
+            pass  # страницу успели уничтожить
+
+    def _on_current(self, widget):
+        page = self.pages.get(self.current)
+        return page is not None and str(widget).startswith(str(page) + ".")
+
+    def _on_root_configure(self, event):
+        """Запомнить, что окно сейчас растягивают (событие приходит и от детей — их пропускаем)."""
+        if event.widget is self and (event.width, event.height) != self._root_size:
+            if self._root_size is not None:
+                self._resizing_until = time.perf_counter() + 0.18
+            self._root_size = (event.width, event.height)
 
     @staticmethod
     def _card(parent, title, text=None):

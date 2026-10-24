@@ -82,8 +82,13 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         # каркас и анимации
         self._anims = {}              # ключ анимации -> id after()
         self._chunk_jobs = {}         # ключ -> id after() недостроенной порции карточек
+        self._fit_jobs = {}           # прокручиваемая область -> отложенная подгонка ширины (см. _fit_scroll)
+        self._fit_pending = set()     # области скрытых страниц, ширину которых подгоним при открытии
+        self._resizing_until = 0.0   # до какого момента считаем, что окно растягивают
+        self._root_size = None
+        self.bind("<Configure>", self._on_root_configure, add="+")
         self._indicator_y = None      # где сейчас полоска выбранной вкладки
-        self._counter_on = 0          # сколько включено (для плавного счётчика в шапке)
+        self.progress_rows = {}       # вкладка с твиками -> строка «N из M включено» (см. _progress_row)
         self._toast_job = None
         self.pages = {}               # вкладка -> страница
         self.nav = {}                 # вкладка -> элементы пункта меню
@@ -113,6 +118,8 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._clean_shown = 0         # сколько сейчас показано в итоге (для плавного счётчика)
         # автозагрузка
         self._rp_last = (None, None)  # последний список точек восстановления (страница может быть не построена)
+        self._rp_drawn = None         # какой список точек сейчас нарисован
+        self._history_sig = None      # какие изменения и журнал сейчас нарисованы на «Восстановлении»
         self.startup_items = {}       # id записи автозагрузки -> запись из startup.list_items()
         self.startup_rows = {}        # id записи -> виджеты строки
         self.startup_loaded = False
@@ -138,6 +145,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._render_presets()
         self.after(100, self._poll)
         self._refresh()
+        self.after(10, self._no_full_redraw)
         self.after(40, lambda: self._animate("alpha", 280, self._set_alpha, self._unlayer))
         self.after(250, self._set_icon)  # позже собственной иконки customtkinter, иначе он её перезапишет
 

@@ -68,8 +68,15 @@ class RestoreMixin:
         # строк, которых никто не видит; при открытии вкладки _on_show_restore нарисует свежее
         if self.current != "restore":
             return
-        # применённые изменения
         items = engine.get_applied(self.tweaks)
+        events = engine.get_history(15)
+        # ничего не изменилось с прошлого раза — не пересоздаём ~40 строк (это почти секунда)
+        sig = (repr(items), repr(events), self.admin)
+        if sig == self._history_sig:
+            return
+        self._history_sig = sig
+
+        # применённые изменения
         self._clear(self.applied_box)
         if not items:
             self._note(self.applied_box, tr("Пока ничего не применено через WinOpti."))
@@ -78,7 +85,6 @@ class RestoreMixin:
 
         # журнал: имена твиков показываем на текущем языке, остальные записи — как записаны
         self._clear(self.journal_box)
-        events = engine.get_history(15)
         if not events:
             self._note(self.journal_box, tr("Журнал пуст."))
         self._build_in_chunks("restore_journal", events, self._journal_line, first=4, chunk=4)
@@ -125,6 +131,9 @@ class RestoreMixin:
         if "restore" not in self.pages:
             return
         self._render_protection()
+        if self._rp_drawn == repr((items, err)):
+            return
+        self._rp_drawn = repr((items, err))
         self._clear(self.rp_box)
         if items is None and err is None:
             self._note(self.rp_box, tr("Загружаю список…"))
