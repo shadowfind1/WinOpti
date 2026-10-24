@@ -41,7 +41,7 @@ def main(argv):
         if not engine.is_admin():
             print("Запусти от имени администратора")
             return 1
-        if "--no-restore" not in argv and not engine.create_restore_point():
+        if "--no-restore" not in argv and not engine.auto_restore_point_msg()[0]:
             print("Точка восстановления не создана (возможно, выключена защита системы)")
         for tid in p["tweaks"]:
             t = tweaks[tid]
@@ -107,7 +107,7 @@ def main(argv):
 
         try:
             if cmd == "on":
-                if "--no-restore" not in argv and not engine.create_restore_point():
+                if "--no-restore" not in argv and not engine.auto_restore_point_msg()[0]:
                     print("Точка восстановления не создана (возможно, выключена защита системы)")
                 warning = engine.apply_tweak(t)
             else:

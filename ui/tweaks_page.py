@@ -168,7 +168,7 @@ class TweaksMixin:
         try:
             if want_on:
                 if need_rp:
-                    ok, msg = engine.create_restore_point_msg("WinOpti")
+                    ok, msg = engine.auto_restore_point_msg("WinOpti")
                     if not ok:
                         note = " " + tr("Точка восстановления не создана: {msg}").format(msg=msg[:140])
                 warning = engine.apply_tweak(t)

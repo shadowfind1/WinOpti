@@ -64,8 +64,14 @@ class PresetsMixin:
                                        "apply": apply_btn, "revert": revert_btn}
         return page
 
+    def _on_show_presets(self):
+        self._render_presets()
+
     def _render_presets(self):
-        """Состояние твиков в карточках пресетов и доступность кнопок."""
+        """Состояние твиков в карточках пресетов и доступность кнопок. Скрытую вкладку не трогаем
+        (~30 мс на каждое переключение твика) — она обновится при открытии, см. _on_show_presets."""
+        if self.current != "presets":
+            return
         applied = {it["id"] for it in engine.get_applied(self.tweaks)}
         for p in self.presets:
             ui = self.preset_ui[p["id"]]
@@ -207,7 +213,7 @@ class PresetsMixin:
     def _job_preset(self, name, ids, want_on, need_rp):
         done, errors, after = 0, [], []
         if need_rp:
-            ok, msg = engine.create_restore_point_msg("WinOpti")
+            ok, msg = engine.auto_restore_point_msg("WinOpti")
             if not ok:
                 errors.append(tr("точка восстановления не создана: {msg}").format(msg=msg[:140]))
         for tid in ids:

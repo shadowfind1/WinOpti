@@ -143,7 +143,6 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
                              (tr("ОБСЛУЖИВАНИЕ"), ["apps", "startup", "cleanup"]), (tr("БЕЗОПАСНОСТЬ"), ["restore"])])
         self._build_main()
         self._show(self.sections[0])
-        self._render_presets()
         self.after(100, self._poll)
         self._refresh()
         self.after(10, self._no_full_redraw)

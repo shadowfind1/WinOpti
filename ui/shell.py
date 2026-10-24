@@ -201,6 +201,9 @@ class ShellMixin:
 
     def _badge(self, cat, text):
         """Счётчик у пункта меню: маленькая «таблетка», пустая — невидима."""
+        if self.nav[cat].get("badge_text") == text:
+            return  # перерисовка CTkLabel стоит ~2 мс, а счётчиков 8 — после каждого переключения
+        self.nav[cat]["badge_text"] = text
         self.nav[cat]["badge"].configure(text=f" {text} " if text else "",
                                          fg_color="#1f2533" if text else "transparent")
 

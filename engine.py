@@ -19,7 +19,7 @@ import time
 import winreg
 import xml.etree.ElementTree as ET
 from ctypes import wintypes
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from i18n import tr
@@ -770,6 +770,19 @@ def create_restore_point_msg(desc="WinOpti"):
     if after is not None and after == before:
         return False, tr("Windows не создала новую точку")
     return True, ""
+
+
+def auto_restore_point_msg(desc="WinOpti", hours=24):
+    """Точка перед включением твиков. Если свежая точка (моложе суток) уже есть, новую не создаём:
+    создание точки — теневой снимок диска, и на это время (до минуты) вся Windows заметно тормозит."""
+    try:
+        points = list_restore_points(1)
+        newest = datetime.strptime(points[0]["t"], "%Y-%m-%d %H:%M") if points else None
+    except Exception:
+        newest = None
+    if newest and datetime.now() - newest < timedelta(hours=hours):
+        return True, ""
+    return create_restore_point_msg(desc)
 
 
 def create_restore_point(desc="WinOpti"):
