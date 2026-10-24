@@ -47,6 +47,12 @@ CLEANUP = ("cleanup", tr("Очистка"), tr("Временные файлы, �
 RESTORE = ("restore", tr("Восстановление"), tr("Откат изменений и точки восстановления Windows"), "restore")
 
 
+def resource(*parts):
+    """Файл рядом с программой: в собранном exe — в его папке данных (sys._MEIPASS)."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, *parts)
+
+
 def relaunch_as_admin():
     """Перезапуск с запросом UAC. True = запрос принят, этот процесс надо закрыть."""
     if getattr(sys, "frozen", False):
@@ -131,6 +137,15 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.after(100, self._poll)
         self._refresh()
         self.after(40, lambda: self._animate("alpha", 280, self._set_alpha))
+        self.after(250, self._set_icon)  # позже собственной иконки customtkinter, иначе он её перезапишет
+
+    def _set_icon(self):
+        ico = resource("assets", "winopti.ico")
+        if os.path.exists(ico):
+            try:
+                self.iconbitmap(ico)
+            except Exception:
+                pass
 
     def _collect_sections(self):
         by_cat = {}

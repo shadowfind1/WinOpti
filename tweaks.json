@@ -813,6 +813,7 @@
     ],
     "description": "Пятикратное нажатие Shift и подобные сочетания больше не вызывают всплывающее окно (удобно в играх).",
     "description_en": "Pressing Shift five times and similar shortcuts no longer bring up a popup (handy in games).",
+    "keywords": "клавиатура keyboard shift",
     "actions": [
       {
         "type": "registry",
@@ -944,6 +945,7 @@
     ],
     "description": "Правый клик сразу показывает полное меню, как в Windows 10, без пункта «Показать дополнительные параметры». Проводник перезапустится.",
     "description_en": "Right-click shows the full menu right away, like in Windows 10, without \"Show more options\". Explorer will restart.",
+    "keywords": "правый клик right click",
     "actions": [
       {
         "type": "registry_key",
@@ -1054,6 +1056,7 @@
     ],
     "description": "Тёмное оформление для Windows и приложений.",
     "description_en": "Dark mode for Windows and apps.",
+    "keywords": "тёмный dark mode",
     "actions": [
       {
         "type": "registry",
@@ -1228,6 +1231,7 @@
     "after": null,
     "description": "Включает скрытую схему «Максимальная производительность»: процессор и устройства не уходят в энергосбережение, меньше задержек. ПК больше греется и потребляет, на ноутбуке сильно сократит работу от батареи. При откате возвращается прежняя схема.",
     "description_en": "Enables the hidden Ultimate Performance plan: the CPU and devices don't go into power saving, less latency. The PC runs hotter and uses more power; on a laptop it greatly shortens battery life. Reverting restores your previous plan.",
+    "keywords": "питание электропитание power plan fps",
     "actions": [
       {
         "type": "power_scheme",
@@ -1566,6 +1570,7 @@
     "after_en": "Restart the game if it's running",
     "description": "Отключает фоновый захват игрового видео Xbox Game Bar, который может просаживать FPS.",
     "description_en": "Turns off Xbox Game Bar's background gameplay capture, which can lower FPS.",
+    "keywords": "fps xbox запись",
     "actions": [
       {
         "type": "registry",
@@ -1612,6 +1617,7 @@
     ],
     "description": "Убирает «повышенную точность указателя»: курсор двигается пропорционально движению руки.",
     "description_en": "Removes \"Enhance pointer precision\": the cursor moves in proportion to your hand movement.",
+    "keywords": "мышка mouse курсор cursor",
     "actions": [
       {
         "type": "registry",
@@ -1658,6 +1664,7 @@
     ],
     "description": "Зажатая клавиша начинает повторяться через ~250 мс вместо ~500 мс, повтор на максимальной скорости. Быстрее отклик при удержании клавиш в играх, при наборе и перемещении курсора стрелками.",
     "description_en": "A held key starts repeating after ~250 ms instead of ~500 ms, at maximum speed. Faster response when holding keys in games, typing and moving the cursor with arrows.",
+    "keywords": "клавиатура keyboard клавиши повтор repeat",
     "actions": [
       {
         "type": "registry",

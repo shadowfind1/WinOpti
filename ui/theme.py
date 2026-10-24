@@ -153,9 +153,8 @@ def icon(kind, color, size=20):
     return _icon_cache[key]
 
 
-def logo_image(size=38):
-    if Image is None:
-        return None
+def logo_pil(px):
+    """Логотип (молния на синем скруглённом квадрате) как картинка PIL px×px: для окна и для .ico."""
     s = 24 * K
     base = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     ImageDraw.Draw(base).rounded_rectangle([0, 0, s - 1, s - 1], radius=6.5 * K, fill=ACCENT)
@@ -163,7 +162,13 @@ def logo_image(size=38):
     pts = [(14, 2), (5, 13), (11.5, 13), (10, 22), (19, 10.5), (12.5, 10.5)]
     ImageDraw.Draw(bolt).polygon(_pts([(12 + (x - 12) * .62, 12 + (y - 12) * .62) for x, y in pts]), fill=255)
     base.paste(Image.new("RGBA", (s, s), "#ffffff"), (0, 0), bolt)
-    base = base.resize((size * 2, size * 2), Image.LANCZOS)
+    return base.resize((px, px), Image.LANCZOS)
+
+
+def logo_image(size=38):
+    if Image is None:
+        return None
+    base = logo_pil(size * 2)
     return ctk.CTkImage(light_image=base, dark_image=base, size=(size, size))
 
 

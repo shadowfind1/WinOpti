@@ -43,10 +43,13 @@ SCHEME_BALANCED = "381b4222-f694-41f0-9685-ff5bb260df2e"
 
 # ---------- утилиты ----------
 
+CREATE_NO_WINDOW = 0x08000000  # без мелькающих окон консоли у программы без консоли (exe, pythonw)
+
+
 def run(cmd, encoding="oem"):
     """Запуск команды. Список = без shell, строка = через shell. -> (код, вывод)."""
     r = subprocess.run(cmd, capture_output=True, text=True, encoding=encoding,
-                       errors="replace", shell=isinstance(cmd, str))
+                       errors="replace", shell=isinstance(cmd, str), creationflags=CREATE_NO_WINDOW)
     return r.returncode, (r.stdout or "") + (r.stderr or "")
 
 
