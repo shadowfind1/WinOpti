@@ -1,4 +1,6 @@
 """winopt/ui/startup_page.py: вкладка «Автозагрузка» — что запускается вместе с Windows."""
+import tkinter
+
 import customtkinter as ctk
 
 import startup
@@ -47,28 +49,28 @@ class StartupMixin:
                                border_color=BORDER)
             row.pack(fill="x", padx=(0, 10), pady=5)
             row.columnconfigure(0, weight=1)
-            head = ctk.CTkFrame(row, fg_color="transparent")
+            # простые надписи Tk вместо CTkLabel: у каждой CTkLabel три окна Windows (см. theme.text)
+            head = tkinter.Frame(row, bg=CARD)
             head.grid(row=0, column=0, sticky="w", padx=18, pady=(12, 0))
-            ctk.CTkLabel(head, text=it["name"], anchor="w", text_color=TEXT, font=font(14, True)).pack(side="left")
+            text(head, it["name"], 14, True).pack(side="left")
             if it["hint"] == "disable":
-                pill(head, tr("можно выключить"), PILL_GREEN, GREEN).pack(side="left", padx=(10, 0))
+                text(head, "   ·   " + tr("можно выключить"), 11, True, GREEN).pack(side="left")
             elif it["hint"] == "keep":
-                pill(head, tr("лучше не трогать"), PILL_ORANGE, ORANGE).pack(side="left", padx=(10, 0))
+                text(head, "   ·   " + tr("лучше не трогать"), 11, True, ORANGE).pack(side="left")
             meta = " · ".join(x for x in (it["company"], it["where"]) if x)
             if it["hint_text"]:
                 meta += f"  —  {it['hint_text']}"
-            autowrap(ctk.CTkLabel(row, text=meta, anchor="w", justify="left", wraplength=620, text_color=MUTED,
-                                  font=font(12)), row, 120).grid(row=1, column=0, sticky="w", padx=18, pady=(2, 0))
+            autowrap(text(row, meta, 12, color=MUTED, wrap=620), row, 120
+                     ).grid(row=1, column=0, sticky="w", padx=18, pady=(3, 0))
             cmd = it["command"] if len(it["command"]) <= 110 else it["command"][:107] + "…"
-            ctk.CTkLabel(row, text=cmd, anchor="w", text_color=DIM, font=font(11)
-                         ).grid(row=2, column=0, sticky="w", padx=18, pady=(2, 0))
-            status = ctk.CTkLabel(row, text="", anchor="w", font=font(11), height=14)
-            status.grid(row=3, column=0, sticky="w", padx=18, pady=(0, 8))
+            text(row, cmd, 11, color=DIM).grid(row=2, column=0, sticky="w", padx=18, pady=(3, 0))
+            status = text(row, "", 11, color=MUTED)
+            status.grid(row=3, column=0, sticky="w", padx=18, pady=(2, 10))
             if it["missing"]:
                 status.configure(text=tr("Файл программы не найден: запись осталась от удалённой программы, "
-                                         "её можно выключить."), text_color=RED)
+                                         "её можно выключить."), fg=RED)
             elif it["admin"] and not self.admin:
-                status.configure(text=tr("Нужны права администратора"), text_color=MUTED)
+                status.configure(text=tr("Нужны права администратора"))
             switch = ctk.CTkSwitch(row, text="", width=50, progress_color=ACCENT, fg_color="#2b3243",
                                    button_color="#e8ebf2", button_hover_color="#ffffff",
                                    command=lambda i=it["id"]: self._startup_toggle(i))
@@ -139,7 +141,7 @@ class StartupMixin:
             row["switch"].select() if state else row["switch"].deselect()
             row["switch"].configure(state="normal")
             row["status"].configure(text=tr("Ошибка: {err}").format(err=err) if err else "",
-                                    text_color=RED if err else MUTED)
+                                    fg=RED if err else MUTED)
         if err:
             self._status(tr("{name}: ошибка: {err}").format(name=it["name"], err=err), True)
         elif state:

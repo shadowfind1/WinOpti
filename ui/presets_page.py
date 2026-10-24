@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+import tkinter
 from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
@@ -43,13 +44,13 @@ class PresetsMixin:
                                   text_color=MUTED, font=font(12)), card, 48
                      ).grid(row=1, column=0, columnspan=2, sticky="w", padx=20, pady=(4, 0))
 
-            grid = ctk.CTkFrame(card, fg_color="transparent")
+            grid = tkinter.Frame(card, bg=CARD)  # список твиков — простыми надписями Tk (см. theme.text)
             grid.grid(row=2, column=0, columnspan=2, sticky="ew", padx=20, pady=(10, 0))
             grid.columnconfigure((0, 1), weight=1, uniform="col")
             items = {}
             for n, tid in enumerate(p["tweaks"]):
-                lbl = ctk.CTkLabel(grid, text="", anchor="w", font=font(12))
-                lbl.grid(row=n // 2, column=n % 2, sticky="w", pady=1)
+                lbl = text(grid, "", 12)
+                lbl.grid(row=n // 2, column=n % 2, sticky="w", pady=4)
                 items[tid] = lbl
 
             bar = ctk.CTkFrame(card, fg_color="transparent")
@@ -73,16 +74,16 @@ class PresetsMixin:
                 state = self.states[tid]
                 name = loc(self.tweaks[tid], "name")
                 if state == "n/a":
-                    lbl.configure(text=f"○  {name}  ({tr('недоступно')})", text_color=DIM)
+                    lbl.configure(text=f"○  {name}  ({tr('недоступно')})", fg=DIM)
                     continue
                 supported += 1
                 if state == "on":
                     on += 1
-                    lbl.configure(text=f"●  {name}", text_color=GREEN)
+                    lbl.configure(text=f"●  {name}", fg=GREEN)
                 elif state == "partial":
-                    lbl.configure(text=f"◐  {name}", text_color=ORANGE)
+                    lbl.configure(text=f"◐  {name}", fg=ORANGE)
                 else:
-                    lbl.configure(text=f"○  {name}", text_color=MUTED)
+                    lbl.configure(text=f"○  {name}", fg=MUTED)
             if not self.loaded:
                 ui["counter"].configure(text=f"  {tr('читаю состояние…')}  ", fg_color=PILL_GRAY, text_color=MUTED)
             elif on == supported:

@@ -62,6 +62,9 @@ class ShellMixin:
         items = list(items)
 
         def step(start, n):
+            if time.perf_counter() < self._moving_until:  # окно двигают: не отнимаем у него кадры
+                self._chunk_jobs[key] = self.after(60, lambda: step(start, n))
+                return
             for it in items[start:start + n]:
                 make(it)
             nxt = start + n
@@ -254,15 +257,17 @@ class ShellMixin:
         page = self._page(cat)
         if self.current in self.nav:
             self._style_nav(self.current, False)
-        prev = self.pages.get(self.current)
-        if prev is not None:  # скрытая страница замирает в своём размере и не перекладывается вместе с окном
-            tkinter.Place.place_configure(prev, relwidth=0, relheight=0,
-                                          width=prev.winfo_width(), height=prev.winfo_height())
+        prev_cat, prev = self.current, self.pages.get(self.current)
         self.current = cat
-        # построенные страницы лежат стопкой и остаются разложенными: поднять нужную наверх вдвое дешевле,
-        # чем убирать одну и заново раскладывать ~200 окон другой
-        tkinter.Place.place_configure(page, x=0, y=0, relwidth=1, relheight=1, width="", height="")
+        # новая страница ложится поверх прежней, а прежняя убирается из окна: скрытые, но разложенные
+        # страницы — это тысячи окон Windows, с ними тормозит перетаскивание окна
+        tkinter.Place.place_configure(page, x=0, y=0, relwidth=1, relheight=1)
         page.tkraise()
+        if prev is not None and prev is not page:
+            prev.place_forget()
+            on_hide = getattr(self, f"_on_hide_{prev_cat}", None)  # вкладка может освободить лишние окна
+            if on_hide:
+                on_hide()
         for scroll in [s for s in self._fit_pending if self._on_current(s)]:
             self._fit_pending.discard(scroll)  # окно растягивали, пока страница была скрыта
             self._fit_scroll(scroll)
@@ -407,11 +412,15 @@ class ShellMixin:
         return page is not None and str(widget).startswith(str(page) + ".")
 
     def _on_root_configure(self, event):
-        """Запомнить, что окно сейчас растягивают (событие приходит и от детей — их пропускаем)."""
-        if event.widget is self and (event.width, event.height) != self._root_size:
-            if self._root_size is not None:
+        """Запомнить, что окно сейчас двигают или растягивают (событие приходит и от детей — их пропускаем)."""
+        if event.widget is not self:
+            return
+        geometry = (event.x, event.y, event.width, event.height)
+        if self._root_geometry is not None and geometry != self._root_geometry:
+            self._moving_until = time.perf_counter() + 0.25
+            if geometry[2:] != self._root_geometry[2:]:
                 self._resizing_until = time.perf_counter() + 0.18
-            self._root_size = (event.width, event.height)
+        self._root_geometry = geometry
 
     @staticmethod
     def _card(parent, title, text=None):

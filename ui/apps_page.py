@@ -3,6 +3,7 @@
 import queue
 import threading
 import time
+import tkinter
 from tkinter import messagebox
 
 import customtkinter as ctk
@@ -237,7 +238,7 @@ class AppsMixin:
             unselected_color="#232938", unselected_hover_color="#2d3548", text_color=TEXT)
         self.apps_mode.set(next(iter(APPS_MODES)))
         self.apps_mode.pack(side="left")
-        self.apps_search = ctk.CTkEntry(bar, placeholder_text=tr("Поиск по названию или издателю"), width=280,
+        self.apps_search = ctk.CTkEntry(bar, placeholder_text=tr("Поиск по названию или издателю"), width=230,
                                         height=34, fg_color=CARD, border_color=BORDER, text_color=TEXT,
                                         font=font(12))
         self.apps_search.pack(side="left", padx=(12, 0))
@@ -253,6 +254,15 @@ class AppsMixin:
 
     def _on_show_apps(self):
         self._apps_show()
+
+    def _on_hide_apps(self):
+        """Список и так перестраивается при каждом открытии, а скрытым он держал бы ~500 окон Windows,
+        с которыми тормозит перетаскивание окна."""
+        job = self._chunk_jobs.pop("apps", None)
+        if job:
+            self.after_cancel(job)
+        self._clear(self.apps_box)
+        self.apps_buttons = {}
 
     def _apps_mode_key(self):
         return APPS_MODES[self.apps_mode.get()]
@@ -312,13 +322,14 @@ class AppsMixin:
         row = ctk.CTkFrame(self.apps_box, corner_radius=12, fg_color=CARD, border_width=1, border_color=BORDER)
         row.pack(fill="x", padx=(0, 10), pady=4)
         row.columnconfigure(0, weight=1)
-        head = ctk.CTkFrame(row, fg_color="transparent")
-        head.grid(row=0, column=0, sticky="w", padx=18, pady=(10, 0))
-        ctk.CTkLabel(head, text=a["name"], anchor="w", text_color=TEXT, font=font(14, True)).pack(side="left")
+        # простые надписи Tk вместо CTkLabel: строк до сотни, а у каждой CTkLabel — три окна Windows
+        head = tkinter.Frame(row, bg=CARD)
+        head.grid(row=0, column=0, sticky="w", padx=18, pady=(11, 0))
+        text(head, a["name"], 14, True).pack(side="left")
         if a["hint"] == "remove":
-            pill(head, tr("можно удалить"), PILL_GREEN, GREEN).pack(side="left", padx=(10, 0))
+            text(head, "   ·   " + tr("можно удалить"), 11, True, GREEN).pack(side="left")
         elif a["hint"] == "keep":
-            pill(head, tr("лучше не трогать"), PILL_ORANGE, ORANGE).pack(side="left", padx=(10, 0))
+            text(head, "   ·   " + tr("лучше не трогать"), 11, True, ORANGE).pack(side="left")
         if mode == "programs":
             size = cleaner.fmt_size(a["size"]) if a["size"] else ""
             meta = " · ".join(x for x in (a["publisher"], a["version"], size, a["date"]) if x)
@@ -326,8 +337,8 @@ class AppsMixin:
             meta = a["package"]
         if a["hint_text"]:
             meta += f"  —  {a['hint_text']}"
-        autowrap(ctk.CTkLabel(row, text=meta, anchor="w", justify="left", wraplength=620, text_color=MUTED,
-                              font=font(12)), row, 160).grid(row=1, column=0, sticky="w", padx=18, pady=(2, 10))
+        autowrap(text(row, meta, 12, color=MUTED, wrap=620), row, 160
+                 ).grid(row=1, column=0, sticky="w", padx=18, pady=(3, 11))
         btn = button(row, tr("Удалить"), "danger", lambda: self._apps_remove(a, mode), width=100, height=32)
         btn.grid(row=0, column=1, rowspan=2, padx=14)
         if not self.admin:

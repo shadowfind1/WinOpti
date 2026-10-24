@@ -1,6 +1,7 @@
 """winopt/ui/theme.py: палитра, шрифты, иконки, кнопки и функции анимации.
 Остальные модули ui берут отсюда всё через `from ui.theme import *` (список в __all__)."""
 import math
+import tkinter
 
 import customtkinter as ctk
 
@@ -13,7 +14,7 @@ except ImportError:  # без Pillow всё работает, только бе�
 
 __all__ = ["APP_NAME", "BG", "SIDEBAR", "CARD", "CARD_ALT", "BORDER", "HOVER", "SELECTED", "TEXT", "MUTED", "DIM",
            "ACCENT", "ACCENT_HOVER", "GREEN", "ORANGE", "RED", "PILL_GREEN", "PILL_ORANGE", "PILL_RED", "PILL_GRAY",
-           "PILL_BLUE", "RISK", "font", "ease", "mix", "autowrap", "icon", "logo_image", "pill", "button", "tr"]
+           "PILL_BLUE", "RISK", "font", "ease", "mix", "autowrap", "icon", "logo_image", "pill", "button", "text", "tr"]
 
 APP_NAME = "WinOpti"
 FONT = "Segoe UI"
@@ -49,11 +50,13 @@ def mix(a, b, t):
 def autowrap(label, container, margin):
     """Перенос текста по реальной ширине контейнера (а не по фиксированному числу пикселей):
     на узком окне текст не обрезается, на широком карточки становятся ниже."""
+    scale = ctk.ScalingTracker.get_widget_scaling(container)
+    native = not isinstance(label, ctk.CTkBaseClass)  # простой tkinter.Label (см. text) — в настоящих пикселях
+
     def on_resize(event):
-        width = container._reverse_widget_scaling(event.width) if hasattr(container, "_reverse_widget_scaling") \
-            else event.width
+        wrap = max(200, int(event.width / scale) - margin)
         try:
-            label.configure(wraplength=max(200, int(width) - margin))
+            label.configure(wraplength=round(wrap * scale) if native else wrap)
         except Exception:
             pass  # подпись уже уничтожена
     container.bind("<Configure>", on_resize, add="+")
@@ -177,6 +180,16 @@ def logo_image(size=38):
 def pill(master, text, bg, fg):
     return ctk.CTkLabel(master, text=f"  {text}  ", fg_color=bg, text_color=fg,
                         corner_radius=9, height=20, font=font(11, True))
+
+
+def text(master, value, size=12, bold=False, color=TEXT, bg=CARD, wrap=0):
+    """Простая надпись Tk: одно окно Windows вместо трёх у CTkLabel. Для текста на карточках, которых
+    на странице десятки: чем меньше окон, тем быстрее окно двигается и перерисовывается.
+    Размеры — в логических пикселях, как у customtkinter (учитываем масштаб экрана)."""
+    scale = ctk.ScalingTracker.get_widget_scaling(master)
+    return tkinter.Label(master, text=value, bg=bg, fg=color, anchor="w", justify="left", bd=0, padx=0, pady=0,
+                         highlightthickness=0, wraplength=round(wrap * scale),
+                         font=(FONT, -round(size * scale), "bold" if bold else "normal"))
 
 
 def button(master, text, kind, command, width=None, height=36):

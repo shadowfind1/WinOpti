@@ -85,7 +85,8 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._fit_jobs = {}           # прокручиваемая область -> отложенная подгонка ширины (см. _fit_scroll)
         self._fit_pending = set()     # области скрытых страниц, ширину которых подгоним при открытии
         self._resizing_until = 0.0   # до какого момента считаем, что окно растягивают
-        self._root_size = None
+        self._moving_until = 0.0      # до какого момента считаем, что окно двигают (дорисовка ждёт)
+        self._root_geometry = None
         self.bind("<Configure>", self._on_root_configure, add="+")
         self._indicator_y = None      # где сейчас полоска выбранной вкладки
         self.progress_rows = {}       # вкладка с твиками -> строка «N из M включено» (см. _progress_row)

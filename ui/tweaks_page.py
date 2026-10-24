@@ -1,4 +1,6 @@
 """winopt/ui/tweaks_page.py: вкладки с твиками (Приватность, Интерфейс, …): карточки и переключение."""
+import tkinter
+
 import customtkinter as ctk
 
 import engine
@@ -7,13 +9,15 @@ from ui.theme import *  # noqa: F403
 
 
 class TweakRow(ctk.CTkFrame):
-    """Карточка одного твика: название, описание, риск, статус и переключатель."""
+    """Карточка одного твика: название, описание, строка состояния и переключатель.
+    Текст — простыми надписями Tk (см. theme.text): карточек на странице до 15, и каждая лишняя
+    надпись customtkinter — ещё три окна Windows, которые тормозят перетаскивание окна."""
 
     STATUS = {
-        "on": (tr("включено"), PILL_GREEN, GREEN),
-        "off": (tr("выключено"), PILL_GRAY, MUTED),
-        "partial": (tr("частично"), PILL_ORANGE, ORANGE),
-        "error": (tr("не удалось прочитать"), PILL_RED, RED),
+        "on": (tr("включено"), GREEN),
+        "off": (tr("выключено"), MUTED),
+        "partial": (tr("частично"), ORANGE),
+        "error": (tr("не удалось прочитать"), RED),
     }
 
     def __init__(self, master, tweak, can_edit, on_toggle):
@@ -23,20 +27,21 @@ class TweakRow(ctk.CTkFrame):
         self.state = "loading"
         self.can_edit = can_edit and engine.is_supported(tweak)
         self.columnconfigure(0, weight=1)
-        self._wrap = 560
+        self._scale = ctk.ScalingTracker.get_widget_scaling(self)
+        self._wrap = 0
 
-        ctk.CTkLabel(self, text=loc(tweak, "name"), anchor="w", text_color=TEXT, font=font(14, True)
-                     ).grid(row=0, column=0, sticky="w", padx=16, pady=(10, 0))
-        self.desc = ctk.CTkLabel(self, text=loc(tweak, "description"), anchor="w", justify="left",
-                                 wraplength=self._wrap, text_color=MUTED, font=font(12))
-        self.desc.grid(row=1, column=0, sticky="w", padx=16, pady=(1, 0))
+        text(self, loc(tweak, "name"), 14, True).grid(row=0, column=0, sticky="w", padx=16, pady=(11, 0))
+        self.desc = text(self, loc(tweak, "description"), 12, color=MUTED, wrap=560)
+        self.desc.grid(row=1, column=0, sticky="w", padx=16, pady=(3, 0))
 
-        meta = ctk.CTkFrame(self, fg_color="transparent")
-        meta.grid(row=2, column=0, sticky="w", padx=16, pady=(6, 10))
-        risk_text, risk_color = RISK.get(tweak.get("risk", "low"), RISK["low"])
-        ctk.CTkLabel(meta, text=f"●  {risk_text}", text_color=risk_color, font=font(11), height=20).pack(side="left")
-        self.status = pill(meta, "", PILL_GRAY, MUTED)
-        self.status.pack(side="left", padx=(12, 0))
+        meta = tkinter.Frame(self, bg=CARD, bd=0, highlightthickness=0)
+        meta.grid(row=2, column=0, sticky="w", padx=16, pady=(5, 11))
+        self.status = text(meta, "", 11, True, MUTED)
+        self.status.pack(side="left")
+        risk = tweak.get("risk", "low")
+        if risk != "low":  # низкий риск у большинства твиков — не засоряем им карточки
+            risk_text, risk_color = RISK[risk]
+            text(meta, f"   ·   {risk_text}", 11, color=risk_color).pack(side="left")
 
         self.switch = ctk.CTkSwitch(self, text="", width=50, command=self._clicked,
                                     progress_color=ACCENT, fg_color="#2b3243",
@@ -47,8 +52,7 @@ class TweakRow(ctk.CTkFrame):
 
     def _on_resize(self, event):
         """Описание занимает всю ширину карточки: на широком окне карточки становятся ниже."""
-        width = self._reverse_widget_scaling(event.width) if hasattr(self, "_reverse_widget_scaling") else event.width
-        wrap = max(280, int(width) - 110)
+        wrap = max(round(280 * self._scale), event.width - round(110 * self._scale))
         if abs(wrap - self._wrap) > 8:
             self._wrap = wrap
             self.desc.configure(wraplength=wrap)
@@ -58,7 +62,7 @@ class TweakRow(ctk.CTkFrame):
 
     def set_busy(self, text):
         self.switch.configure(state="disabled")
-        self.status.configure(text=f"  {text}  ", fg_color=PILL_GRAY, text_color=MUTED)
+        self.status.configure(text=text, fg=MUTED)
 
     def set_state(self, state):
         """state: on / off / partial / n/a / error"""
@@ -68,10 +72,10 @@ class TweakRow(ctk.CTkFrame):
         else:
             self.switch.deselect()
         if state == "n/a":
-            text, bg, fg = tr("недоступно на Windows {v}").format(v=engine.windows_version()), PILL_GRAY, MUTED
+            label, color = tr("недоступно на Windows {v}").format(v=engine.windows_version()), DIM
         else:
-            text, bg, fg = self.STATUS[state]
-        self.status.configure(text=f"  {text}  ", fg_color=bg, text_color=fg)
+            label, color = self.STATUS[state]
+        self.status.configure(text=label, fg=color)
         editable = self.can_edit and state in ("on", "off", "partial")
         self.switch.configure(state="normal" if editable else "disabled")
 

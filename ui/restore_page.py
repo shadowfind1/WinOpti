@@ -1,6 +1,7 @@
 """winopt/ui/restore_page.py: вкладка «Восстановление» — откат изменений WinOpti, точки восстановления
 Windows и журнал."""
 from datetime import datetime
+import tkinter
 from tkinter import messagebox
 
 import customtkinter as ctk
@@ -94,11 +95,10 @@ class RestoreMixin:
         row = ctk.CTkFrame(self.applied_box, fg_color=CARD_ALT, corner_radius=10)
         row.pack(fill="x", pady=4)
         row.columnconfigure(0, weight=1)
-        ctk.CTkLabel(row, text=loc(self.tweaks[it["id"]], "name"), anchor="w", text_color=TEXT,
-                     font=font(13, True)).grid(row=0, column=0, sticky="w", padx=16, pady=(10, 0))
+        text(row, loc(self.tweaks[it["id"]], "name"), 13, True, bg=CARD_ALT
+             ).grid(row=0, column=0, sticky="w", padx=16, pady=(10, 0))
         when = tr("применено {time}").format(time=it["time"]) if it["time"] else tr("применено")
-        ctk.CTkLabel(row, text=when, anchor="w", text_color=MUTED, font=font(11)
-                     ).grid(row=1, column=0, sticky="w", padx=16, pady=(0, 10))
+        text(row, when, 11, color=MUTED, bg=CARD_ALT).grid(row=1, column=0, sticky="w", padx=16, pady=(3, 10))
         btn = button(row, tr("Откатить"), "secondary", lambda tid=it["id"]: self._revert_one(tid),
                      width=100, height=32)
         btn.grid(row=0, column=1, rowspan=2, padx=14)
@@ -106,14 +106,17 @@ class RestoreMixin:
             btn.configure(state="disabled")
 
     def _journal_line(self, e):
-        line = ctk.CTkFrame(self.journal_box, fg_color="transparent")
-        line.pack(fill="x", pady=3)
-        ctk.CTkLabel(line, text=e["time"], width=130, anchor="w", text_color=MUTED, font=font(12)
-                     ).pack(side="left")
-        pill(line, *JOURNAL.get(e["action"], JOURNAL["off"])).pack(side="left")
+        # строк до 15 — простыми надписями Tk (у CTkLabel три окна Windows, см. theme.text)
+        line = tkinter.Frame(self.journal_box, bg=CARD)
+        line.pack(fill="x", pady=4)
+        scale = ctk.ScalingTracker.get_widget_scaling(line)
+        line.columnconfigure(0, minsize=round(130 * scale))
+        line.columnconfigure(1, minsize=round(140 * scale))
+        label, _bg, color = JOURNAL.get(e["action"], JOURNAL["off"])
         name = loc(self.tweaks[e["id"]], "name") if e["id"] in self.tweaks else e["name"]
-        ctk.CTkLabel(line, text=name, anchor="w", text_color=TEXT, font=font(12)
-                     ).pack(side="left", padx=(12, 0))
+        text(line, e["time"], 12, color=MUTED).grid(row=0, column=0, sticky="w")
+        text(line, label, 11, True, color).grid(row=0, column=1, sticky="w")
+        text(line, name, 12).grid(row=0, column=2, sticky="w")
 
     def _render_protection(self):
         """Без включённой защиты системы Windows не создаёт точки вообще — показываем это явно."""
