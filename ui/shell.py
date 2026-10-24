@@ -1,5 +1,6 @@
 """winopt/ui/shell.py: каркас окна. Меню слева, шапка страницы, уведомления, анимации,
 переключение вкладок и общие помощники для страниц (_card, _note, _scroll, _clear)."""
+import ctypes
 import os
 import subprocess
 import sys
@@ -10,6 +11,9 @@ import customtkinter as ctk
 import engine
 import i18n
 from ui.theme import *  # noqa: F403 — палитра, шрифты, иконки, кнопки, tr
+
+GWL_EXSTYLE, WS_EX_LAYERED = -20, 0x80000
+RDW_INVALIDATE, RDW_ERASE, RDW_ALLCHILDREN, RDW_FRAME = 0x1, 0x4, 0x80, 0x400
 
 
 def clear(box):
@@ -48,6 +52,20 @@ class ShellMixin:
     def _set_alpha(self, t):
         try:
             self.attributes("-alpha", t)
+        except Exception:
+            pass
+
+    def _unlayer(self):
+        """После плавного появления снять с окна WS_EX_LAYERED. Tk включает его ради прозрачности и не
+        выключает даже при alpha = 1, а layered-окно Windows перетаскивает и перерисовывает заметно медленнее."""
+        try:
+            u = ctypes.windll.user32
+            u.GetWindowLongW.restype = ctypes.c_long
+            hwnd = u.GetParent(self.winfo_id())  # внешнее окно с рамкой, а не внутренняя область Tk
+            ex = u.GetWindowLongW(hwnd, GWL_EXSTYLE)
+            if ex & WS_EX_LAYERED:
+                u.SetWindowLongW(hwnd, GWL_EXSTYLE, ex & ~WS_EX_LAYERED)
+                u.RedrawWindow(hwnd, None, None, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN)
         except Exception:
             pass
 

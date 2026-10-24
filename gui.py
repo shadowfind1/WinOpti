@@ -136,7 +136,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._render_presets()
         self.after(100, self._poll)
         self._refresh()
-        self.after(40, lambda: self._animate("alpha", 280, self._set_alpha))
+        self.after(40, lambda: self._animate("alpha", 280, self._set_alpha, self._unlayer))
         self.after(250, self._set_icon)  # позже собственной иконки customtkinter, иначе он её перезапишет
 
     def _set_icon(self):
