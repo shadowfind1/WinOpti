@@ -81,26 +81,57 @@ class TweaksMixin:
     def _build_tweak_page(self, box, cat):
         page = ctk.CTkFrame(box, fg_color="transparent")
         scroll = self._scroll(page)
-        self.cat_rows[cat] = []
-        for t in self.groups[cat]:
-            row = TweakRow(scroll, t, self.admin, self._toggle)
+
+        def make(t):
+            row = self._new_row(scroll, t)
             row.pack(fill="x", padx=(0, 10), pady=4)
             self.rows[t["id"]] = row
-            self.cat_rows[cat].append(row)
+        self._build_in_chunks(f"tweaks:{cat}", self.groups[cat], make)
         return page
+
+    # ---------- состояние и карточки ----------
+    # Истина — self.states / self.busy; карточки (основная и в поиске) только показывают её.
+
+    def _new_row(self, master, t):
+        """Карточка твика, сразу в текущем состоянии (вкладка могла открыться позже чтения состояний)."""
+        row = TweakRow(master, t, self.admin, self._toggle)
+        tid = t["id"]
+        if tid in self.busy:
+            row.set_busy(self.busy[tid])
+        elif self.states[tid] != "loading":
+            row.set_state(self.states[tid])
+        return row
+
+    def _views(self, tid):
+        return [r for r in (self.rows.get(tid), self.search_rows.get(tid)) if r is not None]
+
+    def _can_edit(self, tid):
+        return self.admin and engine.is_supported(self.tweaks[tid])
+
+    def _set_busy(self, tid, text):
+        self.busy[tid] = text
+        for r in self._views(tid):
+            r.set_busy(text)
+
+    def _set_row_state(self, tid, state):
+        self.states[tid] = state
+        self.busy.pop(tid, None)
+        for r in self._views(tid):
+            r.set_state(state)
 
     # ---------- действия ----------
 
     def _refresh(self):
         self.refresh_btn.configure(state="disabled")
-        for row in self.rows.values():
-            row.set_busy(tr("читаю состояние…"))
+        for tid in self.tweaks:
+            self._set_busy(tid, tr("читаю состояние…"))
         self.jobs.put(("read_all",))
         self.jobs.put(("rp_list",))
 
     def _toggle(self, row, want_on):
-        row.set_busy(tr("применяю…") if want_on else tr("откатываю…"))
-        self.jobs.put(("toggle", row.tweak["id"], want_on, self._need_restore_point(want_on)))
+        tid = row.tweak["id"]
+        self._set_busy(tid, tr("применяю…") if want_on else tr("откатываю…"))
+        self.jobs.put(("toggle", tid, want_on, self._need_restore_point(want_on)))
 
     def _need_restore_point(self, want_on):
         """Точку восстановления создаём один раз за сеанс, перед первым включением."""
@@ -150,12 +181,6 @@ class TweaksMixin:
             self.results.put(("toggled", tid, state, tr("{name}: ошибка: {err}").format(name=name, err=e), True))
 
     # ---------- ответы ----------
-
-    def _set_row_state(self, tid, state):
-        """Основная карточка и её копия в результатах поиска, если она есть."""
-        self.rows[tid].set_state(state)
-        if tid in self.search_rows:
-            self.search_rows[tid].set_state(state)
 
     def _on_state(self, tid, state, err):
         self._set_row_state(tid, state)

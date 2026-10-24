@@ -61,27 +61,19 @@ class RestoreMixin:
 
     def _on_show_restore(self):
         self._render_history()
+        self._render_rp(*self._rp_last)
 
     def _render_history(self):
+        # перерисовываем только видимую вкладку: иначе каждый переключённый твик пересоздавал бы десятки
+        # строк, которых никто не видит; при открытии вкладки _on_show_restore нарисует свежее
+        if self.current != "restore":
+            return
         # применённые изменения
         items = engine.get_applied(self.tweaks)
         self._clear(self.applied_box)
         if not items:
             self._note(self.applied_box, tr("Пока ничего не применено через WinOpti."))
-        for it in items:
-            row = ctk.CTkFrame(self.applied_box, fg_color=CARD_ALT, corner_radius=10)
-            row.pack(fill="x", pady=4)
-            row.columnconfigure(0, weight=1)
-            ctk.CTkLabel(row, text=loc(self.tweaks[it["id"]], "name"), anchor="w", text_color=TEXT,
-                         font=font(13, True)).grid(row=0, column=0, sticky="w", padx=16, pady=(10, 0))
-            when = tr("применено {time}").format(time=it["time"]) if it["time"] else tr("применено")
-            ctk.CTkLabel(row, text=when, anchor="w", text_color=MUTED, font=font(11)
-                         ).grid(row=1, column=0, sticky="w", padx=16, pady=(0, 10))
-            btn = button(row, tr("Откатить"), "secondary", lambda tid=it["id"]: self._revert_one(tid),
-                         width=100, height=32)
-            btn.grid(row=0, column=1, rowspan=2, padx=14)
-            if not self.admin:
-                btn.configure(state="disabled")
+        self._build_in_chunks("restore_applied", items, self._applied_row)
         self.revert_all_btn.configure(state="normal" if items and self.admin else "disabled")
 
         # журнал: имена твиков показываем на текущем языке, остальные записи — как записаны
@@ -89,15 +81,33 @@ class RestoreMixin:
         events = engine.get_history(15)
         if not events:
             self._note(self.journal_box, tr("Журнал пуст."))
-        for e in events:
-            line = ctk.CTkFrame(self.journal_box, fg_color="transparent")
-            line.pack(fill="x", pady=3)
-            ctk.CTkLabel(line, text=e["time"], width=130, anchor="w", text_color=MUTED, font=font(12)
-                         ).pack(side="left")
-            pill(line, *JOURNAL.get(e["action"], JOURNAL["off"])).pack(side="left")
-            name = loc(self.tweaks[e["id"]], "name") if e["id"] in self.tweaks else e["name"]
-            ctk.CTkLabel(line, text=name, anchor="w", text_color=TEXT, font=font(12)
-                         ).pack(side="left", padx=(12, 0))
+        self._build_in_chunks("restore_journal", events, self._journal_line, first=4, chunk=4)
+
+    def _applied_row(self, it):
+        """Строка применённого твика с кнопкой «Откатить»."""
+        row = ctk.CTkFrame(self.applied_box, fg_color=CARD_ALT, corner_radius=10)
+        row.pack(fill="x", pady=4)
+        row.columnconfigure(0, weight=1)
+        ctk.CTkLabel(row, text=loc(self.tweaks[it["id"]], "name"), anchor="w", text_color=TEXT,
+                     font=font(13, True)).grid(row=0, column=0, sticky="w", padx=16, pady=(10, 0))
+        when = tr("применено {time}").format(time=it["time"]) if it["time"] else tr("применено")
+        ctk.CTkLabel(row, text=when, anchor="w", text_color=MUTED, font=font(11)
+                     ).grid(row=1, column=0, sticky="w", padx=16, pady=(0, 10))
+        btn = button(row, tr("Откатить"), "secondary", lambda tid=it["id"]: self._revert_one(tid),
+                     width=100, height=32)
+        btn.grid(row=0, column=1, rowspan=2, padx=14)
+        if not self.admin:
+            btn.configure(state="disabled")
+
+    def _journal_line(self, e):
+        line = ctk.CTkFrame(self.journal_box, fg_color="transparent")
+        line.pack(fill="x", pady=3)
+        ctk.CTkLabel(line, text=e["time"], width=130, anchor="w", text_color=MUTED, font=font(12)
+                     ).pack(side="left")
+        pill(line, *JOURNAL.get(e["action"], JOURNAL["off"])).pack(side="left")
+        name = loc(self.tweaks[e["id"]], "name") if e["id"] in self.tweaks else e["name"]
+        ctk.CTkLabel(line, text=name, anchor="w", text_color=TEXT, font=font(12)
+                     ).pack(side="left", padx=(12, 0))
 
     def _render_protection(self):
         """Без включённой защиты системы Windows не создаёт точки вообще — показываем это явно."""
@@ -111,6 +121,9 @@ class RestoreMixin:
             self.rp_protect_btn.configure(state="normal" if self.admin else "disabled")
 
     def _render_rp(self, items, err):
+        self._rp_last = (items, err)
+        if "restore" not in self.pages:
+            return
         self._render_protection()
         self._clear(self.rp_box)
         if items is None and err is None:
@@ -131,7 +144,7 @@ class RestoreMixin:
     # ---------- действия ----------
 
     def _revert_one(self, tid):
-        self.rows[tid].set_busy(tr("откатываю…"))
+        self._set_busy(tid, tr("откатываю…"))
         self._status(tr("Откатываю…"))
         self.jobs.put(("toggle", tid, False, False))
 
@@ -209,4 +222,5 @@ class RestoreMixin:
         self._render_rp(items, err)
 
     def _on_rp_done(self):
-        self.rp_create_btn.configure(state="normal")
+        if "restore" in self.pages:
+            self.rp_create_btn.configure(state="normal")

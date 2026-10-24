@@ -22,7 +22,8 @@ def clear(box):
 
 
 class ShellMixin:
-    """Требует от App: self.nav, self.pages, self.titles/subtitles/icons, self.cats, self.cat_rows."""
+    """Требует от App: self.nav, self.pages, self._builders, self.titles/subtitles/icons, self.cats, self.groups,
+    self.states."""
 
     # ---------- анимации ----------
 
@@ -48,6 +49,27 @@ class ShellMixin:
                 if done:
                     done()
         tick()
+
+    def _build_in_chunks(self, key, items, make, first=3, chunk=2, done=None):
+        """Создать карточки порциями: первые сразу, остальные следующими тиками after(). Страница появляется
+        мгновенно, а окно не замирает на секунду, пока customtkinter рисует десятки карточек.
+        Новый вызов с тем же key отменяет недостроенный предыдущий (например, при наборе в поиске)."""
+        old = self._chunk_jobs.pop(key, None)
+        if old:
+            self.after_cancel(old)
+        items = list(items)
+
+        def step(start, n):
+            for it in items[start:start + n]:
+                make(it)
+            nxt = start + n
+            if nxt < len(items):
+                self._chunk_jobs[key] = self.after(1, lambda: step(nxt, chunk))
+            else:
+                self._chunk_jobs.pop(key, None)
+                if done:
+                    done()
+        step(0, first)
 
     def _set_alpha(self, t):
         try:
@@ -212,15 +234,22 @@ class ShellMixin:
                               justify="left", anchor="w", font=font(12)), main, 90
                  ).pack(fill="x", padx=28, pady=(10, 0), ipady=6, ipadx=12)
 
+    def _page(self, cat):
+        """Страница вкладки; строится при первом обращении."""
+        if cat not in self.pages:
+            self.pages[cat] = self._builders[cat]()
+        return self.pages[cat]
+
     def _show(self, cat):
         if cat == self.current:
             return
+        page = self._page(cat)
         if self.current:
             self.pages[self.current].pack_forget()
             if self.current in self.nav:
                 self._style_nav(self.current, False)
         self.current = cat
-        self.pages[cat].pack(fill="both", expand=True)
+        page.pack(fill="both", expand=True)
         if cat in self.nav:
             self._style_nav(cat, True)
             self._move_indicator(cat)
@@ -243,17 +272,15 @@ class ShellMixin:
         self._update_header()
 
     def _update_header(self):
-        if self.current not in self.cat_rows:  # полоса прогресса только у вкладок с твиками
+        if self.current not in self.cats:  # полоса прогресса только у вкладок с твиками
             self.progress_box.grid_remove()
             return
         self.progress_box.grid()
-        rows = self.cat_rows[self.current]
         if not self.loaded:
             self.counter_lbl.configure(text=tr("Читаю состояние…"))
             self.progress.set(0)
             return
-        on = sum(1 for r in rows if r.state == "on")
-        total = len(rows)
+        on, total = self._cat_count(self.current)
         p_from, p_to = self.progress.get(), on / total if total else 0
         n_from = self._counter_on
         template = tr("{on} из {total} включено")
@@ -264,12 +291,16 @@ class ShellMixin:
             self.counter_lbl.configure(text=template.format(on=self._counter_on, total=total))
         self._animate("progress", 450, step)
 
+    def _cat_count(self, cat):
+        """(сколько включено, сколько всего) твиков вкладки — по состояниям, без карточек."""
+        ids = [t["id"] for t in self.groups[cat]]
+        return sum(1 for tid in ids if self.states[tid] == "on"), len(ids)
+
     def _update_counts(self):
         """Счётчики на вкладках: сколько твиков включено, и сколько изменений можно откатить."""
         if self.loaded:
-            for cat, rows in self.cat_rows.items():
-                on = sum(1 for r in rows if r.state == "on")
-                self._badge(cat, f"{on}/{len(rows)}")
+            for cat in self.cats:
+                self._badge(cat, "{}/{}".format(*self._cat_count(cat)))
         applied = len(engine.get_applied(self.tweaks))
         self._badge("restore", str(applied) if applied else "")
         self._render_presets()

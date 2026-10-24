@@ -70,16 +70,16 @@ class PresetsMixin:
             ui = self.preset_ui[p["id"]]
             supported = on = 0
             for tid, lbl in ui["items"].items():
-                row = self.rows[tid]
+                state = self.states[tid]
                 name = loc(self.tweaks[tid], "name")
-                if row.state == "n/a":
+                if state == "n/a":
                     lbl.configure(text=f"○  {name}  ({tr('недоступно')})", text_color=DIM)
                     continue
                 supported += 1
-                if row.state == "on":
+                if state == "on":
                     on += 1
                     lbl.configure(text=f"●  {name}", text_color=GREEN)
-                elif row.state == "partial":
+                elif state == "partial":
                     lbl.configure(text=f"◐  {name}", text_color=ORANGE)
                 else:
                     lbl.configure(text=f"○  {name}", text_color=MUTED)
@@ -107,7 +107,7 @@ class PresetsMixin:
         """Включить/откатить набор твиков: пресет или импорт из файла."""
         self.preset_busy = True
         for tid in ids:
-            self.rows[tid].set_busy(tr("применяю…") if want_on else tr("откатываю…"))
+            self._set_busy(tid, tr("применяю…") if want_on else tr("откатываю…"))
         need_rp = self._need_restore_point(want_on)
         self._render_presets()
         template = tr("Пресет «{name}»: применяю…") if want_on else tr("Пресет «{name}»: откатываю…")
@@ -116,8 +116,7 @@ class PresetsMixin:
 
     def _preset_apply(self, pid):
         p = self._preset(pid)
-        ids = [tid for tid in p["tweaks"]
-               if self.rows[tid].can_edit and self.rows[tid].state in ("off", "partial")]
+        ids = [tid for tid in p["tweaks"] if self._can_edit(tid) and self.states[tid] in ("off", "partial")]
         if not ids:
             self._status(tr("Пресет «{name}»: всё уже включено.").format(name=loc(p, "name")))
             return
@@ -151,7 +150,7 @@ class PresetsMixin:
         if not self.loaded:
             self._status(tr("Подожди, пока прочитается состояние твиков."))
             return
-        ids = [tid for tid, row in self.rows.items() if row.state == "on"]
+        ids = [tid for tid, state in self.states.items() if state == "on"]
         path = filedialog.asksaveasfilename(
             parent=self, title=tr("Экспорт настроек"), defaultextension=".json",
             initialfile=f"winopti-{datetime.now():%Y-%m-%d}.json", filetypes=[("WinOpti", "*.json")])
@@ -180,8 +179,8 @@ class PresetsMixin:
             return
         known = [tid for tid in data["tweaks"] if tid in self.tweaks]
         unknown = len(data["tweaks"]) - len(known)
-        na = [tid for tid in known if self.rows[tid].state == "n/a"]
-        ids = [tid for tid in known if self.rows[tid].can_edit and self.rows[tid].state in ("off", "partial")]
+        na = [tid for tid in known if self.states[tid] == "n/a"]
+        ids = [tid for tid in known if self._can_edit(tid) and self.states[tid] in ("off", "partial")]
         notes = []
         if na:
             notes.append(tr("недоступно на этой Windows: {n}").format(n=len(na)))

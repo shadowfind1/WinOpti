@@ -5,9 +5,7 @@ import re
 
 import customtkinter as ctk
 
-from i18n import loc
 from ui.theme import *  # noqa: F403
-from ui.tweaks_page import TweakRow
 
 SEARCH_LIMIT = 40  # больше карточек customtkinter рисует медленно
 
@@ -66,6 +64,7 @@ class SearchMixin:
             return
         if self.current != "search":
             self._search_back = self.current
+        self._page("search")  # страница строится лениво
 
         terms = self._terms(q)
         found = [t for t in self.tweaks.values() if all(term in self._haystack(t) for term in terms)]
@@ -73,23 +72,27 @@ class SearchMixin:
         self.search_rows = {}
         if not found:
             self._note(self.search_box, tr("Ничего не найдено. Попробуй другое слово — ищу по названию и описанию."))
-        shown = 0
+        # порядок как в меню: заголовок вкладки, под ним её твики
+        items = []
         for cat in self.cats:
-            group = [t for t in found if t.get("category") == cat]
-            if not group or shown >= SEARCH_LIMIT:
-                continue
-            ctk.CTkLabel(self.search_box, text=self.titles[cat].upper(), anchor="w", text_color=DIM,
-                         font=font(10, True)).pack(fill="x", padx=4, pady=(10, 2))
-            for t in group[:SEARCH_LIMIT - shown]:
-                row = TweakRow(self.search_box, t, self.admin, self._toggle)
+            group = [t for t in found if t.get("category") == cat][:SEARCH_LIMIT - sum(k == "row" for k, _ in items)]
+            if group:
+                items += [("header", cat)] + [("row", t) for t in group]
+
+        def make(item):
+            kind, value = item
+            if kind == "header":
+                ctk.CTkLabel(self.search_box, text=self.titles[value].upper(), anchor="w", text_color=DIM,
+                             font=font(10, True)).pack(fill="x", padx=4, pady=(10, 2))
+            else:
+                row = self._new_row(self.search_box, value)
                 row.pack(fill="x", padx=(0, 10), pady=4)
-                main_state = self.rows[t["id"]].state
-                if main_state != "loading":
-                    row.set_state(main_state)
-                self.search_rows[t["id"]] = row
-                shown += 1
-        if len(found) > SEARCH_LIMIT:
-            self._note(self.search_box, tr("Показаны первые {n}. Уточни запрос.").format(n=SEARCH_LIMIT))
+                self.search_rows[value["id"]] = row
+
+        def done():
+            if len(found) > SEARCH_LIMIT:
+                self._note(self.search_box, tr("Показаны первые {n}. Уточни запрос.").format(n=SEARCH_LIMIT))
+        self._build_in_chunks("search", items, make, done=done)
 
         self.titles["search"] = tr("Поиск: «{q}»").format(q=self.search_entry.get().strip())
         self.subtitles["search"] = tr("Найдено твиков: {n}").format(n=len(found))

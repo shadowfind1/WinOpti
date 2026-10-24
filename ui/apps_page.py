@@ -302,11 +302,11 @@ class AppsMixin:
             self._note(self.apps_box, tr("Сначала запускается деинсталлятор программы, потом WinOpti находит "
                                          "оставшиеся папки, ярлыки и записи реестра. Файлы удаляются в корзину, "
                                          "реестр — с резервной копией."))
-        for a in shown[:APPS_LIMIT]:
-            self._apps_row(a, mode)
-        if len(shown) > APPS_LIMIT:
-            self._note(self.apps_box, tr("Показаны первые {n}. Уточни поиск, чтобы увидеть остальные."
-                                         ).format(n=APPS_LIMIT))
+        def done():
+            if len(shown) > APPS_LIMIT:
+                self._note(self.apps_box, tr("Показаны первые {n}. Уточни поиск, чтобы увидеть остальные."
+                                             ).format(n=APPS_LIMIT))
+        self._build_in_chunks("apps", shown[:APPS_LIMIT], lambda a: self._apps_row(a, mode), done=done)
 
     def _apps_row(self, a, mode):
         row = ctk.CTkFrame(self.apps_box, corner_radius=12, fg_color=CARD, border_width=1, border_color=BORDER)

@@ -29,34 +29,39 @@ class CleanupMixin:
         self.clean_btn = button(top, tr("Очистить выбранное"), "primary", self._clean_run, width=170)
         self.clean_btn.grid(row=0, column=2, rowspan=2)
 
-        for it in cleaner.ITEMS:
-            row = ctk.CTkFrame(scroll, corner_radius=14, fg_color=CARD, border_width=1, border_color=BORDER)
-            row.pack(fill="x", padx=(0, 10), pady=6)
-            row.columnconfigure(1, weight=1)
-            allowed = self.admin or not it.admin
-            var = ctk.BooleanVar(value=allowed)
-            check = ctk.CTkCheckBox(row, text="", variable=var, width=24, command=self._clean_update_total,
-                                    fg_color=ACCENT, hover_color=ACCENT_HOVER, border_color="#3a4358",
-                                    checkbox_width=20, checkbox_height=20)
-            check.grid(row=0, column=0, rowspan=2, padx=(18, 4))
-            if not allowed:
-                check.configure(state="disabled")
-            ctk.CTkLabel(row, text=it.name, anchor="w", text_color=TEXT, font=font(15, True)
-                         ).grid(row=0, column=1, sticky="w", padx=(4, 18), pady=(14, 0))
-            autowrap(ctk.CTkLabel(row, text=it.description, anchor="w", justify="left", wraplength=540,
-                                  text_color=MUTED, font=font(12)), row, 190
-                     ).grid(row=1, column=1, sticky="w", padx=(4, 18), pady=(3, 0))
-            size = ctk.CTkLabel(row, text="", anchor="e", text_color=TEXT, font=font(15, True))
-            size.grid(row=0, column=2, sticky="e", padx=20, pady=(14, 0))
-            # под описанием, а не справа: справа длинная надпись обрезала бы описание
-            note = ctk.CTkLabel(row, text="" if allowed else tr("нужны права администратора"), anchor="w",
-                                text_color=MUTED if allowed else RED, font=font(11), height=16)
-            note.grid(row=2, column=1, sticky="w", padx=(4, 18), pady=(2, 12))
-            self.clean_rows[it.id] = {"var": var, "check": check, "size": size, "note": note,
-                                      "allowed": allowed}
+        self._build_in_chunks("cleanup", cleaner.ITEMS, lambda it: self._clean_row(scroll, it),
+                              done=lambda: self._on_show_cleanup())
         return page
 
+    def _clean_row(self, scroll, it):
+        """Строка одного пункта очистки (строки создаются порциями, см. _build_in_chunks)."""
+        row = ctk.CTkFrame(scroll, corner_radius=14, fg_color=CARD, border_width=1, border_color=BORDER)
+        row.pack(fill="x", padx=(0, 10), pady=6)
+        row.columnconfigure(1, weight=1)
+        allowed = self.admin or not it.admin
+        var = ctk.BooleanVar(value=allowed)
+        check = ctk.CTkCheckBox(row, text="", variable=var, width=24, command=self._clean_update_total,
+                                fg_color=ACCENT, hover_color=ACCENT_HOVER, border_color="#3a4358",
+                                checkbox_width=20, checkbox_height=20)
+        check.grid(row=0, column=0, rowspan=2, padx=(18, 4))
+        if not allowed:
+            check.configure(state="disabled")
+        ctk.CTkLabel(row, text=it.name, anchor="w", text_color=TEXT, font=font(15, True)
+                     ).grid(row=0, column=1, sticky="w", padx=(4, 18), pady=(14, 0))
+        autowrap(ctk.CTkLabel(row, text=it.description, anchor="w", justify="left", wraplength=540,
+                              text_color=MUTED, font=font(12)), row, 190
+                 ).grid(row=1, column=1, sticky="w", padx=(4, 18), pady=(3, 0))
+        size = ctk.CTkLabel(row, text="", anchor="e", text_color=TEXT, font=font(15, True))
+        size.grid(row=0, column=2, sticky="e", padx=20, pady=(14, 0))
+        # под описанием, а не справа: справа длинная надпись обрезала бы описание
+        note = ctk.CTkLabel(row, text="" if allowed else tr("нужны права администратора"), anchor="w",
+                            text_color=MUTED if allowed else RED, font=font(11), height=16)
+        note.grid(row=2, column=1, sticky="w", padx=(4, 18), pady=(2, 12))
+        self.clean_rows[it.id] = {"var": var, "check": check, "size": size, "note": note, "allowed": allowed}
+
     def _on_show_cleanup(self):
+        if len(self.clean_rows) < len(cleaner.ITEMS):
+            return  # строки ещё дорисовываются: сканирование запустится, когда появится последняя
         if not self.clean_scanned and not self.clean_busy:
             self._clean_scan()
 

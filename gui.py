@@ -81,6 +81,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
 
         # каркас и анимации
         self._anims = {}              # ключ анимации -> id after()
+        self._chunk_jobs = {}         # ключ -> id after() недостроенной порции карточек
         self._indicator_y = None      # где сейчас полоска выбранной вкладки
         self._counter_on = 0          # сколько включено (для плавного счётчика в шапке)
         self._toast_job = None
@@ -92,8 +93,10 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.admin = engine.is_admin()
         self.tweaks = engine.load_tweaks()
         self.presets = engine.load_presets(self.tweaks)
-        self.rows = {}                # id твика -> TweakRow
-        self.cat_rows = {}            # категория -> [TweakRow]
+        # состояние твиков хранится отдельно от карточек: карточки создаются лениво, только для открытых вкладок
+        self.states = {tid: "loading" for tid in self.tweaks}  # id твика -> on/off/partial/n/a/error/loading
+        self.busy = {}                # id твика -> текст «применяю…», пока идёт операция
+        self.rows = {}                # id твика -> TweakRow (только для уже построенных вкладок)
         self.loaded = False           # состояния прочитаны хотя бы раз
         self.restore_done = False     # точка восстановления за этот сеанс уже создавалась
         self.preset_ui = {}           # id пресета -> виджеты карточки
@@ -109,6 +112,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.clean_busy = False
         self._clean_shown = 0         # сколько сейчас показано в итоге (для плавного счётчика)
         # автозагрузка
+        self._rp_last = (None, None)  # последний список точек восстановления (страница может быть не построена)
         self.startup_items = {}       # id записи автозагрузки -> запись из startup.list_items()
         self.startup_rows = {}        # id записи -> виджеты строки
         self.startup_loaded = False
@@ -131,8 +135,6 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
                              (tr("ОБСЛУЖИВАНИЕ"), ["apps", "startup", "cleanup"]), (tr("БЕЗОПАСНОСТЬ"), ["restore"])])
         self._build_main()
         self._show(self.sections[0])
-        self._render_history()
-        self._render_rp(None, None)
         self._render_presets()
         self.after(100, self._poll)
         self._refresh()
@@ -177,16 +179,19 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
                                   "Лучше войти под {user} с правами администратора.").format(user=other),
                          ORANGE, PILL_ORANGE)
 
-        box = ctk.CTkFrame(main, fg_color="transparent")
-        box.pack(fill="both", expand=True, padx=(28, 12), pady=(12, 12))
-        for cat in self.cats:
-            self.pages[cat] = self._build_tweak_page(box, cat)
-        self.pages["search"] = self._build_search_page(box)
-        self.pages["presets"] = self._build_presets_page(box)
-        self.pages["apps"] = self._build_apps_page(box)
-        self.pages["startup"] = self._build_startup_page(box)
-        self.pages["cleanup"] = self._build_cleanup_page(box)
-        self.pages["restore"] = self._build_restore_page(box)
+        # страницы строятся лениво, при первом открытии (см. ShellMixin._page): все сразу — это ~2400
+        # виджетов, 7 секунд запуска и заметно более медленное перетаскивание окна
+        self.page_box = ctk.CTkFrame(main, fg_color="transparent")
+        self.page_box.pack(fill="both", expand=True, padx=(28, 12), pady=(12, 12))
+        self._builders = {cat: (lambda c=cat: self._build_tweak_page(self.page_box, c)) for cat in self.cats}
+        self._builders.update({
+            "search": lambda: self._build_search_page(self.page_box),
+            "presets": lambda: self._build_presets_page(self.page_box),
+            "apps": lambda: self._build_apps_page(self.page_box),
+            "startup": lambda: self._build_startup_page(self.page_box),
+            "cleanup": lambda: self._build_cleanup_page(self.page_box),
+            "restore": lambda: self._build_restore_page(self.page_box),
+        })
         self._build_toast(main)
 
     # ---------- фоновый поток (в нём нет обращений к виджетам) ----------
