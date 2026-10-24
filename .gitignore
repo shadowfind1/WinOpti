@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+# локальные настройки Claude Code
+.claude/
+# сборки
+build/
+dist/
+*.spec
