@@ -374,7 +374,49 @@ EN = {
     "Точка восстановления создана.": "Restore point created.",
     "Точка не создана: {msg}": "Restore point not created: {msg}",
 
+    "Включить защиту системы": "Turn on System Protection",
+    "Включаю защиту системы…": "Turning on System Protection…",
+    "●  Защита системы включена": "●  System Protection is on",
+    "●  Защита системы выключена: точки восстановления не создаются":
+        "●  System Protection is off: restore points can't be created",
+    "Защита системы включена.": "System Protection turned on.",
+    "Не удалось включить защиту системы: {err}": "Couldn't turn on System Protection: {err}",
+
+    # ---------- поиск ----------
+    "Поиск твиков…": "Search tweaks…",
+    "Ничего не найдено. Попробуй другое слово — ищу по названию и описанию.":
+        "Nothing found. Try another word — names and descriptions are searched.",
+    "Поиск: «{q}»": "Search: “{q}”",
+    "Найдено твиков: {n}": "Tweaks found: {n}",
+    "Показаны первые {n}. Уточни запрос.": "Showing the first {n}. Refine the query.",
+
+    # ---------- свои настройки ----------
+    "Свои настройки": "Your settings",
+    "Сохрани включённые твики в файл и примени их на другом ПК или после переустановки Windows. Импорт только "
+    "включает твики из файла и ничего не выключает.":
+        "Save your enabled tweaks to a file and apply them on another PC or after reinstalling Windows. Import only "
+        "enables the tweaks from the file and never disables anything.",
+    "Экспорт в файл": "Export to file",
+    "Импорт из файла": "Import from file",
+    "Экспорт настроек": "Export settings",
+    "Импорт настроек": "Import settings",
+    "Подожди, пока прочитается состояние твиков.": "Wait until tweak states are read.",
+    "Сохранено твиков: {n}. Файл: {path}": "Tweaks saved: {n}. File: {path}",
+    "Не удалось сохранить файл: {err}": "Couldn't save the file: {err}",
+    "Не удалось прочитать файл: {err}": "Couldn't read the file: {err}",
+    "это не файл настроек WinOpti": "this is not a WinOpti settings file",
+    "недоступно на этой Windows: {n}": "not available on this Windows: {n}",
+    "неизвестно этой версии WinOpti: {n}": "unknown to this WinOpti version: {n}",
+    "Всё из файла уже включено.": "Everything from the file is already enabled.",
+    "Включить из файла:\n\n{items}": "Enable from the file:\n\n{items}",
+    "Пропущено: {list}.": "Skipped: {list}.",
+    "Всё можно откатить на вкладке «Восстановление».": "Everything can be undone on the Restore tab.",
+    "импорт из файла": "import from file",
+
     # ---------- engine ----------
+    "защита системы выключена: включи её на вкладке «Восстановление»":
+        "System Protection is off: turn it on on the Restore tab",
+    "Windows не создала новую точку": "Windows didn't create a new restore point",
     "служба {name} не найдена": "service {name} not found",
     "не удалось создать схему питания: {err}": "couldn't create the power plan: {err}",
     "этой схемы питания нет на ПК (часто так на ноутбуках с Modern Standby)":

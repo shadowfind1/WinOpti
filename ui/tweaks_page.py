@@ -151,13 +151,19 @@ class TweaksMixin:
 
     # ---------- ответы ----------
 
-    def _on_state(self, tid, state, err):
+    def _set_row_state(self, tid, state):
+        """Основная карточка и её копия в результатах поиска, если она есть."""
         self.rows[tid].set_state(state)
+        if tid in self.search_rows:
+            self.search_rows[tid].set_state(state)
+
+    def _on_state(self, tid, state, err):
+        self._set_row_state(tid, state)
         if err:
             self._status(err, True)
 
     def _on_toggled(self, tid, state, text, is_err):
-        self.rows[tid].set_state(state)
+        self._set_row_state(tid, state)
         self._status(text, is_err)
         self._update_counts()
         self._render_history()

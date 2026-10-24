@@ -44,6 +44,12 @@ class RestoreMixin:
         self.rp_create_btn.pack(side="left")
         button(bar, tr("Открыть восстановление системы"), "secondary", self._open_restore
                ).pack(side="left", padx=(10, 0))
+        protect = ctk.CTkFrame(card, fg_color="transparent")
+        protect.pack(fill="x", padx=20, pady=(10, 0))
+        self.rp_protect_lbl = ctk.CTkLabel(protect, text="", anchor="w", font=font(12))
+        self.rp_protect_lbl.pack(side="left")
+        self.rp_protect_btn = button(protect, tr("Включить защиту системы"), "primary", self._enable_protection,
+                                     height=30)
         self.rp_box = ctk.CTkFrame(card, fg_color="transparent")
         self.rp_box.pack(fill="x", padx=20, pady=(8, 16))
 
@@ -93,7 +99,19 @@ class RestoreMixin:
             ctk.CTkLabel(line, text=name, anchor="w", text_color=TEXT, font=font(12)
                          ).pack(side="left", padx=(12, 0))
 
+    def _render_protection(self):
+        """Без включённой защиты системы Windows не создаёт точки вообще — показываем это явно."""
+        if engine.restore_protection_enabled():
+            self.rp_protect_lbl.configure(text=tr("●  Защита системы включена"), text_color=GREEN)
+            self.rp_protect_btn.pack_forget()
+        else:
+            self.rp_protect_lbl.configure(text=tr("●  Защита системы выключена: точки восстановления не создаются"),
+                                          text_color=RED)
+            self.rp_protect_btn.pack(side="left", padx=(12, 0))
+            self.rp_protect_btn.configure(state="normal" if self.admin else "disabled")
+
     def _render_rp(self, items, err):
+        self._render_protection()
         self._clear(self.rp_box)
         if items is None and err is None:
             self._note(self.rp_box, tr("Загружаю список…"))
@@ -132,6 +150,11 @@ class RestoreMixin:
         self._status(tr("Создаю точку восстановления…"))
         self.jobs.put(("restore_point",))
 
+    def _enable_protection(self):
+        self.rp_protect_btn.configure(state="disabled")
+        self._status(tr("Включаю защиту системы…"))
+        self.jobs.put(("enable_protection",))
+
     def _open_restore(self):
         try:
             engine.open_system_restore()
@@ -163,6 +186,14 @@ class RestoreMixin:
         text = tr("Точка восстановления создана.") if ok else tr("Точка не создана: {msg}").format(msg=msg[:160])
         self.results.put(("message", text, not ok))
         self.results.put(("rp_done",))
+        self._job_rp_list()
+
+    def _job_enable_protection(self):
+        try:
+            engine.enable_restore_protection()
+            self.results.put(("message", tr("Защита системы включена."), False))
+        except Exception as e:
+            self.results.put(("message", tr("Не удалось включить защиту системы: {err}").format(err=e), True))
         self._job_rp_list()
 
     def _job_rp_list(self):

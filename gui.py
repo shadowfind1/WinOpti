@@ -22,6 +22,7 @@ from ui.apps_page import AppsMixin, UninstallDialog  # noqa: F401 — UninstallD
 from ui.cleanup_page import CleanupMixin
 from ui.presets_page import PresetsMixin
 from ui.restore_page import RestoreMixin
+from ui.search_page import SearchMixin
 from ui.shell import ShellMixin
 from ui.startup_page import StartupMixin
 from ui.theme import *  # noqa: F403
@@ -58,7 +59,8 @@ def relaunch_as_admin():
     return rc > 32
 
 
-class App(ShellMixin, TweaksMixin, PresetsMixin, AppsMixin, StartupMixin, CleanupMixin, RestoreMixin, ctk.CTk):
+class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, StartupMixin, CleanupMixin, RestoreMixin,
+          ctk.CTk):
     def __init__(self):
         super().__init__()
         ctk.set_appearance_mode("dark")
@@ -90,6 +92,10 @@ class App(ShellMixin, TweaksMixin, PresetsMixin, AppsMixin, StartupMixin, Cleanu
         self.restore_done = False     # точка восстановления за этот сеанс уже создавалась
         self.preset_ui = {}           # id пресета -> виджеты карточки
         self.preset_busy = False
+        # поиск
+        self.search_rows = {}         # id твика -> TweakRow в результатах поиска
+        self._search_job = None
+        self._search_back = None      # куда вернуться, когда поиск очищен
         # очистка
         self.clean_rows = {}          # id пункта очистки -> виджеты строки
         self.clean_sizes = {}         # id пункта очистки -> байт (после сканирования)
@@ -160,6 +166,7 @@ class App(ShellMixin, TweaksMixin, PresetsMixin, AppsMixin, StartupMixin, Cleanu
         box.pack(fill="both", expand=True, padx=(28, 12), pady=(12, 12))
         for cat in self.cats:
             self.pages[cat] = self._build_tweak_page(box, cat)
+        self.pages["search"] = self._build_search_page(box)
         self.pages["presets"] = self._build_presets_page(box)
         self.pages["apps"] = self._build_apps_page(box)
         self.pages["startup"] = self._build_startup_page(box)

@@ -710,14 +710,63 @@ def get_history(limit=20):
     return list(reversed(_load_history()))[:limit]
 
 
+SR_KEY = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore"
+SR_FREQUENCY = "SystemRestorePointCreationFrequency"
+
+
+def restore_protection_enabled():
+    """Включена ли защита системы (хотя бы для одного диска): RPSessionInterval = 1."""
+    return reg_read("HKLM", SR_KEY, "RPSessionInterval").get("value") == 1
+
+
+def enable_restore_protection():
+    """Включить защиту системы для системного диска."""
+    drive = os.environ.get("SystemDrive", "C:") + "\\"
+    rc, out = run(["powershell", "-NoProfile", "-Command",
+                   f"$ErrorActionPreference='Stop'; Enable-ComputerRestore -Drive '{drive}'"])
+    if rc != 0:
+        raise RuntimeError(out.strip().splitlines()[0] if out.strip() else tr("код {rc}").format(rc=rc))
+
+
+def _newest_restore_point():
+    try:
+        points = list_restore_points(1)
+        return points[0]["n"] if points else None
+    except Exception:
+        return None
+
+
 def create_restore_point_msg(desc="WinOpti"):
-    """Точка восстановления. -> (успех, первая строка ошибки).
-    По умолчанию Windows не даёт создавать точки чаще раза в 24 часа, тогда будет ошибка."""
-    ps = ("$ErrorActionPreference='Stop'; $WarningPreference='Stop'; "
-          f"Checkpoint-Computer -Description '{desc}' -RestorePointType MODIFY_SETTINGS")
-    rc, out = run(["powershell", "-NoProfile", "-Command", ps])
+    """Точка восстановления. -> (успех, текст ошибки).
+    Windows по умолчанию создаёт не больше одной точки в сутки, а лишние молча пропускает. На время
+    создания снимаем это ограничение (SystemRestorePointCreationFrequency = 0) и возвращаем как было.
+    Успех проверяем по списку точек: появилась новая — создана."""
+    if not restore_protection_enabled():
+        return False, tr("защита системы выключена: включи её на вкладке «Восстановление»")
+    before = _newest_restore_point()
+    old = reg_read("HKLM", SR_KEY, SR_FREQUENCY)
+    try:
+        reg_write("HKLM", SR_KEY, SR_FREQUENCY, "DWORD", 0)
+        changed = True
+    except OSError:
+        changed = False  # нет прав: пробуем как есть
+    try:
+        ps = ("$ErrorActionPreference='Stop'; $WarningPreference='Stop'; "
+              f"Checkpoint-Computer -Description '{desc}' -RestorePointType MODIFY_SETTINGS")
+        rc, out = run(["powershell", "-NoProfile", "-Command", ps])
+    finally:
+        if changed:
+            if old["exists"]:
+                reg_write("HKLM", SR_KEY, SR_FREQUENCY, old["kind"], old["value"])
+            else:
+                reg_delete("HKLM", SR_KEY, SR_FREQUENCY)
     first = next((line.strip() for line in out.splitlines() if line.strip()), "")
-    return rc == 0, first
+    if rc != 0:
+        return False, first
+    after = _newest_restore_point()
+    if after is not None and after == before:
+        return False, tr("Windows не создала новую точку")
+    return True, ""
 
 
 def create_restore_point(desc="WinOpti"):

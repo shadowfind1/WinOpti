@@ -88,6 +88,7 @@ class ShellMixin:
         ctk.CTkLabel(name, text="Opti", font=font(20, True), text_color=ACCENT, height=24).pack(side="left")
         ctk.CTkLabel(logo, text=f"Windows {engine.windows_version()}", text_color=DIM, font=font(11), height=14
                      ).grid(row=1, column=1, sticky="nw")
+        self._build_search_entry(side)
 
         # вкладки: прокручиваются, если окно низкое, поэтому никогда не обрезаются
         nav = ctk.CTkScrollableFrame(side, fg_color="transparent", corner_radius=0,
@@ -198,11 +199,15 @@ class ShellMixin:
             return
         if self.current:
             self.pages[self.current].pack_forget()
-            self._style_nav(self.current, False)
+            if self.current in self.nav:
+                self._style_nav(self.current, False)
         self.current = cat
         self.pages[cat].pack(fill="both", expand=True)
-        self._style_nav(cat, True)
-        self._move_indicator(cat)
+        if cat in self.nav:
+            self._style_nav(cat, True)
+            self._move_indicator(cat)
+        else:  # страница без пункта меню (поиск)
+            self.nav_indicator.place_forget()
         # заголовок проявляется и чуть выезжает слева
         self.title_lbl.configure(text=self.titles[cat], text_color=BG)
         self.subtitle_lbl.configure(text=self.subtitles[cat], text_color=BG)
