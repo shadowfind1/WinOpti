@@ -22,6 +22,8 @@ def main(argv):
     if cmd == "list":
         print(f"Windows {engine.windows_version()}\n")
         for t in tweaks.values():
+            if engine.is_hidden(t):
+                continue
             state = engine.get_state(t) if engine.is_supported(t) else "n/a"
             print(f"[{state:7}] {t['id']:24} {t['name']}  (риск: {t['risk']})")
         return 0

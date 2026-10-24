@@ -30,10 +30,8 @@ from ui.tweaks_page import TweaksMixin
 
 # вкладки с твиками: (id категории из tweaks.json, название, подпись, иконка)
 SECTIONS = [
-    ("privacy", tr("Приватность"), tr("Что Windows собирает и отправляет о тебе"), "privacy"),
-    ("interface", tr("Интерфейс"), tr("Реклама, анимации и отклик интерфейса"), "interface"),
-    ("appearance", tr("Внешний вид"), tr("Тема, панель задач и контекстное меню — по вкусу"), "appearance"),
-    ("explorer", tr("Проводник"), tr("Как проводник показывает файлы"), "explorer"),
+    ("privacy", tr("Телеметрия и фон"), tr("Слежка и фоновые службы, которые тратят ресурсы ПК"), "privacy"),
+    ("interface", tr("Интерфейс"), tr("Анимации, прозрачность и отклик интерфейса"), "interface"),
     ("performance", tr("Производительность"), tr("Питание, запуск и фоновые процессы"), "performance"),
     ("gaming", tr("Игры и ввод"), tr("Меньше помех в играх, точная мышь, быстрая клавиатура"), "gaming"),
     ("system", tr("Система"), tr("Обновления и системные настройки"), "system"),
@@ -160,7 +158,8 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
     def _collect_sections(self):
         by_cat = {}
         for t in self.tweaks.values():
-            by_cat.setdefault(t.get("category", "other"), []).append(t)
+            if not engine.is_hidden(t):  # скрытые — только для отката на «Восстановлении»
+                by_cat.setdefault(t.get("category", "other"), []).append(t)
         self.groups = by_cat
         known = {s[0]: s for s in SECTIONS}
         order = [s[0] for s in SECTIONS if s[0] in by_cat]

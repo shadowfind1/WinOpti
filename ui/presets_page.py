@@ -157,7 +157,7 @@ class PresetsMixin:
         if not self.loaded:
             self._status(tr("Подожди, пока прочитается состояние твиков."))
             return
-        ids = [tid for tid, state in self.states.items() if state == "on"]
+        ids = [tid for tid, state in self.states.items() if state == "on" and not engine.is_hidden(self.tweaks[tid])]
         path = filedialog.asksaveasfilename(
             parent=self, title=tr("Экспорт настроек"), defaultextension=".json",
             initialfile=f"winopti-{datetime.now():%Y-%m-%d}.json", filetypes=[("WinOpti", "*.json")])
@@ -184,7 +184,7 @@ class PresetsMixin:
         except (OSError, ValueError) as e:
             self._status(tr("Не удалось прочитать файл: {err}").format(err=e), True)
             return
-        known = [tid for tid in data["tweaks"] if tid in self.tweaks]
+        known = [tid for tid in data["tweaks"] if tid in self.tweaks and not engine.is_hidden(self.tweaks[tid])]
         unknown = len(data["tweaks"]) - len(known)
         na = [tid for tid in known if self.states[tid] == "n/a"]
         ids = [tid for tid in known if self._can_edit(tid) and self.states[tid] in ("off", "partial")]

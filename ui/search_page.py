@@ -5,6 +5,7 @@ import re
 
 import customtkinter as ctk
 
+import engine
 from ui.theme import *  # noqa: F403
 
 SEARCH_LIMIT = 40  # больше карточек customtkinter рисует медленно
@@ -67,7 +68,8 @@ class SearchMixin:
         self._page("search")  # страница строится лениво
 
         terms = self._terms(q)
-        found = [t for t in self.tweaks.values() if all(term in self._haystack(t) for term in terms)]
+        found = [t for t in self.tweaks.values()
+                 if not engine.is_hidden(t) and all(term in self._haystack(t) for term in terms)]
         self._clear(self.search_box)
         self.search_rows = {}
         if not found:

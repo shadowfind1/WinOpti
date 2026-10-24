@@ -1,4 +1,4 @@
-"""winopt/ui/tweaks_page.py: вкладки с твиками (Приватность, Интерфейс, …): карточки и переключение."""
+"""winopt/ui/tweaks_page.py: вкладки с твиками (Телеметрия и фон, Интерфейс, …): карточки и переключение."""
 import tkinter
 
 import customtkinter as ctk

@@ -617,14 +617,20 @@ def load_tweaks():
     return {t["id"]: t for t in data}
 
 
+def is_hidden(t):
+    """Твик убран из приложения (не ускоряет ПК): его не показываем и не включаем, но описание осталось,
+    чтобы то, что уже включено, можно было откатить на вкладке «Восстановление»."""
+    return bool(t.get("hidden"))
+
+
 def load_presets(tweaks):
-    """Пресеты из presets.json. Ссылки на несуществующие твики отбрасываем."""
+    """Пресеты из presets.json. Ссылки на несуществующие и скрытые твики отбрасываем."""
     try:
         data = json.loads(PRESETS_FILE.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return []
     for p in data:
-        p["tweaks"] = [tid for tid in p["tweaks"] if tid in tweaks]
+        p["tweaks"] = [tid for tid in p["tweaks"] if tid in tweaks and not is_hidden(tweaks[tid])]
     return data
 
 

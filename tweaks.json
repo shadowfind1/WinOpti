@@ -94,7 +94,8 @@
         "value": 1,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_advertising_id",
@@ -119,7 +120,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_tailored_experiences",
@@ -144,7 +146,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_activity_history",
@@ -238,7 +241,8 @@
         "value": "Deny",
         "default": "Allow"
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_input_personalization",
@@ -290,7 +294,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_online_speech",
@@ -315,7 +320,8 @@
         "value": 0,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_feedback_requests",
@@ -348,7 +354,8 @@
         "type": "task",
         "path": "\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload"
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_app_launch_tracking",
@@ -376,7 +383,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_telemetry_tasks",
@@ -389,8 +397,8 @@
       "11"
     ],
     "after": null,
-    "description": "Задачи, которые по расписанию собирают данные о программах, дисках и USB-устройствах для Microsoft. На работу ПК не влияют.",
-    "description_en": "Tasks that periodically collect data about programs, disks and USB devices for Microsoft. They don't affect how the PC works.",
+    "description": "Задачи, которые по расписанию собирают данные о программах, дисках и USB-устройствах для Microsoft. Compatibility Appraiser при этом заметно грузит процессор и диск.",
+    "description_en": "Tasks that periodically collect data about programs, disks and USB devices for Microsoft. Compatibility Appraiser noticeably loads the CPU and disk while doing it.",
     "actions": [
       {
         "type": "task",
@@ -535,7 +543,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_lockscreen_tips",
@@ -570,7 +579,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_promo_app_installs",
@@ -665,7 +675,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_widgets",
@@ -867,7 +878,8 @@
         "value": 1,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_welcome_experience",
@@ -901,7 +913,8 @@
         "value": 0,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "taskbar_align_left",
@@ -928,7 +941,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "classic_context_menu",
@@ -954,7 +968,8 @@
         "root": "Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}",
         "value": ""
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "hide_taskbar_search",
@@ -982,7 +997,8 @@
         "value": 0,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "hide_task_view_button",
@@ -1010,7 +1026,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "show_seconds_clock",
@@ -1038,7 +1055,8 @@
         "value": 1,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "dark_theme",
@@ -1076,7 +1094,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "show_hidden_files",
@@ -1104,7 +1123,8 @@
         "value": 1,
         "default": 2
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "show_file_extensions",
@@ -1132,7 +1152,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "explorer_open_this_pc",
@@ -1157,7 +1178,8 @@
         "value": 1,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "quick_access_no_recent",
@@ -1191,7 +1213,8 @@
         "value": 0,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "explorer_full_path",
@@ -1216,7 +1239,8 @@
         "value": 1,
         "default": 0
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "high_performance_power",
@@ -1265,7 +1289,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_hibernation",
@@ -1288,7 +1313,8 @@
         "detect": "reg query \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power\" /v HibernateEnabled",
         "detect_contains": "0x0"
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "disable_startup_delay",
@@ -1916,7 +1942,8 @@
         "value": 0,
         "default": 1
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "enable_long_paths",
@@ -1941,7 +1968,8 @@
         "value": 1,
         "default": 0
       }
-    ]
+    ],
+    "hidden": true
   },
   {
     "id": "no_driver_updates_wu",
@@ -1966,6 +1994,7 @@
         "value": 1,
         "default": null
       }
-    ]
+    ],
+    "hidden": true
   }
 ]

@@ -3,25 +3,16 @@
     "id": "recommended",
     "name": "Рекомендуемое",
     "name_en": "Recommended",
-    "description": "Безопасная база для любого ПК: без рекламы и лишней телеметрии, видны расширения файлов, нет окна залипания клавиш.",
-    "description_en": "A safe baseline for any PC: no ads or extra telemetry, file extensions visible, no Sticky Keys popup.",
+    "description": "Безопасная база для любого ПК: меньше фоновой нагрузки и телеметрии, автозагрузка без задержки, нет окна залипания клавиш.",
+    "description_en": "A safe baseline for any PC: less background load and telemetry, no startup delay, no Sticky Keys popup.",
     "tweaks": [
       "disable_telemetry",
       "disable_web_search",
-      "disable_advertising_id",
-      "disable_tailored_experiences",
-      "disable_start_ads",
-      "disable_lockscreen_tips",
       "disable_promo_app_installs",
-      "disable_settings_suggestions",
-      "show_file_extensions",
       "disable_sticky_keys_prompt",
       "disable_startup_delay",
       "disable_delivery_optimization",
-      "disable_remote_assistance",
-      "disable_feedback_requests",
       "disable_telemetry_tasks",
-      "disable_welcome_experience",
       "disable_edge_background",
       "disable_unneeded_services"
     ]
@@ -53,33 +44,20 @@
   },
   {
     "id": "privacy",
-    "name": "Максимальная приватность",
-    "name_en": "Maximum privacy",
-    "description": "Всё, что Windows собирает и отправляет: телеметрия, журнал действий, рекламный ID, отчёты об ошибках, Recall, веб-поиск.",
-    "description_en": "Everything Windows collects and sends: telemetry, activity history, advertising ID, error reports, Recall, web search.",
+    "name": "Меньше фоновой нагрузки",
+    "name_en": "Less background load",
+    "description": "Меньше фоновой нагрузки: телеметрия и её задачи, журнал действий, отчёты об ошибках, Copilot, Cortana, раздача обновлений — всё, что работает в фоне и тратит ресурсы.",
+    "description_en": "Less background load: telemetry and its tasks, activity history, error reports, Copilot, Cortana, update sharing — everything that runs in the background and uses resources.",
     "tweaks": [
       "disable_telemetry",
       "disable_web_search",
-      "disable_recall",
-      "disable_advertising_id",
-      "disable_tailored_experiences",
       "disable_activity_history",
       "disable_error_reporting",
-      "disable_start_ads",
-      "disable_lockscreen_tips",
       "disable_promo_app_installs",
-      "disable_settings_suggestions",
       "disable_delivery_optimization",
-      "disable_remote_assistance",
-      "disable_location",
-      "disable_input_personalization",
-      "disable_online_speech",
-      "disable_feedback_requests",
-      "disable_app_launch_tracking",
       "disable_telemetry_tasks",
       "disable_copilot",
-      "disable_cortana",
-      "quick_access_no_recent"
+      "disable_cortana"
     ]
   },
   {
@@ -95,10 +73,8 @@
       "disable_startup_delay",
       "disable_background_apps",
       "disable_widgets",
-      "disable_start_ads",
       "disable_promo_app_installs",
-      "disable_edge_background",
-      "disable_aero_shake"
+      "disable_edge_background"
     ]
   }
 ]
