@@ -66,6 +66,10 @@ def relaunch_as_admin():
 class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, StartupMixin, CleanupMixin, RestoreMixin,
           ctk.CTk):
     def __init__(self):
+        # Фоновый поток (чтение задач планировщика, сканирование очистки, реестр) держит GIL, а окну на каждом
+        # шаге перетаскивания нужно выполнить немного Python. По умолчанию поток отдаёт GIL раз в 5 мс, и окно
+        # замирало при перетаскивании до ~350 мс; с 1 мс — не больше ~30 мс.
+        sys.setswitchinterval(0.001)
         super().__init__()
         ctk.set_appearance_mode("dark")
         self.title(APP_NAME)
