@@ -1,16 +1,19 @@
 """winopt/ui/theme.py: палитра, шрифты, иконки, кнопки и функции анимации.
 Остальные модули ui берут отсюда всё через `from ui.theme import *` (список в __all__)."""
+import functools
 import math
+import sys
 import tkinter
+from pathlib import Path
 
 import customtkinter as ctk
 
 from i18n import tr
 
 try:
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageFilter
 except ImportError:  # без Pillow всё работает, только без иконок
-    Image = ImageDraw = None
+    Image = ImageDraw = ImageFilter = None
 
 __all__ = ["APP_NAME", "BG", "SIDEBAR", "CARD", "CARD_ALT", "BORDER", "HOVER", "SELECTED", "TEXT", "MUTED", "DIM",
            "ACCENT", "ACCENT_HOVER", "GREEN", "ORANGE", "RED", "PILL_GREEN", "PILL_ORANGE", "PILL_RED", "PILL_GRAY",
@@ -156,15 +159,58 @@ def icon(kind, color, size=20):
     return _icon_cache[key]
 
 
+LOGO_FROM, LOGO_TO = "#5b5bff", "#c04dff"  # градиент плитки логотипа
+
+
+@functools.lru_cache(maxsize=1)
+def _logo_master():
+    """Логотип 1024×1024: двойной шеврон вверх («буст») на скруглённом квадрате с диагональным градиентом,
+    мягким бликом сверху, светлой кромкой и тенью под знаком. Рисуем один раз и уменьшаем."""
+    s = 1024
+    white = Image.new("L", (s, s), 255)
+
+    def layer(alpha):  # белый слой с заданной прозрачностью
+        return Image.merge("RGBA", (white, white, white, alpha))
+
+    tile = Image.new("L", (s, s), 0)
+    ImageDraw.Draw(tile).rounded_rectangle([0, 0, s - 1, s - 1], radius=s * .27, fill=255)
+    across = Image.linear_gradient("L").rotate(90).transpose(Image.FLIP_LEFT_RIGHT).resize((s, s))
+    down = Image.linear_gradient("L").resize((s, s))
+    grad = Image.composite(Image.new("RGBA", (s, s), LOGO_TO), Image.new("RGBA", (s, s), LOGO_FROM),
+                           Image.blend(across, down, .5))
+    out = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    out.paste(grad, (0, 0), tile)
+    shine = down.point(lambda v: max(0, 70 - v // 2))  # блик: светлее сверху, к середине сходит на нет
+    out = Image.alpha_composite(out, layer(Image.composite(shine, Image.new("L", (s, s), 0), tile)))
+    edge = Image.new("L", (s, s), 0)
+    ImageDraw.Draw(edge).rounded_rectangle([6, 6, s - 7, s - 7], radius=s * .27 - 6, outline=60, width=10)
+    out = Image.alpha_composite(out, layer(edge))
+
+    mark = Image.new("L", (s, s), 0)
+    d = ImageDraw.Draw(mark)
+    w = s * .105
+    for top in (.36, .58):
+        pts = [(s * .27, s * (top + .17)), (s * .5, s * top), (s * .73, s * (top + .17))]
+        d.line(pts, fill=255, width=round(w), joint="curve")
+        for x, y in (pts[0], pts[2]):  # скруглённые концы
+            d.ellipse([x - w / 2, y - w / 2, x + w / 2, y + w / 2], fill=255)
+    shadow = mark.filter(ImageFilter.GaussianBlur(s * .025)).point(lambda v: v * 90 // 255)
+    shadow = Image.merge("RGBA", (*[Image.new("L", (s, s), 10)] * 3, shadow))
+    out = Image.alpha_composite(out, shadow.transform((s, s), Image.AFFINE, (1, 0, 0, 0, 1, -s * .02)))
+    out.paste(Image.new("RGBA", (s, s), "#ffffff"), (0, 0), mark)
+    return out
+
+
+LOGO_PNG = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets" / "logo.png"
+
+
 def logo_pil(px):
-    """Логотип (молния на синем скруглённом квадрате) как картинка PIL px×px: для окна и для .ico."""
-    s = 24 * K
-    base = Image.new("RGBA", (s, s), (0, 0, 0, 0))
-    ImageDraw.Draw(base).rounded_rectangle([0, 0, s - 1, s - 1], radius=6.5 * K, fill=ACCENT)
-    bolt = Image.new("L", (s, s), 0)
-    pts = [(14, 2), (5, 13), (11.5, 13), (10, 22), (19, 10.5), (12.5, 10.5)]
-    ImageDraw.Draw(bolt).polygon(_pts([(12 + (x - 12) * .62, 12 + (y - 12) * .62) for x, y in pts]), fill=255)
-    base.paste(Image.new("RGBA", (s, s), "#ffffff"), (0, 0), bolt)
+    """Логотип как картинка PIL px×px: для окна и для .ico. Готовую картинку (её сохраняет build.py) загрузить
+    быстрее, чем рисовать заново (~60 мс на каждом запуске)."""
+    try:
+        base = Image.open(LOGO_PNG).convert("RGBA") if px <= 256 else _logo_master()
+    except OSError:
+        base = _logo_master()
     return base.resize((px, px), Image.LANCZOS)
 
 

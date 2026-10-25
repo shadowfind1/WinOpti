@@ -18,11 +18,14 @@ ICON = ROOT / "assets" / "winopti.ico"
 
 
 def make_icon():
-    """Иконка из того же логотипа, что в окне (ui.theme.logo_pil), во всех размерах Windows."""
+    """Логотип (ui.theme._logo_master): готовая картинка для окна и иконка exe во всех размерах Windows."""
     sys.path.insert(0, str(ROOT))
-    from ui.theme import logo_pil
+    from PIL import Image
+    from ui.theme import LOGO_PNG, _logo_master
     ICON.parent.mkdir(exist_ok=True)
-    logo_pil(256).save(ICON, sizes=[(s, s) for s in (16, 20, 24, 32, 40, 48, 64, 128, 256)])
+    big = _logo_master().resize((256, 256), Image.LANCZOS)
+    big.save(LOGO_PNG)
+    big.save(ICON, sizes=[(s, s) for s in (16, 20, 24, 32, 40, 48, 64, 128, 256)])
 
 
 def build():
@@ -32,6 +35,7 @@ def build():
            "--icon", str(ICON),
            "--add-data", f"{ROOT / 'tweaks.json'}{sep}.",
            "--add-data", f"{ICON}{sep}assets",
+           "--add-data", f"{ROOT / 'assets' / 'logo.png'}{sep}assets",
            "--collect-data", "customtkinter",
            "--hidden-import", "lang_en",  # импортируется только при английском языке
            "--distpath", str(DIST), "--workpath", str(WORK), "--specpath", str(WORK)]
