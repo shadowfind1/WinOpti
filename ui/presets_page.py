@@ -64,8 +64,15 @@ class PresetsMixin:
                                        "apply": apply_btn, "revert": revert_btn}
         return page
 
+    def _preset_ids(self):
+        return list(dict.fromkeys(tid for p in self.presets for tid in p["tweaks"]))
+
     def _on_show_presets(self):
+        self._read(self._preset_ids())
         self._render_presets()
+
+    def _refresh_presets(self):
+        self._read(self._preset_ids(), force=True)
 
     def _render_presets(self):
         """Состояние твиков в карточках пресетов и доступность кнопок. Скрытую вкладку не трогаем
@@ -90,7 +97,8 @@ class PresetsMixin:
                     lbl.configure(text=f"◐  {name}", fg=ORANGE)
                 else:
                     lbl.configure(text=f"○  {name}", fg=MUTED)
-            if not self.loaded:
+            loading = self._unread(p["tweaks"])
+            if loading:
                 ui["counter"].configure(text=f"  {tr('читаю состояние…')}  ", fg_color=PILL_GRAY, text_color=MUTED)
             elif on == supported:
                 ui["counter"].configure(text="  " + tr("всё включено: {on} из {total}").format(on=on, total=supported)
@@ -98,11 +106,11 @@ class PresetsMixin:
             else:
                 ui["counter"].configure(text="  " + tr("включено {on} из {total}").format(on=on, total=supported)
                                         + "  ", fg_color=PILL_GRAY, text_color=MUTED)
-            idle = self.admin and self.loaded and not self.preset_busy
+            idle = self.admin and not loading and not self.preset_busy
             ui["apply"].configure(state="normal" if idle and on < supported else "disabled")
             can_revert = idle and any(tid in applied for tid in p["tweaks"])
             ui["revert"].configure(state="normal" if can_revert else "disabled")
-        idle = self.admin and self.loaded and not self.preset_busy
+        idle = self.admin and not self.preset_busy
         self.import_btn.configure(state="normal" if idle else "disabled")
 
     # ---------- действия ----------
@@ -154,8 +162,10 @@ class PresetsMixin:
     # ---------- свои настройки: экспорт и импорт ----------
 
     def _export_settings(self):
-        if not self.loaded:
-            self._status(tr("Подожди, пока прочитается состояние твиков."))
+        visible = [tid for tid, t in self.tweaks.items() if not engine.is_hidden(t)]
+        if self._unread(visible):  # в файл идут все включённые — сначала дочитаем остальные вкладки
+            self._status(tr("Читаю состояние твиков…"))
+            self._read(visible, then="export")
             return
         ids = [tid for tid, state in self.states.items() if state == "on" and not engine.is_hidden(self.tweaks[tid])]
         path = filedialog.asksaveasfilename(
@@ -183,6 +193,20 @@ class PresetsMixin:
                 raise ValueError(tr("это не файл настроек WinOpti"))
         except (OSError, ValueError) as e:
             self._status(tr("Не удалось прочитать файл: {err}").format(err=e), True)
+            return
+        self._import_data = data
+        known = [tid for tid in data["tweaks"] if tid in self.tweaks and not engine.is_hidden(self.tweaks[tid])]
+        if self._unread(known):
+            self._status(tr("Читаю состояние твиков…"))
+        self._read(known, then="import")
+
+    def _after_read_export(self):
+        self._export_settings()
+
+    def _after_read_import(self):
+        """Продолжение импорта, когда состояние твиков из файла прочитано."""
+        data, self._import_data = self._import_data, None
+        if data is None:
             return
         known = [tid for tid in data["tweaks"] if tid in self.tweaks and not engine.is_hidden(self.tweaks[tid])]
         unknown = len(data["tweaks"]) - len(known)

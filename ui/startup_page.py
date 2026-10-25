@@ -29,6 +29,9 @@ class StartupMixin:
         self.startup_box.pack(fill="x")
         return page
 
+    def _refresh_startup(self):
+        self._startup_load()
+
     def _on_show_startup(self):
         if not self.startup_loaded:
             self._startup_load()

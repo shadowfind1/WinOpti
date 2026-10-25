@@ -293,6 +293,8 @@ class ShellMixin:
         on_show = getattr(self, f"_on_show_{cat}", None)  # вкладке нужно что-то загрузить при открытии
         if on_show:
             on_show()
+        if cat in self.groups:  # вкладка с твиками читает состояние только своих твиков
+            self._read([t["id"] for t in self.groups[cat]])
         self._update_header()
 
     def _progress_row(self, page, cat):
@@ -311,7 +313,7 @@ class ShellMixin:
         row = self.progress_rows.get(self.current)  # полоса прогресса только у вкладок с твиками
         if row is None:
             return
-        if not self.loaded:
+        if self._unread(t["id"] for t in self.groups[self.current]):
             row["label"].configure(text=tr("Читаю состояние…"))
             row["bar"].set(0)
             return
@@ -333,8 +335,8 @@ class ShellMixin:
 
     def _update_counts(self):
         """Счётчики на вкладках: сколько твиков включено, и сколько изменений можно откатить."""
-        if self.loaded:
-            for cat in self.cats:
+        for cat in self.cats:  # счётчик — когда вкладку открывали и её твики прочитаны
+            if not self._unread(t["id"] for t in self.groups[cat]):
                 self._badge(cat, "{}/{}".format(*self._cat_count(cat)))
         applied = len(engine.get_applied(self.tweaks))
         self._badge("restore", str(applied) if applied else "")

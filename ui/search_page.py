@@ -34,6 +34,9 @@ class SearchMixin:
             self.after_cancel(self._search_job)
         self._search_job = self.after(250, self._search_run)  # не перерисовывать на каждую букву
 
+    def _refresh_search(self):
+        self._read(self._search_ids, force=True)
+
     def _search_clear(self):
         self.search_entry.delete(0, "end")
         self._search_run()
@@ -95,6 +98,8 @@ class SearchMixin:
             if len(found) > SEARCH_LIMIT:
                 self._note(self.search_box, tr("Показаны первые {n}. Уточни запрос.").format(n=SEARCH_LIMIT))
         self._build_in_chunks("search", items, make, done=done)
+        self._search_ids = [value["id"] for kind, value in items if kind == "row"]
+        self._read(self._search_ids)  # состояние только найденных твиков
 
         self.titles["search"] = tr("Поиск: «{q}»").format(q=self.search_entry.get().strip())
         self.subtitles["search"] = tr("Найдено твиков: {n}").format(n=len(found))

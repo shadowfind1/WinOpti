@@ -126,12 +126,35 @@ class TweaksMixin:
 
     # ---------- действия ----------
 
+    # Состояния читаются только тогда, когда они нужны открытой вкладке (её твики, твики пресетов,
+    # найденные в поиске) — ничего не работает в фоне «на всякий случай».
+
+    def _read(self, ids, then=None, force=False):
+        """Прочитать состояние твиков в фоновом потоке. Уже прочитанные (если не force) и уже читаемые
+        пропускаем. then: имя продолжения _after_read_<then> — вызовем, когда всё начатое чтение закончится."""
+        ids = [tid for tid in ids if tid not in self.reading and (force or self.states[tid] == "loading")]
+        if force:
+            for tid in ids:
+                self._set_busy(tid, tr("читаю состояние…"))
+        if ids:
+            self.reading.update(ids)
+            self.jobs.put(("read", ids))
+        if then:
+            if self.reading:
+                self._read_then.add(then)
+            else:
+                getattr(self, f"_after_read_{then}")()
+
+    def _unread(self, ids):
+        return any(self.states[tid] == "loading" for tid in ids)
+
     def _refresh(self):
-        self.refresh_btn.configure(state="disabled")
-        for tid in self.tweaks:
-            self._set_busy(tid, tr("читаю состояние…"))
-        self.jobs.put(("read_all",))
-        self.jobs.put(("rp_list",))
+        """Кнопка «Обновить»: только то, что показывает открытая вкладка."""
+        hook = getattr(self, f"_refresh_{self.current}", None)
+        if hook:
+            hook()
+        elif self.current in self.groups:
+            self._read([t["id"] for t in self.groups[self.current]], force=True)
 
     def _toggle(self, row, want_on):
         tid = row.tweak["id"]
@@ -155,11 +178,14 @@ class TweaksMixin:
         except Exception as e:
             return "error", f"{loc(t, 'name')}: {e}"
 
-    def _job_read_all(self):
-        for tid, t in self.tweaks.items():
-            state, err = self._read_state(t)
+    def _job_read(self, ids):
+        for tid in ids:
+            state, err = self._read_state(self.tweaks[tid])
             self.results.put(("state", tid, state, err))
-        self.results.put(("read_done",))
+        self.results.put(("read_done", ids))
+
+    def _fail_read(self, ids, _error):
+        self.results.put(("read_done", ids))
 
     def _job_toggle(self, tid, want_on, need_rp):
         t = self.tweaks[tid]
@@ -203,7 +229,10 @@ class TweaksMixin:
         self._update_counts()
         self._render_history()
 
-    def _on_read_done(self):
-        self.loaded = True
-        self.refresh_btn.configure(state="normal")
+    def _on_read_done(self, ids):
+        self.reading.difference_update(ids)
         self._update_counts()
+        if not self.reading:
+            pending, self._read_then = self._read_then, set()
+            for name in pending:
+                getattr(self, f"_after_read_{name}")()

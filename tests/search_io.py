@@ -54,7 +54,21 @@ def s2():
     app._on_state(tid, "on", None)
     app._search_clear()
     log.append(f"после очистки поиска вернулись на: {app.current}")
-    app._export_settings()
+    export_file.unlink(missing_ok=True)
+    unread = sum(s == "loading" for s in app.states.values())
+    app._export_settings()  # сначала дочитывает состояние непрочитанных вкладок, потом сохраняет
+    log.append(f"экспорт: непрочитанных твиков было {unread}, файл сразу: {export_file.exists()}")
+    wait_export()
+
+
+def wait_export():
+    if app.reading or not export_file.exists():
+        app.after(200, wait_export)
+        return
+    s3()
+
+
+def s3():
     data = json.loads(export_file.read_text(encoding="utf-8"))
     on_now = sum(1 for s in app.states.values() if s == "on")
     log.append(f"экспорт: твиков в файле {len(data['tweaks'])}, включено сейчас {on_now}")

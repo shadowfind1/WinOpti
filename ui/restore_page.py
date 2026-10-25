@@ -62,7 +62,16 @@ class RestoreMixin:
 
     def _on_show_restore(self):
         self._render_history()
+        if self._rp_last == (None, None) and not self._rp_loading:
+            self._refresh_restore()  # список точек — только когда вкладку открыли
         self._render_rp(*self._rp_last)
+
+    def _refresh_restore(self):
+        self._history_sig = None
+        self._render_history()
+        if not self._rp_loading:
+            self._rp_loading = True
+            self.jobs.put(("rp_list",))
 
     def _render_history(self):
         # перерисовываем только видимую вкладку: иначе каждый переключённый твик пересоздавал бы десятки
@@ -231,6 +240,7 @@ class RestoreMixin:
     # ---------- ответы ----------
 
     def _on_rp_list(self, items, err):
+        self._rp_loading = False
         self._render_rp(items, err)
 
     def _on_rp_done(self):

@@ -396,7 +396,7 @@ EN = {
     "Импорт из файла": "Import from file",
     "Экспорт настроек": "Export settings",
     "Импорт настроек": "Import settings",
-    "Подожди, пока прочитается состояние твиков.": "Wait until tweak states are read.",
+    "Читаю состояние твиков…": "Reading tweak states…",
     "Сохранено твиков: {n}. Файл: {path}": "Tweaks saved: {n}. File: {path}",
     "Не удалось сохранить файл: {err}": "Couldn't save the file: {err}",
     "Не удалось прочитать файл: {err}": "Couldn't read the file: {err}",

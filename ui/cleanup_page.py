@@ -59,6 +59,10 @@ class CleanupMixin:
         note.grid(row=2, column=1, sticky="w", padx=(4, 18), pady=(2, 12))
         self.clean_rows[it.id] = {"var": var, "check": check, "size": size, "note": note, "allowed": allowed}
 
+    def _refresh_cleanup(self):
+        if not self.clean_busy:
+            self._clean_scan()
+
     def _on_show_cleanup(self):
         if len(self.clean_rows) < len(cleaner.ITEMS):
             return  # строки ещё дорисовываются: сканирование запустится, когда появится последняя

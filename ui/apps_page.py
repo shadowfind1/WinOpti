@@ -252,6 +252,9 @@ class AppsMixin:
         self.apps_box.pack(fill="x")
         return page
 
+    def _refresh_apps(self):
+        self._apps_reload()
+
     def _on_show_apps(self):
         self._apps_show()
 

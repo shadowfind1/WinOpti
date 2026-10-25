@@ -105,7 +105,8 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.states = {tid: "loading" for tid in self.tweaks}  # id твика -> on/off/partial/n/a/error/loading
         self.busy = {}                # id твика -> текст «применяю…», пока идёт операция
         self.rows = {}                # id твика -> TweakRow (только для уже построенных вкладок)
-        self.loaded = False           # состояния прочитаны хотя бы раз
+        self.reading = set()          # id твиков, состояние которых сейчас читает фоновый поток
+        self._read_then = set()       # что сделать, когда чтение закончится (см. TweaksMixin._read)
         self.restore_done = False     # точка восстановления за этот сеанс уже создавалась
         self.preset_ui = {}           # id пресета -> виджеты карточки
         self.preset_busy = False
@@ -113,6 +114,9 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.search_rows = {}         # id твика -> TweakRow в результатах поиска
         self._search_job = None
         self._search_back = None      # куда вернуться, когда поиск очищен
+        self._search_ids = []         # найденные твики (их состояние читаем и обновляем)
+        self._import_data = None      # импорт ждёт, пока прочитается состояние твиков из файла
+        self._rp_loading = False      # список точек восстановления сейчас загружается
         # очистка
         self.clean_rows = {}          # id пункта очистки -> виджеты строки
         self.clean_sizes = {}         # id пункта очистки -> байт (после сканирования)
@@ -146,7 +150,6 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._build_main()
         self._show(self.sections[0])
         self.after(100, self._poll)
-        self._refresh()
         self.after(10, self._no_full_redraw)
         self.after(40, lambda: self._animate("alpha", 280, self._set_alpha, self._unlayer))
         self.after(250, self._set_icon)  # позже собственной иконки customtkinter, иначе он её перезапишет
