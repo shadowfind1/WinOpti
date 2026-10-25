@@ -20,6 +20,9 @@ WINDIR = Path(os.environ.get("SystemRoot", r"C:\Windows"))
 PROGRAMDATA = Path(os.environ.get("ProgramData", r"C:\ProgramData"))
 HOUR = 3600
 FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+# WinOpti.exe (и другие программы на PyInstaller) при запуске распаковывается в %TEMP%\_MEIxxxxx — пока
+# программа работает, это её файлы; сама же она и удаляет папку при выходе
+RUNNING_APP_DIR = re.compile(r"_MEI\d+$", re.IGNORECASE)
 
 
 def fmt_size(n):
@@ -63,6 +66,8 @@ def _walk(roots, min_age):
                     if st.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT:
                         continue
                     if stat.S_ISDIR(st.st_mode):
+                        if RUNNING_APP_DIR.match(e.name):
+                            continue
                         stack.append(e.path)
                         dirs.append(e.path)
                     elif now - st.st_mtime >= min_age:

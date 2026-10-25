@@ -8,12 +8,11 @@
 
 ## Скачать
 
-1. Открой страницу [Releases](../../releases/latest) и скачай `WinOpti-<дата>.zip`.
-2. Распакуй архив в любую папку (не запускай прямо из архива).
-3. Запусти `WinOpti.exe` и разреши запуск от имени администратора — без этого Windows не даст менять
-   настройки.
+1. Открой страницу [Releases](../../releases/latest) и скачай `WinOpti.exe` — это один файл, больше
+   ничего не нужно.
+2. Запусти его и разреши запуск от имени администратора — без этого Windows не даст менять настройки.
 
-Python ставить не нужно: всё уже внутри архива.
+Python ставить не нужно: всё уже внутри exe. Первые пару секунд после запуска программа распаковывается.
 
 > **Windows SmartScreen или антивирус могут предупредить** о неизвестной программе: exe не подписан
 > цифровой подписью, а такие программы (собранные PyInstaller) антивирусы иногда помечают по ошибке.
@@ -51,7 +50,7 @@ Python ставить не нужно: всё уже внутри архива.
 ```
 pip install -r requirements.txt
 python gui.py          # запустить окно (для изменений — от имени администратора)
-python build.py        # собрать dist/WinOpti/WinOpti.exe и dist/WinOpti-<дата>.zip
+python build.py        # собрать dist/WinOpti.exe (один файл)
 python main.py list    # консольная версия: list, on, off, scan, clean
 ```
 
@@ -63,8 +62,8 @@ WinOpti is a Windows 10/11 optimizer focused on gaming: it disables background l
 up UI response and gives games more resources. Most tweaks apply immediately, without a reboot or re-login,
 and every change can be reverted on the Restore tab.
 
-**Download:** get `WinOpti-<date>.zip` from [Releases](../../releases/latest), unpack it and run
-`WinOpti.exe` as administrator. SmartScreen may warn because the exe is not code-signed — click
+**Download:** get `WinOpti.exe` from [Releases](../../releases/latest) (a single file) and run it as
+administrator. SmartScreen may warn because the exe is not code-signed — click
 "More info" → "Run anyway". Switch the interface language with the RU/EN toggle at the bottom of the menu.
 
 ## Лицензия
