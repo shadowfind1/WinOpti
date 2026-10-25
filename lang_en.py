@@ -397,6 +397,13 @@ EN = {
     "Экспорт настроек": "Export settings",
     "Импорт настроек": "Import settings",
     "Читаю состояние твиков…": "Reading tweak states…",
+    "Удалить все точки": "Delete all points",
+    "Точек восстановления нет — удалять нечего.": "There are no restore points to delete.",
+    "Удалить все точки восстановления Windows ({n} шт.)?\n\nВернуть систему к ним будет нельзя. Изменения WinOpti это не затронет: их по-прежнему можно откатить кнопками выше.":
+        "Delete all Windows restore points ({n})?\n\nYou won't be able to roll the system back to them. WinOpti "
+        "changes are not affected: you can still revert them with the buttons above.",
+    "Удаляю точки восстановления…": "Deleting restore points…",
+    "Удалено точек восстановления: {n}.": "Restore points deleted: {n}.",
     "Сохранено твиков: {n}. Файл: {path}": "Tweaks saved: {n}. File: {path}",
     "Не удалось сохранить файл: {err}": "Couldn't save the file: {err}",
     "Не удалось прочитать файл: {err}": "Couldn't read the file: {err}",

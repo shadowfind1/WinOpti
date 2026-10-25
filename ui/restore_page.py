@@ -51,6 +51,10 @@ class RestoreMixin:
         self.rp_protect_lbl.pack(side="left")
         self.rp_protect_btn = button(protect, tr("Включить защиту системы"), "primary", self._enable_protection,
                                      height=30)
+        # точки копятся и занимают место на диске — их можно удалить разом
+        self.rp_delete_btn = button(protect, tr("Удалить все точки"), "danger", self._delete_restore_points,
+                                    width=150, height=30)
+        self.rp_delete_btn.pack(side="right")
         self.rp_box = ctk.CTkFrame(card, fg_color="transparent")
         self.rp_box.pack(fill="x", padx=20, pady=(8, 16))
 
@@ -146,6 +150,7 @@ class RestoreMixin:
         if "restore" not in self.pages:
             return
         self._render_protection()
+        self._rp_delete_state()
         if self._rp_drawn == repr((items, err)):
             return
         self._rp_drawn = repr((items, err))
@@ -192,6 +197,25 @@ class RestoreMixin:
         self._status(tr("Включаю защиту системы…"))
         self.jobs.put(("enable_protection",))
 
+    def _rp_delete_state(self):
+        if self.current == "restore":
+            can = self.admin and bool(self._rp_last[0]) and not self._rp_deleting
+            self.rp_delete_btn.configure(state="normal" if can else "disabled")
+
+    def _delete_restore_points(self):
+        items = self._rp_last[0] or []
+        if not items:
+            self._status(tr("Точек восстановления нет — удалять нечего."))
+            return
+        text = tr("Удалить все точки восстановления Windows ({n} шт.)?\n\nВернуть систему к ним будет нельзя. "
+                  "Изменения WinOpti это не затронет: их по-прежнему можно откатить кнопками выше.")
+        if not messagebox.askyesno(APP_NAME, text.format(n=len(items)), icon="warning", parent=self):
+            return
+        self._rp_deleting = True
+        self._rp_delete_state()
+        self._status(tr("Удаляю точки восстановления…"))
+        self.jobs.put(("rp_delete",))
+
     def _open_restore(self):
         try:
             engine.open_system_restore()
@@ -233,6 +257,18 @@ class RestoreMixin:
             self.results.put(("message", tr("Не удалось включить защиту системы: {err}").format(err=e), True))
         self._job_rp_list()
 
+    def _job_rp_delete(self):
+        deleted, errors = engine.delete_restore_points()
+        text = tr("Удалено точек восстановления: {n}.").format(n=deleted)
+        if errors:
+            text += " " + tr("Ошибки: {list}").format(list="; ".join(errors[:3]))
+        self.results.put(("message", text, bool(errors)))
+        self.results.put(("rp_deleted",))
+        self._job_rp_list()
+
+    def _fail_rp_delete(self, _error):
+        self.results.put(("rp_deleted",))
+
     def _job_rp_list(self):
         try:
             items, err = engine.list_restore_points(), None
@@ -245,6 +281,10 @@ class RestoreMixin:
     def _on_rp_list(self, items, err):
         self._rp_loading = False
         self._render_rp(items, err)
+
+    def _on_rp_deleted(self):
+        self._rp_deleting = False
+        self._rp_delete_state()
 
     def _on_rp_done(self):
         if "restore" in self.pages:

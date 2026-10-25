@@ -802,6 +802,24 @@ def list_restore_points(limit=10):
     return data[:limit]
 
 
+def delete_restore_points():
+    """Удалить все точки восстановления Windows. -> (сколько удалено, [ошибки]).
+    SRRemoveRestorePoint удаляет именно точки восстановления; другие теневые копии диска (например, у программ
+    резервного копирования) не трогаем — поэтому не vssadmin delete shadows. Нужны права администратора."""
+    points = list_restore_points(limit=10 ** 6)
+    remove = ctypes.windll.srclient.SRRemoveRestorePoint
+    remove.argtypes = [wintypes.DWORD]
+    remove.restype = wintypes.DWORD
+    deleted, errors = 0, []
+    for p in points:
+        rc = remove(int(p["n"]))
+        if rc == 0:
+            deleted += 1
+        else:
+            errors.append(f"{p['t']}: {ctypes.FormatError(rc).strip()}")
+    return deleted, errors
+
+
 def open_system_restore():
     """Окно «Восстановление системы»: откат всей Windows к выбранной точке."""
     subprocess.Popen(["rstrui.exe"])

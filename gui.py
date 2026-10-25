@@ -108,6 +108,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, StartupMixin, CleanupMixin, Rest
         self._search_back = None      # куда вернуться, когда поиск очищен
         self._search_ids = []         # найденные твики (их состояние читаем и обновляем)
         self._rp_loading = False      # список точек восстановления сейчас загружается
+        self._rp_deleting = False     # точки восстановления сейчас удаляются
         # очистка
         self.clean_rows = {}          # id пункта очистки -> виджеты строки
         self.clean_sizes = {}         # id пункта очистки -> байт (после сканирования)
