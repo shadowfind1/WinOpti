@@ -3,8 +3,6 @@
   python main.py list                  состояние всех твиков
   python main.py on  <id> [--no-restore]   применить
   python main.py off <id>              откатить
-  python main.py presets               список пресетов
-  python main.py preset <id>           применить пресет
   python main.py scan                  сколько места можно освободить
   python main.py clean <id ...|all>    очистить
 (on/off и системные пункты очистки нужно запускать от имени администратора)
@@ -26,34 +24,6 @@ def main(argv):
                 continue
             state = engine.get_state(t) if engine.is_supported(t) else "n/a"
             print(f"[{state:7}] {t['id']:24} {t['name']}  (риск: {t['risk']})")
-        return 0
-
-    if cmd == "presets":
-        for p in engine.load_presets(tweaks):
-            ts = [tweaks[tid] for tid in p["tweaks"] if engine.is_supported(tweaks[tid])]
-            on = sum(1 for t in ts if engine.get_state(t) == "on")
-            print(f"{p['id']:12} {on:2}/{len(ts):<2} включено  {p['name']}")
-        return 0
-
-    if cmd == "preset" and len(argv) >= 2:
-        p = next((p for p in engine.load_presets(tweaks) if p["id"] == argv[1]), None)
-        if p is None:
-            print(f"Нет пресета '{argv[1]}'. Список: python main.py presets")
-            return 1
-        if not engine.is_admin():
-            print("Запусти от имени администратора")
-            return 1
-        if "--no-restore" not in argv and not engine.auto_restore_point_msg()[0]:
-            print("Точка восстановления не создана (возможно, выключена защита системы)")
-        for tid in p["tweaks"]:
-            t = tweaks[tid]
-            if not engine.is_supported(t) or engine.get_state(t) == "on":
-                continue
-            try:
-                warning = engine.apply_tweak(t)
-                print(f"{tid}: {engine.get_state(t)}" + (f"  (внимание: {warning})" if warning else ""))
-            except Exception as e:
-                print(f"{tid}: ошибка: {e}")
         return 0
 
     if cmd == "scan":

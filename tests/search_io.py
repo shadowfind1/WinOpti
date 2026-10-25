@@ -1,5 +1,4 @@
-"""Поиск и экспорт/импорт в окне. Диалоги подменены: ничего не применяется. Аргумент: папка для файлов."""
-import json
+"""Поиск в окне: найденные карточки и их связь с состоянием твиков. Аргумент: папка для скриншота."""
 import pathlib
 import sys
 import traceback
@@ -8,16 +7,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))  # ко�
 from PIL import ImageGrab
 
 import gui
-import ui.presets_page as pp
 
 OUT = pathlib.Path(sys.argv[1])
-export_file = OUT / "export_test.json"
-import_file = OUT / "import_test.json"
-asked = []
-pp.filedialog.asksaveasfilename = lambda **kw: str(export_file)
-pp.filedialog.askopenfilename = lambda **kw: str(import_file)
-pp.messagebox.askyesno = lambda title, text, parent=None: asked.append(text) or False  # всегда «Нет»
-
 errors, log = [], []
 app = gui.App()
 app.report_callback_exception = lambda *a: errors.append("".join(traceback.format_exception(*a)))
@@ -54,35 +45,6 @@ def s2():
     app._on_state(tid, "on", None)
     app._search_clear()
     log.append(f"после очистки поиска вернулись на: {app.current}")
-    export_file.unlink(missing_ok=True)
-    unread = sum(s == "loading" for s in app.states.values())
-    app._export_settings()  # сначала дочитывает состояние непрочитанных вкладок, потом сохраняет
-    log.append(f"экспорт: непрочитанных твиков было {unread}, файл сразу: {export_file.exists()}")
-    wait_export()
-
-
-def wait_export():
-    if app.reading or not export_file.exists():
-        app.after(200, wait_export)
-        return
-    s3()
-
-
-def s3():
-    data = json.loads(export_file.read_text(encoding="utf-8"))
-    on_now = sum(1 for s in app.states.values() if s == "on")
-    log.append(f"экспорт: твиков в файле {len(data['tweaks'])}, включено сейчас {on_now}")
-    off = [tid for tid, s in app.states.items() if s == "off"][:2]
-    import_file.write_text(json.dumps({"app": "WinOpti", "format": 1,
-                                       "tweaks": data["tweaks"][:3] + off + ["disable_widgets", "no_such_tweak"]}),
-                           encoding="utf-8")
-    app.admin = True  # чтобы импорт не упёрся в отсутствие прав; askyesno подменён на «Нет»
-    app._can_edit = lambda tid: app.states[tid] != "n/a"
-    app._import_settings()
-    log.append("импорт, окно подтверждения:\n" + (asked[-1] if asked else "(не показано)"))
-    import_file.write_text("{\"hello\": 1}", encoding="utf-8")
-    app._import_settings()
-    log.append("импорт чужого файла: " + app.toast_lbl.cget("text"))
     app.destroy()
 
 

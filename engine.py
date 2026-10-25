@@ -25,7 +25,6 @@ from pathlib import Path
 from i18n import tr
 
 TWEAKS_FILE = Path(__file__).with_name("tweaks.json")
-PRESETS_FILE = Path(__file__).with_name("presets.json")
 DATA_DIR = Path(os.environ.get("APPDATA", ".")) / "winopt"
 BACKUP_FILE = DATA_DIR / "backup.json"
 HISTORY_FILE = DATA_DIR / "history.json"
@@ -621,17 +620,6 @@ def is_hidden(t):
     """Твик убран из приложения (не ускоряет ПК): его не показываем и не включаем, но описание осталось,
     чтобы то, что уже включено, можно было откатить на вкладке «Восстановление»."""
     return bool(t.get("hidden"))
-
-
-def load_presets(tweaks):
-    """Пресеты из presets.json. Ссылки на несуществующие и скрытые твики отбрасываем."""
-    try:
-        data = json.loads(PRESETS_FILE.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        return []
-    for p in data:
-        p["tweaks"] = [tid for tid in p["tweaks"] if tid in tweaks and not is_hidden(tweaks[tid])]
-    return data
 
 
 def is_supported(t):

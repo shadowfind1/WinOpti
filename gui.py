@@ -18,9 +18,7 @@ import traceback
 import customtkinter as ctk
 
 import engine
-from ui.apps_page import AppsMixin, UninstallDialog  # noqa: F401 — UninstallDialog нужен тестам
 from ui.cleanup_page import CleanupMixin
-from ui.presets_page import PresetsMixin
 from ui.restore_page import RestoreMixin
 from ui.search_page import SearchMixin
 from ui.shell import ShellMixin
@@ -37,9 +35,6 @@ SECTIONS = [
     ("system", tr("Система"), tr("Обновления и системные настройки"), "system"),
 ]
 # остальные вкладки: (id, название, подпись, иконка)
-PRESETS = ("presets", tr("Пресеты"), tr("Готовые наборы твиков: включаются одной кнопкой"), "presets")
-APPS = ("apps", tr("Приложения"), tr("Удаление программ вместе с остатками и встроенных приложений Windows"),
-        "apps")
 STARTUP = ("startup", tr("Автозагрузка"), tr("Программы, которые запускаются вместе с Windows"), "startup")
 CLEANUP = ("cleanup", tr("Очистка"), tr("Временные файлы, кэш обновлений и корзина"), "cleanup")
 RESTORE = ("restore", tr("Восстановление"), tr("Откат изменений и точки восстановления Windows"), "restore")
@@ -63,7 +58,7 @@ def relaunch_as_admin():
     return rc > 32
 
 
-class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, StartupMixin, CleanupMixin, RestoreMixin,
+class App(ShellMixin, TweaksMixin, SearchMixin, StartupMixin, CleanupMixin, RestoreMixin,
           ctk.CTk):
     def __init__(self):
         # Фоновый поток (чтение задач планировщика, сканирование очистки, реестр) держит GIL, а окну на каждом
@@ -97,10 +92,9 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.nav = {}                 # вкладка -> элементы пункта меню
         self.titles, self.subtitles, self.icons = {}, {}, {}
         self.current = None
-        # твики и пресеты
+        # твики
         self.admin = engine.is_admin()
         self.tweaks = engine.load_tweaks()
-        self.presets = engine.load_presets(self.tweaks)
         # состояние твиков хранится отдельно от карточек: карточки создаются лениво, только для открытых вкладок
         self.states = {tid: "loading" for tid in self.tweaks}  # id твика -> on/off/partial/n/a/error/loading
         self.busy = {}                # id твика -> текст «применяю…», пока идёт операция
@@ -108,14 +102,11 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.reading = set()          # id твиков, состояние которых сейчас читает фоновый поток
         self._read_then = set()       # что сделать, когда чтение закончится (см. TweaksMixin._read)
         self.restore_done = False     # точка восстановления за этот сеанс уже создавалась
-        self.preset_ui = {}           # id пресета -> виджеты карточки
-        self.preset_busy = False
         # поиск
         self.search_rows = {}         # id твика -> TweakRow в результатах поиска
         self._search_job = None
         self._search_back = None      # куда вернуться, когда поиск очищен
         self._search_ids = []         # найденные твики (их состояние читаем и обновляем)
-        self._import_data = None      # импорт ждёт, пока прочитается состояние твиков из файла
         self._rp_loading = False      # список точек восстановления сейчас загружается
         # очистка
         self.clean_rows = {}          # id пункта очистки -> виджеты строки
@@ -133,12 +124,6 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.startup_loaded = False
         self.startup_loading = False
         self._startup_last = (None, None)  # последний прочитанный список (переживает удаление страницы)
-        # приложения
-        self.apps_data = {"programs": None, "store": None}  # списки приложений (None = не загружен)
-        self.apps_loading = set()
-        self.apps_buttons = {}        # id приложения -> кнопка «Удалить»
-        self._apps_view = None        # (режим, поиск) — переживают удаление страницы
-        self._apps_search_job = None
         # фоновый поток
         self._working = False         # фоновый поток сейчас что-то делает (смену языка придержим)
         self.jobs = queue.Queue()     # задания фоновому потоку (строго по очереди)
@@ -148,8 +133,8 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._collect_sections()
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self._build_sidebar([(tr("БЫСТРЫЙ СТАРТ"), ["presets"]), (tr("ОПТИМИЗАЦИЯ"), self.cats),
-                             (tr("ОБСЛУЖИВАНИЕ"), ["apps", "startup", "cleanup"]), (tr("БЕЗОПАСНОСТЬ"), ["restore"])])
+        self._build_sidebar([(tr("ОПТИМИЗАЦИЯ"), self.cats), (tr("ОБСЛУЖИВАНИЕ"), ["startup", "cleanup"]),
+                             (tr("БЕЗОПАСНОСТЬ"), ["restore"])])
         self._build_main()
         self._show(self.sections[0])
         self.after(100, self._poll)
@@ -175,11 +160,11 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         order = [s[0] for s in SECTIONS if s[0] in by_cat]
         order += [c for c in by_cat if c not in known]  # неизвестные категории в конец
         self.cats = order  # вкладки с твиками
-        self.sections = [PRESETS[0]] + order + [APPS[0], STARTUP[0], CLEANUP[0], RESTORE[0]]
+        self.sections = order + [STARTUP[0], CLEANUP[0], RESTORE[0]]
         for cat in order:
             _, title, sub, ic = known.get(cat, (cat, cat.title(), "", "system"))
             self.titles[cat], self.subtitles[cat], self.icons[cat] = title, sub, ic
-        for sec in (PRESETS, APPS, STARTUP, CLEANUP, RESTORE):
+        for sec in (STARTUP, CLEANUP, RESTORE):
             self.titles[sec[0]], self.subtitles[sec[0]], self.icons[sec[0]] = sec[1:]
 
     def _build_main(self):
@@ -203,8 +188,6 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self._builders = {cat: (lambda c=cat: self._build_tweak_page(self.page_box, c)) for cat in self.cats}
         self._builders.update({
             "search": lambda: self._build_search_page(self.page_box),
-            "presets": lambda: self._build_presets_page(self.page_box),
-            "apps": lambda: self._build_apps_page(self.page_box),
             "startup": lambda: self._build_startup_page(self.page_box),
             "cleanup": lambda: self._build_cleanup_page(self.page_box),
             "restore": lambda: self._build_restore_page(self.page_box),

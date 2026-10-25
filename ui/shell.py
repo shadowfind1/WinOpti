@@ -167,7 +167,7 @@ class ShellMixin:
         lang = value.lower()
         if lang == i18n.LANG:
             return
-        if self._working or not self.jobs.empty() or self.clean_busy or self.preset_busy:
+        if self._working or not self.jobs.empty() or self.clean_busy:
             self.lang_switch.set(i18n.LANG.upper())
             self._status(tr("Подожди, пока закончится текущая операция, и переключи язык ещё раз."), True)
             return
@@ -352,7 +352,6 @@ class ShellMixin:
                 self._badge(cat, "{}/{}".format(*self._cat_count(cat)))
         applied = len(engine.get_applied(self.tweaks))
         self._badge("restore", str(applied) if applied else "")
-        self._render_presets()
         self._update_header()
 
     # ---------- уведомления ----------

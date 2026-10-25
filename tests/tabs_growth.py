@@ -13,8 +13,8 @@ u = ctypes.windll.user32
 errors = []
 app = gui.App()
 app.report_callback_exception = lambda *a: errors.append("".join(traceback.format_exception(*a)))
-ORDER = ["privacy", "interface", "performance", "gaming", "system", "apps", "startup", "cleanup", "restore",
-         "presets", "privacy", "cleanup", "startup", "apps"]
+ORDER = ["interface", "performance", "gaming", "system", "startup", "cleanup", "restore",
+         "privacy", "cleanup", "startup", "restore"]
 
 
 def hwnds():

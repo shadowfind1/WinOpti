@@ -34,7 +34,6 @@ def build():
            "--name", "WinOpti", "--noconfirm", "--clean", "--windowed", "--uac-admin",
            "--icon", str(ICON),
            "--add-data", f"{ROOT / 'tweaks.json'}{sep}.",
-           "--add-data", f"{ROOT / 'presets.json'}{sep}.",
            "--add-data", f"{ICON}{sep}assets",
            "--collect-data", "customtkinter",
            "--hidden-import", "lang_en",  # импортируется только при английском языке
