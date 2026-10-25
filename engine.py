@@ -686,6 +686,15 @@ def _join(*warnings):
     return "; ".join(w for w in warnings if w) or None
 
 
+def forget_applied():
+    """Очистить список изменений WinOpti: забыть сохранённые исходные значения. Сами твики остаются как есть.
+    Выключить твик потом по-прежнему можно — revert_tweak вернёт значения Windows по умолчанию. -> сколько забыто."""
+    backup = _load_backup()
+    if backup:
+        _save_backup({})
+    return len(backup)
+
+
 def get_applied(tweaks):
     """Твики, применённые через WinOpti и ещё не откаченные (у них есть бэкап). Новые сверху."""
     backup = _load_backup()

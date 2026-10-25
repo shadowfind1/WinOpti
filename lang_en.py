@@ -398,6 +398,15 @@ EN = {
     "Импорт настроек": "Import settings",
     "Читаю состояние твиков…": "Reading tweak states…",
     "Удалить все точки": "Delete all points",
+    "Очистить список": "Clear list",
+    "Список изменений уже пуст.": "The list of changes is already empty.",
+    "Очистить список изменений WinOpti ({n})?\n\nТвики останутся включёнными: WinOpti просто забудет их исходные значения. Выключить твик можно и потом — переключателем на его вкладке, тогда вернётся значение Windows по умолчанию.":
+        "Clear the list of WinOpti changes ({n})?\n\nThe tweaks stay enabled: WinOpti just forgets their original "
+        "values. You can still turn a tweak off later with its switch — Windows defaults will be restored then.",
+    "Этих твиков больше нет во вкладках, и откатить их через WinOpti будет нельзя (только в параметрах Windows):\n{list}":
+        "These tweaks are no longer in the tabs and can't be reverted through WinOpti afterwards "
+        "(only in Windows settings):\n{list}",
+    "Список изменений очищен: {n}.": "List of changes cleared: {n}.",
     "Точек восстановления нет — удалять нечего.": "There are no restore points to delete.",
     "Удалить все точки восстановления Windows ({n} шт.)?\n\nВернуть систему к ним будет нельзя. Изменения WinOpti это не затронет: их по-прежнему можно откатить кнопками выше.":
         "Delete all Windows restore points ({n})?\n\nYou won't be able to roll the system back to them. WinOpti "

@@ -31,6 +31,9 @@ class RestoreMixin:
         bar.pack(fill="x", padx=20, pady=(12, 0))
         self.revert_all_btn = button(bar, tr("Откатить всё"), "danger", self._revert_all, width=130)
         self.revert_all_btn.pack(side="left")
+        # список копится: можно забыть его, не откатывая твики
+        self.forget_btn = button(bar, tr("Очистить список"), "secondary", self._forget_applied, width=150)
+        self.forget_btn.pack(side="left", padx=(10, 0))
         self.applied_box = ctk.CTkFrame(card, fg_color="transparent")
         self.applied_box.pack(fill="x", padx=20, pady=(8, 16))
 
@@ -99,6 +102,7 @@ class RestoreMixin:
             self._note(self.applied_box, tr("Пока ничего не применено через WinOpti."))
         self._build_in_chunks("restore_applied", items, self._applied_row)
         self.revert_all_btn.configure(state="normal" if items and self.admin else "disabled")
+        self.forget_btn.configure(state="normal" if items else "disabled")
 
         # журнал: имена твиков показываем на текущем языке, остальные записи — как записаны
         self._clear(self.journal_box)
@@ -187,6 +191,23 @@ class RestoreMixin:
         self._status(tr("Откатываю все изменения…"))
         self.jobs.put(("revert_all",))
 
+    def _forget_applied(self):
+        items = engine.get_applied(self.tweaks)
+        if not items:
+            self._status(tr("Список изменений уже пуст."))
+            return
+        text = tr("Очистить список изменений WinOpti ({n})?\n\nТвики останутся включёнными: WinOpti просто забудет "
+                  "их исходные значения. Выключить твик можно и потом — переключателем на его вкладке, тогда "
+                  "вернётся значение Windows по умолчанию.").format(n=len(items))
+        hidden = [loc(self.tweaks[it["id"]], "name") for it in items if engine.is_hidden(self.tweaks[it["id"]])]
+        if hidden:
+            text += "\n\n" + tr("Этих твиков больше нет во вкладках, и откатить их через WinOpti будет нельзя "
+                                 "(только в параметрах Windows):\n{list}").format(list="\n".join(f"•  {n}" for n in hidden))
+        if not messagebox.askyesno(APP_NAME, text, icon="warning", parent=self):
+            return
+        self.forget_btn.configure(state="disabled")
+        self.jobs.put(("forget_applied",))
+
     def _create_restore_point(self):
         self.rp_create_btn.configure(state="disabled")
         self._status(tr("Создаю точку восстановления…"))
@@ -241,6 +262,10 @@ class RestoreMixin:
         if errors:
             text += " " + tr("Ошибки: {list}").format(list="; ".join(errors))
         self.results.put(("batch_done", text, bool(errors)))
+
+    def _job_forget_applied(self):
+        n = engine.forget_applied()
+        self.results.put(("batch_done", tr("Список изменений очищен: {n}.").format(n=n), False))
 
     def _job_restore_point(self):
         ok, msg = engine.create_restore_point_msg("WinOpti " + datetime.now().strftime("%Y-%m-%d %H:%M"))
