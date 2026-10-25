@@ -34,6 +34,9 @@ class SearchMixin:
             self.after_cancel(self._search_job)
         self._search_job = self.after(250, self._search_run)  # не перерисовывать на каждую букву
 
+    def _on_drop_search(self):
+        self.search_rows = {}
+
     def _refresh_search(self):
         self._read(self._search_ids, force=True)
 

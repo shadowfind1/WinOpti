@@ -66,6 +66,9 @@ class RestoreMixin:
             self._refresh_restore()  # список точек — только когда вкладку открыли
         self._render_rp(*self._rp_last)
 
+    def _on_drop_restore(self):
+        self._history_sig = self._rp_drawn = None  # новая страница нарисует всё заново
+
     def _refresh_restore(self):
         self._history_sig = None
         self._render_history()

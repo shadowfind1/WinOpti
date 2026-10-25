@@ -254,25 +254,37 @@ class ShellMixin:
             self.pages[cat] = self._builders[cat]()
         return self.pages[cat]
 
+    def _drop_page(self, cat):
+        """Удалить страницу вкладки целиком. Каждая построенная страница — сотни окон Windows, и даже скрытые
+        они замедляют перетаскивание окна: с каждой открытой вкладкой задержка росла. Поэтому в памяти живёт
+        только открытая вкладка, а данные (состояния твиков, списки, размеры) хранятся отдельно от виджетов —
+        при возвращении страница строится заново из них, без повторного чтения системы."""
+        page = self.pages.pop(cat, None)
+        if page is None:
+            return
+        for key in [k for k in self._chunk_jobs if k == f"tweaks:{cat}" or k.split("_")[0] == cat]:
+            self.after_cancel(self._chunk_jobs.pop(key))  # недостроенные порции карточек этой страницы
+        self._fit_pending = {s for s in self._fit_pending if not str(s).startswith(str(page) + ".")}
+        if cat in self.groups:
+            for t in self.groups[cat]:
+                self.rows.pop(t["id"], None)
+            self.progress_rows.pop(cat, None)
+        on_drop = getattr(self, f"_on_drop_{cat}", None)  # вкладка забывает ссылки на свои виджеты
+        if on_drop:
+            on_drop()
+        page.destroy()
+
     def _show(self, cat):
         if cat == self.current:
             return
-        page = self._page(cat)
         if self.current in self.nav:
             self._style_nav(self.current, False)
-        prev_cat, prev = self.current, self.pages.get(self.current)
+        self._drop_page(self.current)
         self.current = cat
-        # новая страница ложится поверх прежней, а прежняя убирается из окна: скрытые, но разложенные
-        # страницы — это тысячи окон Windows, с ними тормозит перетаскивание окна
+        page = self._page(cat)
         tkinter.Place.place_configure(page, x=0, y=0, relwidth=1, relheight=1)
-        page.tkraise()
-        if prev is not None and prev is not page:
-            prev.place_forget()
-            on_hide = getattr(self, f"_on_hide_{prev_cat}", None)  # вкладка может освободить лишние окна
-            if on_hide:
-                on_hide()
         for scroll in [s for s in self._fit_pending if self._on_current(s)]:
-            self._fit_pending.discard(scroll)  # окно растягивали, пока страница была скрыта
+            self._fit_pending.discard(scroll)  # страницу построили до переключения (поиск)
             self._fit_scroll(scroll)
         if cat in self.nav:
             self._style_nav(cat, True)

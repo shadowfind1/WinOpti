@@ -236,12 +236,15 @@ class AppsMixin:
             bar, values=list(APPS_MODES), command=lambda _v: self._apps_show(), height=34, font=font(13, True),
             fg_color="#232938", selected_color=ACCENT, selected_hover_color=ACCENT_HOVER,
             unselected_color="#232938", unselected_hover_color="#2d3548", text_color=TEXT)
-        self.apps_mode.set(next(iter(APPS_MODES)))
+        mode, query = self._apps_view or (next(iter(APPS_MODES)), "")
+        self.apps_mode.set(mode)
         self.apps_mode.pack(side="left")
         self.apps_search = ctk.CTkEntry(bar, placeholder_text=tr("Поиск по названию или издателю"), width=230,
                                         height=34, fg_color=CARD, border_color=BORDER, text_color=TEXT,
                                         font=font(12))
         self.apps_search.pack(side="left", padx=(12, 0))
+        if query:
+            self.apps_search.insert(0, query)
         self.apps_search.bind("<KeyRelease>", lambda _e: self._apps_search_changed())
         self.apps_reload_btn = button(bar, tr("Обновить"), "secondary", self._apps_reload, width=104, height=34)
         self.apps_reload_btn.pack(side="right")
@@ -258,14 +261,13 @@ class AppsMixin:
     def _on_show_apps(self):
         self._apps_show()
 
-    def _on_hide_apps(self):
-        """Список и так перестраивается при каждом открытии, а скрытым он держал бы ~500 окон Windows,
-        с которыми тормозит перетаскивание окна."""
-        job = self._chunk_jobs.pop("apps", None)
-        if job:
-            self.after_cancel(job)
-        self._clear(self.apps_box)
+    def _on_drop_apps(self):
+        """Страницу удаляют (см. ShellMixin._drop_page): запомнить режим и поиск, забыть виджеты."""
+        self._apps_view = (self.apps_mode.get(), self.apps_search.get())
         self.apps_buttons = {}
+        if self._apps_search_job:
+            self.after_cancel(self._apps_search_job)
+            self._apps_search_job = None
 
     def _apps_mode_key(self):
         return APPS_MODES[self.apps_mode.get()]

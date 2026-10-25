@@ -27,7 +27,15 @@ class StartupMixin:
         self.startup_reload_btn.grid(row=0, column=1, rowspan=2)
         self.startup_box = ctk.CTkFrame(scroll, fg_color="transparent")
         self.startup_box.pack(fill="x")
+        if self.startup_loaded:  # список уже читали — показываем его, не читая заново
+            self._render_startup(*self._startup_last)
+        if self.startup_loading:
+            self.startup_reload_btn.configure(state="disabled")
+            self.startup_total.configure(text="…")
         return page
+
+    def _on_drop_startup(self):
+        self.startup_rows = {}
 
     def _refresh_startup(self):
         self._startup_load()
@@ -88,23 +96,25 @@ class StartupMixin:
     def _startup_update_total(self):
         items = self.startup_items.values()
         on = sum(1 for it in items if it["enabled"])
-        self.startup_total.configure(text=tr("{on} из {total}").format(on=on, total=len(items))
-                                     if self.startup_loaded else "…")
+        if self.current == "startup":
+            self.startup_total.configure(text=tr("{on} из {total}").format(on=on, total=len(items))
+                                         if self.startup_loaded else "…")
         self._badge("startup", str(on) if self.startup_loaded else "")
 
     def _startup_load(self):
         if self.startup_loading:
             return
         self.startup_loading = True
-        self.startup_reload_btn.configure(state="disabled")
-        self.startup_total.configure(text="…")
+        if self.current == "startup":
+            self.startup_reload_btn.configure(state="disabled")
+            self.startup_total.configure(text="…")
         self.jobs.put(("startup_list",))
 
     def _startup_toggle(self, sid):
         row = self.startup_rows[sid]
         enable = bool(row["switch"].get())
         row["switch"].configure(state="disabled")
-        row["status"].configure(text=tr("включаю…") if enable else tr("выключаю…"), text_color=MUTED)
+        row["status"].configure(text=tr("включаю…") if enable else tr("выключаю…"), fg=MUTED)
         self.jobs.put(("startup_set", sid, enable))
 
     # ---------- фоновый поток ----------
@@ -134,8 +144,13 @@ class StartupMixin:
     def _on_startup_list(self, items, warning):
         self.startup_loaded = True
         self.startup_loading = False
-        self.startup_reload_btn.configure(state="normal")
-        self._render_startup(items, warning)
+        self._startup_last = (items, warning)
+        if self.current == "startup":
+            self.startup_reload_btn.configure(state="normal")
+            self._render_startup(items, warning)
+        else:  # вкладку уже закрыли: запомнить список, нарисуем при открытии
+            self.startup_items = {it["id"]: it for it in items or []}
+            self._startup_update_total()
 
     def _on_startup_set(self, sid, state, err):
         it, row = self.startup_items[sid], self.startup_rows.get(sid)

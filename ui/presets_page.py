@@ -71,6 +71,9 @@ class PresetsMixin:
         self._read(self._preset_ids())
         self._render_presets()
 
+    def _on_drop_presets(self):
+        self.preset_ui = {}
+
     def _refresh_presets(self):
         self._read(self._preset_ids(), force=True)
 

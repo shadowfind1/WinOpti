@@ -120,6 +120,7 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         # очистка
         self.clean_rows = {}          # id пункта очистки -> виджеты строки
         self.clean_sizes = {}         # id пункта очистки -> байт (после сканирования)
+        self.clean_errors = {}        # id пункта очистки -> ошибка сканирования
         self.clean_scanned = False
         self.clean_busy = False
         self._clean_shown = 0         # сколько сейчас показано в итоге (для плавного счётчика)
@@ -131,10 +132,12 @@ class App(ShellMixin, TweaksMixin, SearchMixin, PresetsMixin, AppsMixin, Startup
         self.startup_rows = {}        # id записи -> виджеты строки
         self.startup_loaded = False
         self.startup_loading = False
+        self._startup_last = (None, None)  # последний прочитанный список (переживает удаление страницы)
         # приложения
         self.apps_data = {"programs": None, "store": None}  # списки приложений (None = не загружен)
         self.apps_loading = set()
         self.apps_buttons = {}        # id приложения -> кнопка «Удалить»
+        self._apps_view = None        # (режим, поиск) — переживают удаление страницы
         self._apps_search_job = None
         # фоновый поток
         self._working = False         # фоновый поток сейчас что-то делает (смену языка придержим)

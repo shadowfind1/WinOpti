@@ -63,10 +63,31 @@ class CleanupMixin:
         if not self.clean_busy:
             self._clean_scan()
 
+    def _on_drop_cleanup(self):
+        self.clean_rows = {}
+
+    def _clean_fill(self, cid):
+        """Показать в строке то, что уже известно: размер или ошибку сканирования."""
+        row, size, err = self.clean_rows.get(cid), self.clean_sizes.get(cid), self.clean_errors.get(cid)
+        if row is None:
+            return
+        if err:
+            row["size"].configure(text="—", text_color=MUTED)
+            row["note"].configure(text=tr("не удалось: {err}").format(err=err[:60]), text_color=RED)
+        elif cid in self.clean_sizes:
+            row["size"].configure(text=cleaner.fmt_size(size), text_color=TEXT if size else DIM)
+        elif self.clean_busy and row["allowed"]:
+            row["size"].configure(text=tr("считаю…"), text_color=MUTED)
+
     def _on_show_cleanup(self):
         if len(self.clean_rows) < len(cleaner.ITEMS):
-            return  # строки ещё дорисовываются: сканирование запустится, когда появится последняя
-        if not self.clean_scanned and not self.clean_busy:
+            return  # строки ещё дорисовываются: продолжим, когда появится последняя
+        if self.clean_scanned or self.clean_busy:  # уже сканировали — показываем найденное, не сканируя заново
+            for cid in self.clean_rows:
+                self._clean_fill(cid)
+            self._clean_set_busy(self.clean_busy)
+            self._clean_update_total()
+        else:
             self._clean_scan()
 
     def _clean_selected(self):
@@ -76,6 +97,8 @@ class CleanupMixin:
         known = [self.clean_sizes[i] for i in self._clean_selected() if self.clean_sizes.get(i) is not None]
         total = sum(v for v in self.clean_sizes.values() if v)
         self._badge("cleanup", cleaner.fmt_size(total) if self.clean_scanned and total else "")
+        if "cleanup" not in self.pages or len(self.clean_rows) < len(cleaner.ITEMS):
+            return
         if not known and not self.clean_scanned:
             self.clean_total.configure(text="—")
             return
@@ -88,6 +111,8 @@ class CleanupMixin:
 
     def _clean_set_busy(self, busy):
         self.clean_busy = busy
+        if "cleanup" not in self.pages:
+            return
         for b in (self.clean_scan_btn, self.clean_btn):
             b.configure(state="disabled" if busy else "normal")
 
@@ -97,7 +122,9 @@ class CleanupMixin:
             if r["allowed"]:
                 r["size"].configure(text=tr("считаю…"), text_color=MUTED)
                 r["note"].configure(text="")
-        self.clean_total.configure(text="…")
+        self.clean_errors = {}
+        if "cleanup" in self.pages:
+            self.clean_total.configure(text="…")
         self.jobs.put(("clean_scan",))
 
     def _clean_run(self):
@@ -161,20 +188,21 @@ class CleanupMixin:
 
     def _on_clean_size(self, cid, size, err):
         self.clean_sizes[cid] = size
-        row = self.clean_rows[cid]
         if err:
-            row["size"].configure(text="—", text_color=MUTED)
-            row["note"].configure(text=tr("не удалось: {err}").format(err=err[:60]), text_color=RED)
+            self.clean_errors[cid] = err
         else:
-            row["size"].configure(text=cleaner.fmt_size(size), text_color=TEXT if size else DIM)
+            self.clean_errors.pop(cid, None)
+        self._clean_fill(cid)
         self._clean_update_total()
 
     def _on_clean_progress(self, cid):
-        self.clean_rows[cid]["size"].configure(text=tr("очищаю…"), text_color=MUTED)
+        if cid in self.clean_rows:
+            self.clean_rows[cid]["size"].configure(text=tr("очищаю…"), text_color=MUTED)
 
     def _on_clean_freed(self, cid, freed):
-        self.clean_rows[cid]["note"].configure(text=tr("освобождено {size}").format(size=cleaner.fmt_size(freed)),
-                                               text_color=GREEN)
+        if cid in self.clean_rows:
+            self.clean_rows[cid]["note"].configure(
+                text=tr("освобождено {size}").format(size=cleaner.fmt_size(freed)), text_color=GREEN)
 
     def _on_clean_done(self, then):
         self.clean_scanned = True
