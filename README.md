@@ -6,6 +6,12 @@
 
 *English: a Windows 10/11 optimizer for gaming. See [English](#english) below.*
 
+![WinOpti: вкладка «Игры и ввод»](docs/gaming.png)
+
+| Телеметрия и фон | Очистка |
+|---|---|
+| ![Телеметрия и фон](docs/privacy.png) | ![Очистка диска](docs/cleanup.png) |
+
 ## Скачать
 
 1. Открой страницу [Releases](../../releases/latest) и скачай `WinOpti.exe` — это один файл, больше
