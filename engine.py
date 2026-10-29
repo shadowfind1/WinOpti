@@ -536,6 +536,10 @@ def refresh_search():
     _kill("SearchApp.exe", "SearchUI.exe", "SearchHost.exe")
 
 
+def refresh_widgets():
+    _kill("Widgets.exe", "WidgetService.exe")  # панель виджетов перечитает политику при следующем запуске
+
+
 def _explorer_running():
     _, out = run(["tasklist", "/fi", "imagename eq explorer.exe", "/nh"])
     return "explorer.exe" in out.lower()
@@ -570,7 +574,7 @@ REFRESHERS = {
     "accessibility": refresh_accessibility,
     "menu_delay": refresh_menu_delay, "theme": refresh_theme, "tray": refresh_tray,
     "explorer_view": refresh_explorer_view, "start_menu": refresh_start_menu,
-    "search": refresh_search, "explorer": refresh_explorer,
+    "search": refresh_search, "widgets": refresh_widgets, "explorer": refresh_explorer,
 }
 
 

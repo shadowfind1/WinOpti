@@ -584,17 +584,17 @@
   },
   {
     "id": "disable_promo_app_installs",
-    "name": "Запретить автоустановку рекламных приложений",
-    "name_en": "Block automatic promo app installs",
+    "name": "Убрать рекламу Windows и автоустановку приложений",
+    "name_en": "Remove Windows ads and promo app installs",
     "category": "interface",
     "risk": "low",
     "windows": [
       "10",
       "11"
     ],
-    "after": null,
-    "description": "Windows перестаёт сама ставить приложения-«рекомендации» (игры, соцсети). Уже установленные остаются.",
-    "description_en": "Windows stops installing \"suggested\" apps (games, social networks) on its own. Already installed ones stay.",
+    "after": "Экран блокировки — со следующей блокировки или перезагрузки",
+    "description": "Windows перестаёт сама ставить приложения-«рекомендации» (игры, соцсети) и показывать рекламу, советы и «интересные факты» на экране блокировки. В Windows 11 с экрана блокировки уходят и виджеты с новостями. Уже установленные приложения остаются.",
+    "description_en": "Windows stops installing \"suggested\" apps (games, social networks) on its own and stops showing ads, tips and \"fun facts\" on the lock screen. On Windows 11 the news widgets leave the lock screen too. Already installed apps stay.",
     "actions": [
       {
         "type": "registry",
@@ -631,8 +631,36 @@
         "kind": "DWORD",
         "value": 0,
         "default": 1
+      },
+      {
+        "type": "registry",
+        "hive": "HKCU",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "RotatingLockScreenOverlayEnabled",
+        "kind": "DWORD",
+        "value": 0,
+        "default": 1
+      },
+      {
+        "type": "registry",
+        "hive": "HKCU",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338387Enabled",
+        "kind": "DWORD",
+        "value": 0,
+        "default": 1
+      },
+      {
+        "type": "registry",
+        "hive": "HKLM",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+        "name": "DisableWidgetsOnLockScreen",
+        "kind": "DWORD",
+        "value": 1,
+        "default": null
       }
-    ]
+    ],
+    "after_en": "Lock screen: from the next lock or restart"
   },
   {
     "id": "disable_settings_suggestions",
@@ -689,16 +717,35 @@
     ],
     "after": null,
     "refresh": [
+      "widgets",
       "explorer"
     ],
-    "description": "Отключает панель виджетов (новости, погода) на панели задач Windows 11.",
-    "description_en": "Turns off the widgets panel (news, weather) on the Windows 11 taskbar.",
+    "description": "Отключает виджеты Windows 11 (новости, погода): кнопку на панели задач и саму панель, в том числе в новых версиях Windows 11 (24H2 и новее).",
+    "description_en": "Turns off Windows 11 widgets (news, weather): the taskbar button and the widgets board itself, including newer Windows 11 versions (24H2 and later).",
     "actions": [
       {
         "type": "registry",
         "hive": "HKLM",
         "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
         "name": "AllowNewsAndInterests",
+        "kind": "DWORD",
+        "value": 0,
+        "default": null
+      },
+      {
+        "type": "registry",
+        "hive": "HKLM",
+        "path": "SOFTWARE\\Policies\\Microsoft\\Dsh",
+        "name": "DisableWidgetsBoard",
+        "kind": "DWORD",
+        "value": 1,
+        "default": null
+      },
+      {
+        "type": "registry",
+        "hive": "HKLM",
+        "path": "SOFTWARE\\Microsoft\\PolicyManager\\default\\NewsAndInterests\\AllowNewsAndInterests",
+        "name": "value",
         "kind": "DWORD",
         "value": 0,
         "default": null
