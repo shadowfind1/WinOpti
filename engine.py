@@ -631,8 +631,9 @@ def is_supported(t):
 
 
 def get_state(t):
-    """'on' / 'off' / 'partial' по реальному состоянию системы."""
-    flags = [HANDLERS[a["type"]]["detect"](a) for a in t["actions"]]
+    """'on' / 'off' / 'partial' по реальному состоянию системы. Необязательные действия (optional) не считаются:
+    Windows может не дать их записать, а твик при этом работает."""
+    flags = [HANDLERS[a["type"]]["detect"](a) for a in t["actions"] if not a.get("optional")]
     if all(flags):
         return "on"
     return "partial" if any(flags) else "off"
@@ -669,7 +670,7 @@ def apply_tweak(t):
         backup[t["id"]] = snaps
         _save_backup(backup)
     for a in t["actions"]:
-        HANDLERS[a["type"]]["apply"](a)
+        _run_action(a, "apply")
     return _join(_refresh(t), _log(t, "on"))
 
 
@@ -679,11 +680,21 @@ def revert_tweak(t):
     snaps = list(backup.get(t["id"], []))
     snaps += [None] * (len(t["actions"]) - len(snaps))  # для новых действий берём default
     for a, snap in zip(t["actions"], snaps):
-        HANDLERS[a["type"]]["restore"](a, snap)
+        _run_action(a, "restore", snap)
     if t["id"] in backup:
         del backup[t["id"]]
         _save_backup(backup)
     return _join(_refresh(t), _log(t, "off"))
+
+
+def _run_action(a, step, *args):
+    """Действие optional — запасной путь (например, ключ, который новые сборки Windows защищают):
+    его сбой не ломает твик."""
+    try:
+        HANDLERS[a["type"]][step](a, *args)
+    except OSError:
+        if not a.get("optional"):
+            raise
 
 
 def _join(*warnings):

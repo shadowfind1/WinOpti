@@ -715,7 +715,7 @@
     "windows": [
       "11"
     ],
-    "after": null,
+    "after": "Если кнопка виджетов не пропала сразу — перезагрузи ПК",
     "refresh": [
       "widgets",
       "explorer"
@@ -739,7 +739,8 @@
         "name": "DisableWidgetsBoard",
         "kind": "DWORD",
         "value": 1,
-        "default": null
+        "default": null,
+        "optional": true
       },
       {
         "type": "registry",
@@ -748,9 +749,21 @@
         "name": "value",
         "kind": "DWORD",
         "value": 0,
-        "default": null
+        "default": null,
+        "optional": true
+      },
+      {
+        "type": "registry",
+        "hive": "HKCU",
+        "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "TaskbarDa",
+        "kind": "DWORD",
+        "value": 0,
+        "default": 1,
+        "optional": true
       }
-    ]
+    ],
+    "after_en": "If the widgets button is still there, restart the PC"
   },
   {
     "id": "disable_transparency",
