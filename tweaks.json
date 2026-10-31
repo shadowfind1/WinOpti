@@ -10,7 +10,7 @@
       "11"
     ],
     "after": null,
-    "description": "Минимальный уровень диагностики, служба DiagTrack и задача Compatibility Appraiser. На Home/Pro Windows всё равно оставляет базовый уровень.",
+    "description": "Windows постоянно собирает данные о том, как ты пользуешься компьютером, и отправляет их в Microsoft. Твик сводит это к минимуму. Например, в фоне перестаёт работать «сборщик», который иногда грузит процессор прямо во время игры.",
     "description_en": "Minimum diagnostic level, the DiagTrack service and the Compatibility Appraiser task. On Home/Pro Windows still keeps the basic level.",
     "actions": [
       {
@@ -48,7 +48,7 @@
     "refresh": [
       "search"
     ],
-    "description": "Поиск в Пуске ищет только локально, без запросов в интернет.",
+    "description": "Когда ищешь что-то в Пуске, Windows заодно отправляет запрос в интернет и показывает результаты Bing. Твик оставляет только поиск по компьютеру. Например, набираешь «стим» — сразу находится Steam, а не открывается сайт в браузере.",
     "description_en": "Start menu search looks only on your PC, without internet requests.",
     "actions": [
       {
@@ -161,7 +161,7 @@
     ],
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
-    "description": "Windows не записывает и не отправляет историю запущенных программ и открытых файлов.",
+    "description": "Windows запоминает, какие программы и файлы ты открывал, и может отправлять эту историю в Microsoft. Твик её выключает. Например, в «Представлении задач» (Win+Tab) пропадёт лента недавних файлов.",
     "description_en": "Windows doesn't record or send the history of launched programs and opened files.",
     "actions": [
       {
@@ -204,7 +204,7 @@
       "11"
     ],
     "after": null,
-    "description": "Windows не отправляет в Microsoft отчёты о сбоях программ.",
+    "description": "Когда программа вылетает, Windows собирает отчёт и отправляет его в Microsoft. Тебе от этого пользы нет. Твик это выключает: после вылета игры не будет висеть окно «Поиск решения проблемы».",
     "description_en": "Windows doesn't send program crash reports to Microsoft.",
     "actions": [
       {
@@ -397,7 +397,7 @@
       "11"
     ],
     "after": null,
-    "description": "Задачи, которые по расписанию собирают данные о программах, дисках и USB-устройствах для Microsoft. Compatibility Appraiser при этом заметно грузит процессор и диск.",
+    "description": "По расписанию Windows запускает задачи, которые собирают данные о программах, дисках и флешках. Одна из них иногда на пару минут грузит процессор и диск. Например, игра вдруг начинает фризить, а в диспетчере задач висит «Microsoft Compatibility Telemetry». Твик выключает эти задачи.",
     "description_en": "Tasks that periodically collect data about programs, disks and USB devices for Microsoft. Compatibility Appraiser noticeably loads the CPU and disk while doing it.",
     "actions": [
       {
@@ -440,7 +440,7 @@
     "refresh": [
       "tray"
     ],
-    "description": "Убирает ИИ-помощник Copilot из Windows и его кнопку с панели задач.",
+    "description": "Убирает ИИ-помощника Copilot и его кнопку с панели задач. Если ты им не пользуешься — меньше лишнего в системе и на панели.",
     "description_en": "Removes the Copilot AI assistant from Windows and its taskbar button.",
     "actions": [
       {
@@ -476,7 +476,7 @@
     "refresh": [
       "search"
     ],
-    "description": "Политика AllowCortana: голосовой помощник не запускается и не собирает данные. Обычный поиск работает. В Windows 11 Cortana уже удалена.",
+    "description": "Выключает голосового помощника Cortana: он не запускается в фоне и не собирает данные. Обычный поиск в Пуске работает как раньше. В Windows 11 Cortana уже удалена, там твик ничего не меняет.",
     "description_en": "The AllowCortana policy: the voice assistant doesn't start or collect data. Regular search keeps working. Cortana is already removed in Windows 11.",
     "actions": [
       {
@@ -593,7 +593,7 @@
       "11"
     ],
     "after": "Экран блокировки — со следующей блокировки или перезагрузки",
-    "description": "Windows перестаёт сама ставить приложения-«рекомендации» (игры, соцсети) и показывать рекламу, советы и «интересные факты» на экране блокировки. В Windows 11 с экрана блокировки уходят и виджеты с новостями. Уже установленные приложения остаются.",
+    "description": "Windows сама ставит «рекомендованные» приложения — игры вроде Candy Crush, соцсети — и показывает рекламу и «интересные факты» на экране блокировки. Твик это прекращает. Например, после обновления в Пуске больше не появятся игры, которые ты не ставил. Уже установленные приложения остаются.",
     "description_en": "Windows stops installing \"suggested\" apps (games, social networks) on its own and stops showing ads, tips and \"fun facts\" on the lock screen. On Windows 11 the news widgets leave the lock screen too. Already installed apps stay.",
     "actions": [
       {
@@ -720,7 +720,7 @@
       "widgets",
       "explorer"
     ],
-    "description": "Отключает виджеты Windows 11 (новости, погода): кнопку на панели задач и саму панель, в том числе в новых версиях Windows 11 (24H2 и новее).",
+    "description": "Убирает виджеты Windows 11 — панель с новостями и погодой, которая висит слева на панели задач и работает в фоне. Например, перестанет выпрыгивать лента новостей, когда случайно ведёшь мышью к углу экрана.",
     "description_en": "Turns off Windows 11 widgets (news, weather): the taskbar button and the widgets board itself, including newer Windows 11 versions (24H2 and later).",
     "actions": [
       {
@@ -779,7 +779,7 @@
     "refresh": [
       "theme"
     ],
-    "description": "Убирает эффекты прозрачности: чуть меньше нагрузка на видеокарту, интерфейс контрастнее.",
+    "description": "Убирает полупрозрачные эффекты в Пуске, на панели задач и в окнах. Видеокарте чуть меньше работы, а текст на панелях читается чётче.",
     "description_en": "Removes transparency effects: slightly less GPU load and a higher-contrast interface.",
     "actions": [
       {
@@ -808,7 +808,7 @@
       "animation",
       "tray"
     ],
-    "description": "Окна открываются, закрываются, сворачиваются и разворачиваются мгновенно, без анимации. Панель задач тоже без анимаций. Интерфейс ощущается быстрее, особенно на слабых ПК.",
+    "description": "Окна открываются, сворачиваются и закрываются мгновенно, без плавной анимации. Например, нажал «свернуть» — окно сразу исчезло, а не «уплывает» вниз. Особенно заметно на слабых ПК.",
     "description_en": "Windows open, close, minimize and maximize instantly, without animation. The taskbar has no animations either. The interface feels faster, especially on weak PCs.",
     "actions": [
       {
@@ -854,7 +854,7 @@
     "refresh": [
       "menu_delay"
     ],
-    "description": "Задержка открытия подменю уменьшается с 400 мс до нуля.",
+    "description": "Подменю открываются сразу, а не через полсекунды. Например, наводишь мышь на «Отправить» в меню правой кнопки — список появляется мгновенно.",
     "description_en": "The submenu opening delay goes from 400 ms down to zero.",
     "actions": [
       {
@@ -882,7 +882,7 @@
     "refresh": [
       "accessibility"
     ],
-    "description": "Пятикратное нажатие Shift и подобные сочетания больше не вызывают всплывающее окно (удобно в играх).",
+    "description": "Если в игре быстро нажать Shift пять раз, Windows выкидывает тебя на рабочий стол с окном «Включить залипание клавиш?». Твик убирает это окно.",
     "description_en": "Pressing Shift five times and similar shortcuts no longer bring up a popup (handy in games).",
     "keywords": "клавиатура keyboard shift",
     "actions": [
@@ -1313,7 +1313,7 @@
       "11"
     ],
     "after": null,
-    "description": "Включает скрытую схему «Максимальная производительность»: процессор и устройства не уходят в энергосбережение, меньше задержек. ПК больше греется и потребляет, на ноутбуке сильно сократит работу от батареи. При откате возвращается прежняя схема.",
+    "description": "Включает скрытый режим питания «Максимальная производительность»: процессор не сбрасывает частоту ради экономии энергии и отвечает без задержек. Например, меньше микрофризов, когда в игре резко растёт нагрузка. ПК при этом потребляет больше, а на ноутбуке быстрее сядет батарея. При выключении вернётся прежний режим.",
     "description_en": "Enables the hidden Ultimate Performance plan: the CPU and devices don't go into power saving, less latency. The PC runs hotter and uses more power; on a laptop it greatly shortens battery life. Reverting restores your previous plan.",
     "keywords": "питание электропитание power plan fps",
     "actions": [
@@ -1388,7 +1388,7 @@
     ],
     "after": "Сработает при следующем входе в систему",
     "after_en": "Takes effect at your next sign-in",
-    "description": "Windows перестаёт искусственно откладывать запуск автозагрузки после входа в систему.",
+    "description": "После входа в Windows программы из автозагрузки запускаются не сразу, а с искусственной задержкой. Твик её убирает. Например, Discord и Steam открываются сразу, как только появился рабочий стол.",
     "description_en": "Windows stops artificially delaying startup programs after you sign in.",
     "actions": [
       {
@@ -1414,7 +1414,7 @@
     ],
     "after": "Перезайди в систему",
     "after_en": "Sign out and back in",
-    "description": "Приложения Microsoft Store не работают в фоне. Экономит ресурсы, но у части приложений пропадут уведомления.",
+    "description": "Приложения из Microsoft Store (Почта, Погода, Xbox и другие) не работают в фоне, когда закрыты. Это экономит память и процессор. Минус: у этих приложений могут пропасть уведомления — например, о новых письмах во встроенной Почте.",
     "description_en": "Microsoft Store apps don't run in the background. Saves resources, but some apps will stop showing notifications.",
     "actions": [
       {
@@ -1439,7 +1439,7 @@
       "11"
     ],
     "after": null,
-    "description": "Служба заранее загружает частые программы в память. На SSD выигрыш от неё почти незаметен, а на слабых ПК она бывает причиной «диск загружен на 100%». На HDD лучше не отключать: программы будут открываться медленнее.",
+    "description": "Служба SysMain заранее загружает в память программы, которые ты часто открываешь. На SSD от неё почти нет пользы, а на слабых ПК она бывает причиной «Диск загружен на 100%». Например, после включения ПК всё лагает пару минут — часто это она. Если Windows стоит на обычном жёстком диске (HDD), лучше не выключать: программы будут открываться медленнее.",
     "description_en": "The service preloads frequently used programs into memory. On an SSD the gain is barely noticeable, and on weak PCs it can cause \"disk at 100%\". Better not to disable on an HDD: programs will open slower.",
     "actions": [
       {
@@ -1461,7 +1461,7 @@
       "11"
     ],
     "after": null,
-    "description": "Служба Windows Search перестаёт постоянно сканировать файлы. Меньше нагрузка на диск и процессор, но поиск файлов в Пуске и проводнике станет медленнее, а в Outlook может не работать.",
+    "description": "Windows постоянно перебирает файлы на диске, чтобы поиск работал быстрее. Это нагрузка на диск и процессор, иногда прямо во время игры. Минус: поиск файлов в Пуске и проводнике станет медленнее, а в Outlook может не работать.",
     "description_en": "The Windows Search service stops constantly scanning files. Less disk and CPU load, but file search in Start and Explorer gets slower, and it may not work in Outlook.",
     "actions": [
       {
@@ -1483,7 +1483,7 @@
       "11"
     ],
     "after": null,
-    "description": "Edge не запускается вместе с Windows («ускорение запуска») и не остаётся в памяти после закрытия окна.",
+    "description": "Edge запускается вместе с Windows и остаётся в памяти даже после закрытия, чтобы потом открыться быстрее. Твик это запрещает. Например, если ты сидишь в Chrome, Edge больше не будет тихо занимать память.",
     "description_en": "Edge doesn't start with Windows (\"startup boost\") and doesn't stay in memory after you close its window.",
     "actions": [
       {
@@ -1508,7 +1508,7 @@
   },
   {
     "id": "disable_power_throttling",
-    "name": "Отключить Power Throttling",
+    "name": "Не замедлять фоновые программы (Power Throttling)",
     "name_en": "Disable Power Throttling",
     "category": "performance",
     "risk": "medium",
@@ -1518,7 +1518,7 @@
     ],
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
-    "description": "Windows перестаёт искусственно замедлять фоновые программы ради экономии энергии. На ноутбуке сократит работу от батареи.",
+    "description": "Windows нарочно замедляет программы в фоне, чтобы экономить энергию. Иногда она тормозит то, что тебе нужно, — например, Discord или запись в OBS, пока ты в игре. Твик это выключает. На ноутбуке батарея сядет быстрее.",
     "description_en": "Windows stops artificially slowing down background programs to save power. Shortens battery life on a laptop.",
     "actions": [
       {
@@ -1543,7 +1543,7 @@
       "11"
     ],
     "after": null,
-    "description": "Факс, демо-режим для магазинов, WAP-push сообщения (используется телеметрией) и общий доступ к библиотеке Windows Media Player.",
+    "description": "Выключает службы, которые почти никому не нужны: факс, демо-режим для витрин магазинов, сервис push-сообщений и раздачу медиатеки Windows Media Player. Например, если у тебя нет факса, его служба просто зря висит в памяти.",
     "description_en": "Fax, the retail demo mode, WAP push messages (used by telemetry) and Windows Media Player library sharing.",
     "actions": [
       {
@@ -1583,7 +1583,7 @@
       "11"
     ],
     "after": null,
-    "description": "Служба и задачи, которые скачивают обновления карт для приложения «Карты». Если не пользуешься офлайн-картами, они не нужны.",
+    "description": "Windows сама скачивает обновления для приложения «Карты». Если ты не пользуешься офлайн-картами (почти никто не пользуется), это лишние загрузки в фоне. Твик их выключает.",
     "description_en": "The service and tasks that download map updates for the Maps app. Not needed if you don't use offline maps.",
     "actions": [
       {
@@ -1613,7 +1613,7 @@
       "11"
     ],
     "after": null,
-    "description": "Вход в Xbox Live, облачные сохранения и сеть Xbox. Не отключай, если играешь через Xbox app или Game Pass, или пользуешься аксессуарами Xbox.",
+    "description": "Выключает службы Xbox: вход в Xbox Live, облачные сохранения и сеть Xbox. Если играешь в Steam, Epic или Riot — они не нужны. Не выключай, если играешь через приложение Xbox или Game Pass или пользуешься аксессуарами Xbox.",
     "description_en": "Xbox Live sign-in, cloud saves and Xbox networking. Don't disable if you play via the Xbox app or Game Pass, or use Xbox accessories.",
     "actions": [
       {
@@ -1654,7 +1654,7 @@
     ],
     "after": "Перезапусти игру, если она открыта",
     "after_en": "Restart the game if it's running",
-    "description": "Отключает фоновый захват игрового видео Xbox Game Bar, который может просаживать FPS.",
+    "description": "Xbox Game Bar постоянно записывает видео игры в фоне, чтобы можно было сохранить последние секунды. Это нагрузка на видеокарту, даже если ты ничего не сохраняешь, — минус несколько FPS. Твик выключает фоновую запись. OBS и NVIDIA ShadowPlay работают как раньше.",
     "description_en": "Turns off Xbox Game Bar's background gameplay capture, which can lower FPS.",
     "keywords": "fps xbox запись",
     "actions": [
@@ -1701,7 +1701,7 @@
     "refresh": [
       "mouse"
     ],
-    "description": "Убирает «повышенную точность указателя»: курсор двигается пропорционально движению руки.",
+    "description": "Выключает «Повышенную точность указателя». С ней быстрое движение мыши уводит курсор дальше, чем медленное на то же расстояние. Например, в шутере резкий флик проскакивает мимо головы. Без ускорения прицел двигается ровно настолько, насколько ты двинул мышь.",
     "description_en": "Removes \"Enhance pointer precision\": the cursor moves in proportion to your hand movement.",
     "keywords": "мышка mouse курсор cursor",
     "actions": [
@@ -1748,7 +1748,7 @@
     "refresh": [
       "keyboard"
     ],
-    "description": "Зажатая клавиша начинает повторяться через ~250 мс вместо ~500 мс, повтор на максимальной скорости. Быстрее отклик при удержании клавиш в играх, при наборе и перемещении курсора стрелками.",
+    "description": "Когда держишь клавишу, Windows ждёт полсекунды, прежде чем начать её повторять. Твик сокращает паузу вдвое и ставит максимальную скорость повтора. Например, стрелки и Backspace в тексте работают заметно быстрее. В играх зажатые клавиши это не меняет — там отклик и так мгновенный.",
     "description_en": "A held key starts repeating after ~250 ms instead of ~500 ms, at maximum speed. Faster response when holding keys in games, typing and moving the cursor with arrows.",
     "keywords": "клавиатура keyboard клавиши повтор repeat",
     "actions": [
@@ -1783,7 +1783,7 @@
       "11"
     ],
     "after": null,
-    "description": "Во время игры Windows откладывает обновления и уведомления и отдаёт игре больше ресурсов. Обычно включён по умолчанию.",
+    "description": "Во время игры Windows откладывает установку обновлений и уведомления и отдаёт игре больше ресурсов. Например, посреди катки не начнёт ставиться обновление. Обычно режим и так включён — твик проверяет и включает, если он выключен.",
     "description_en": "While you play, Windows postpones updates and notifications and gives the game more resources. Usually on by default.",
     "actions": [
       {
@@ -1809,7 +1809,7 @@
     ],
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
-    "description": "Окно, с которым ты работаешь (игра), получает более длинные кванты процессорного времени, чем фоновые процессы (Win32PrioritySeparation = 38).",
+    "description": "Программа, в которой ты сейчас (например, игра), получает больше времени процессора, чем то, что работает в фоне. Например, браузер с кучей вкладок меньше отнимает у игры.",
     "description_en": "The window you're working with (the game) gets longer CPU time slices than background processes (Win32PrioritySeparation = 38).",
     "actions": [
       {
@@ -1825,7 +1825,7 @@
   },
   {
     "id": "mmcss_games",
-    "name": "Высокий приоритет игр в планировщике мультимедиа",
+    "name": "Приоритет играм при распределении ресурсов",
     "name_en": "High priority for games in the multimedia scheduler",
     "category": "gaming",
     "risk": "low",
@@ -1835,7 +1835,7 @@
     ],
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
-    "description": "Служба MMCSS отдаёт играм высокий приоритет процессора и диска и оставляет фоновым задачам 10% вместо 20%.",
+    "description": "В Windows есть служба, которая делит ресурсы между играми, видео и звуком. Твик говорит ей отдавать играм высокий приоритет, а фоновым задачам оставлять 10% вместо 20%. Например, фоновая работа Windows меньше мешает игре.",
     "description_en": "The MMCSS service gives games high CPU and disk priority and leaves background tasks 10% instead of 20%.",
     "actions": [
       {
@@ -1888,7 +1888,7 @@
     ],
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
-    "description": "Видеокарта сама управляет своей памятью и очередью задач: чуть меньше задержка и нагрузка на процессор. Нужна видеокарта NVIDIA GTX 10xx / AMD RX 5000 или новее и свежий драйвер.",
+    "description": "Видеокарта сама управляет своей памятью и очередью кадров вместо процессора. Чуть меньше задержка и нагрузка на процессор, а в новых играх без этого не работает DLSS Frame Generation. Нужна видеокарта NVIDIA GTX 10xx, AMD RX 5000 или новее и свежий драйвер.",
     "description_en": "The graphics card manages its own memory and work queue: slightly less latency and CPU load. Requires an NVIDIA GTX 10xx / AMD RX 5000 or newer and a recent driver.",
     "actions": [
       {
@@ -1913,7 +1913,7 @@
       "11"
     ],
     "after": null,
-    "description": "Windows не перезагружает ПК сама, пока ты в системе: обновления скачиваются и ставятся автоматически, а перезагрузку ты делаешь, когда удобно. Политика работает только вместе с режимом «устанавливать по расписанию», поэтому он включается тоже; в Параметрах появится надпись «Некоторыми параметрами управляет ваша организация». В Windows Home политики обновлений могут не действовать.",
+    "description": "Windows больше не перезагружает ПК сама, пока ты за ним сидишь. Например, не будет такого, что отошёл на минуту — а игра закрыта и ставится обновление. Обновления ставятся как обычно, а перезагружаешь ты, когда удобно. В Параметрах появится надпись «Некоторыми параметрами управляет ваша организация» — это нормально. В Windows Home может не сработать.",
     "description_en": "Windows won't restart the PC by itself while you're signed in: updates download and install automatically, and you reboot when convenient. The policy only works together with the \"scheduled install\" mode, so that is enabled too; Settings will show \"Some settings are managed by your organization\". Update policies may not apply on Windows Home.",
     "actions": [
       {
@@ -1965,7 +1965,7 @@
       "11"
     ],
     "after": null,
-    "description": "Windows скачивает обновления только с серверов Microsoft и не раздаёт их по интернету другим компьютерам.",
+    "description": "Windows раздаёт скачанные обновления другим компьютерам через твой интернет, как торрент. Это отнимает скорость и может поднимать пинг в игре. Твик выключает раздачу: обновления качаются только с серверов Microsoft.",
     "description_en": "Windows downloads updates only from Microsoft servers and doesn't share them with other computers over the internet.",
     "actions": [
       {
