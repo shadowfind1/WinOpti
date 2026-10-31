@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- WinOpti 2: WPF на .NET Framework 4.8. Он уже есть в каждой Windows 10/11, поэтому exe маленький,
+       стартует сразу и ничего ставить не нужно. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>WinOpti</AssemblyName>
+    <RootNamespace>WinOpti</RootNamespace>
+    <ApplicationIcon>Assets\winopti.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <Product>WinOpti</Product>
+    <Copyright>shadowfind1</Copyright>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Debug запускается без UAC (для разработки и скриншотов), Release просит права администратора -->
+    <ApplicationManifest Condition="'$(Configuration)' == 'Release'">app.manifest</ApplicationManifest>
+    <ApplicationManifest Condition="'$(Configuration)' != 'Release'">app.debug.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <!-- те же твики, что у WinOpti 1 -->
+    <EmbeddedResource Include="Tweaks\tweaks.json" LogicalName="WinOpti.tweaks.json" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\Fonts\*.ttf" />
+    <!-- Intel PresentMon (MIT) для замера FPS: встроен в exe, распаковывается при первом замере -->
+    <EmbeddedResource Include="Tools\PresentMon-2.6.0-x64.exe" LogicalName="WinOpti.Tools.PresentMon.exe" />
+    <None Include="Tools\PresentMon-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

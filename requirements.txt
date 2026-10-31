@@ -1,3 +1,0 @@
-customtkinter>=5.2
-pillow>=10
-pyinstaller>=6.0

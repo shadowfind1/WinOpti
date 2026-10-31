@@ -1,10 +1,4 @@
-__pycache__/
-*.pyc
-# локальные настройки Claude Code
-.claude/
-# сборки
-build/
-dist/
-*.spec
-_internal/
-/WinOpti.exe
+bin/
+obj/
+*.user
+.vs/

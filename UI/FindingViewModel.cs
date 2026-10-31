@@ -1,0 +1,115 @@
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Media;
+using WinOpti.Diagnostics;
+using WinOpti.Sys;
+
+namespace WinOpti.UI
+{
+    public sealed class RelayCommand : ICommand
+    {
+        readonly Action _run;
+        public RelayCommand(Action run) { _run = run; }
+        public event EventHandler CanExecuteChanged { add { } remove { } }
+        public bool CanExecute(object p) => true;
+        public void Execute(object p) => _run();
+    }
+
+    /// <summary>Карточка находки на экране: состояние кнопки «Исправить», инструкция, результат.</summary>
+    public sealed class FindingViewModel : INotifyPropertyChanged
+    {
+        public Finding F { get; }
+        public event PropertyChangedEventHandler PropertyChanged;
+        public event Action Fixed;
+
+        public FindingViewModel(Finding f)
+        {
+            F = f;
+            FixCommand = new RelayCommand(async () => await FixAsync());
+            GuideCommand = new RelayCommand(() => GuideOpen = !GuideOpen);
+        }
+
+        public string Title => F.Title;
+        public string Detail => F.Detail;
+        public string Impact => F.Impact;
+        public bool HasImpact => !string.IsNullOrEmpty(F.Impact) && F.Severity != Severity.Ok;
+        public string Guide => F.Guide;
+        public bool HasGuide => !string.IsNullOrEmpty(F.Guide);
+        public string FixLabel => F.FixLabel;
+        public bool IsOk => F.Severity == Severity.Ok;
+        public int Order => -(int)F.Severity;
+
+        public string Glyph => F.Severity switch
+        {
+            Severity.Critical => "",
+            Severity.Warn => "",
+            Severity.Info => "",
+            _ => "",
+        };
+
+        static SolidColorBrush B(string hex) { var b = (SolidColorBrush)new BrushConverter().ConvertFrom(hex); b.Freeze(); return b; }
+        static readonly SolidColorBrush red = B("#FF5D6C"), orange = B("#FFB547"), blue = B("#6EA8FE"), green = B("#3ECF8E");
+        static readonly SolidColorBrush redSoft = B("#2A1519"), orangeSoft = B("#2A2112"), blueSoft = B("#131C2E"), greenSoft = B("#10231A");
+
+        public Brush Tint => F.Severity switch { Severity.Critical => red, Severity.Warn => orange, Severity.Info => blue, _ => green };
+        public Brush TintSoft => F.Severity switch { Severity.Critical => redSoft, Severity.Warn => orangeSoft, Severity.Info => blueSoft, _ => greenSoft };
+        public string SeverityText => F.Severity switch { Severity.Critical => "Важно", Severity.Warn => "Стоит исправить", Severity.Info => "Совет", _ => "В порядке" };
+
+        bool _busy, _done, _guideOpen;
+        string _result;
+        bool _error;
+
+        public bool CanFix => F.Fix != null && !_done && !_busy;
+        public bool ShowGuideButton => HasGuide && !_done;
+        public bool Busy { get => _busy; private set { _busy = value; Changed(); Changed(nameof(CanFix)); } }
+        public bool Done { get => _done; private set { _done = value; Changed(); Changed(nameof(CanFix)); Changed(nameof(ShowGuideButton)); } }
+        public bool GuideOpen { get => _guideOpen; set { _guideOpen = value; Changed(); Changed(nameof(GuideButtonText)); } }
+        public string GuideButtonText => _guideOpen ? "Скрыть" : (F.Fix == null ? "Как исправить" : "Подробнее");
+        public string Result { get => _result; private set { _result = value; Changed(); Changed(nameof(HasResult)); } }
+        public bool HasResult => !string.IsNullOrEmpty(_result);
+        public Brush ResultBrush => _error ? red : green;
+        public string NeedsRebootText => F.FixNeedsReboot ? "нужна перезагрузка" : null;
+        public bool NeedsReboot => F.FixNeedsReboot && !_done;
+
+        public ICommand FixCommand { get; }
+        public ICommand GuideCommand { get; }
+
+        async Task FixAsync()
+        {
+            if (!CanFix) return;
+            if (F.FixNeedsAdmin && !SysInfo.IsAdmin)
+            {
+                _error = true;
+                Result = "Нужны права администратора: запусти WinOpti от имени администратора.";
+                Changed(nameof(ResultBrush));
+                return;
+            }
+            Busy = true;
+            try
+            {
+                var text = await Task.Run(() => F.Fix());
+                _error = false;
+                Result = text;
+                Done = true;
+                Fixed?.Invoke();
+            }
+            catch (Exception e)
+            {
+                _error = true;
+                Result = e is UnauthorizedAccessException || e is System.Security.SecurityException
+                    ? "Windows не дала изменить настройку: нужны права администратора."
+                    : e.Message;
+            }
+            finally
+            {
+                Changed(nameof(ResultBrush));
+                Busy = false;
+            }
+        }
+
+        void Changed([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+}

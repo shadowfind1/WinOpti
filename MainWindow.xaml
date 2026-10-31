@@ -1,0 +1,287 @@
+<Window x:Class="WinOpti.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:WinOpti.UI"
+        Title="WinOpti" Width="1180" Height="780" MinWidth="980" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource Bg}"
+        WindowStyle="None" ResizeMode="CanResize" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display">
+
+    <!-- Своя рамка окна, но без AllowsTransparency: прозрачное окно в WPF рисуется программно и лагает. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="Vis"/>
+        <CubicEase x:Key="EaseOut" EasingMode="EaseOut"/>
+
+        <!-- карточка находки -->
+        <DataTemplate x:Key="FindingCard">
+            <Border x:Name="card" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                    CornerRadius="10" Padding="20,18" Margin="0,0,0,12" Opacity="0">
+                <Border.RenderTransform>
+                    <TranslateTransform Y="16"/>
+                </Border.RenderTransform>
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.35">
+                                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                                <DoubleAnimation Storyboard.TargetProperty="RenderTransform.Y" To="0" Duration="0:0:0.45">
+                                    <DoubleAnimation.EasingFunction><QuarticEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Width="38" Height="38" CornerRadius="11" Background="{Binding TintSoft}" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding Glyph}" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Tint}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="16,0,16,0">
+                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Detail}" FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap"
+                                   Margin="0,5,0,0" LineHeight="20"/>
+                        <WrapPanel Margin="0,12,0,0">
+                            <Border Background="{Binding TintSoft}" CornerRadius="7" Padding="9,3" Margin="0,0,8,0">
+                                <TextBlock Text="{Binding SeverityText}" Foreground="{Binding Tint}" FontSize="12" FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Background="{StaticResource CardAlt}" CornerRadius="7" Padding="9,3" Margin="0,0,8,0"
+                                    Visibility="{Binding HasImpact, Converter={StaticResource Vis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE945;" FontFamily="{StaticResource Icons}" FontSize="11" Foreground="#C6FF3D"
+                                               VerticalAlignment="Center" Margin="0,1,6,0"/>
+                                    <TextBlock Text="{Binding Impact}" FontSize="12" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{StaticResource CardAlt}" CornerRadius="7" Padding="9,3"
+                                    Visibility="{Binding NeedsReboot, Converter={StaticResource Vis}}">
+                                <TextBlock Text="{Binding NeedsRebootText}" FontSize="12" Foreground="{StaticResource Muted}"/>
+                            </Border>
+                        </WrapPanel>
+                        <Border Background="{StaticResource CardAlt}" CornerRadius="10" Padding="16,12" Margin="0,14,0,0"
+                                Visibility="{Binding GuideOpen, Converter={StaticResource Vis}}">
+                            <TextBlock Text="{Binding Guide}" FontSize="13" TextWrapping="Wrap" LineHeight="21"/>
+                        </Border>
+                        <TextBlock Text="{Binding Result}" Foreground="{Binding ResultBrush}" FontSize="13" FontWeight="SemiBold"
+                                   TextWrapping="Wrap" Margin="0,12,0,0" Visibility="{Binding HasResult, Converter={StaticResource Vis}}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Top" MinWidth="150">
+                        <Button Style="{StaticResource SmallAccentButton}" Content="{Binding FixLabel}" Command="{Binding FixCommand}"
+                                Visibility="{Binding CanFix, Converter={StaticResource Vis}}"/>
+                        <TextBlock Text="Исправляю…" Foreground="{StaticResource Muted}" FontSize="13" HorizontalAlignment="Center" Margin="0,8"
+                                   Visibility="{Binding Busy, Converter={StaticResource Vis}}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8"
+                                    Visibility="{Binding Done, Converter={StaticResource Vis}}">
+                            <TextBlock Text="&#xE73E;" FontFamily="{StaticResource Icons}" Foreground="{StaticResource Green}" FontSize="13" Margin="0,2,6,0"/>
+                            <TextBlock Text="Исправлено" Foreground="{StaticResource Green}" FontSize="13" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <Button Style="{StaticResource GhostButton}" Content="{Binding GuideButtonText}" Command="{Binding GuideCommand}" Margin="0,8,0,0"
+                                Visibility="{Binding ShowGuideButton, Converter={StaticResource Vis}}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- строка «в порядке» -->
+        <DataTemplate x:Key="OkRow">
+            <Border Background="{StaticResource Card}" CornerRadius="12" Padding="14,12" Margin="0,0,10,10" Opacity="0">
+                <Border.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.4"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Border.Triggers>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource GreenSoft}" VerticalAlignment="Top">
+                        <TextBlock Text="&#xE73E;" FontFamily="{StaticResource Icons}" FontSize="12" Foreground="{StaticResource Green}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="{StaticResource Dim}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid x:Name="Root">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== меню ===== -->
+        <Border Background="{StaticResource Sidebar}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="16,16,16,18">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,4,0,26">
+                    <Border Width="32" Height="32" CornerRadius="8" Background="{StaticResource Accent}" VerticalAlignment="Center">
+                        <Path Data="M5,12.5 L12,5.5 L19,12.5 M5,18.5 L12,11.5 L19,18.5" Stroke="{StaticResource OnAccent}" StrokeThickness="2.9"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="24" Height="24" Stretch="None"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform><ScaleTransform ScaleX="0.75" ScaleY="0.75"/></Path.RenderTransform>
+                        </Path>
+                    </Border>
+                    <TextBlock Text="WinOpti" FontFamily="{StaticResource DisplayFont}" FontSize="20" FontWeight="Bold"
+                               VerticalAlignment="Center" Margin="11,0,8,0"/>
+                    <Border BorderBrush="#2A2E35" BorderThickness="1" CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                        <TextBlock Text="2.0" FontFamily="{StaticResource NumFont}" FontSize="11" Foreground="{StaticResource Muted}"/>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom">
+                    <Border Background="{StaticResource Card}" CornerRadius="10" Padding="12,10">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="AdminDot" Width="8" Height="8" Fill="{StaticResource Green}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="AdminText" Text="Администратор" FontSize="12" Margin="8,0,0,0" Foreground="{StaticResource Muted}"/>
+                            </StackPanel>
+                            <TextBlock x:Name="SystemText" FontSize="11.5" Foreground="{StaticResource Dim}" Margin="16,4,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel x:Name="Nav">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="diag" IsChecked="True" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Диагностика" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavFps" Style="{StaticResource NavItem}" GroupName="nav" Tag="fps" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xEC4A;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Замер FPS" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavChecks" Style="{StaticResource NavItem}" GroupName="nav" Tag="checks" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE9E9;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Проверки" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavTweaks" Style="{StaticResource NavItem}" GroupName="nav" Tag="tweaks" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE713;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Твики" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavClean" Style="{StaticResource NavItem}" GroupName="nav" Tag="clean" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE74D;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Очистка" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavStartup" Style="{StaticResource NavItem}" GroupName="nav" Tag="startup" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE7E8;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Автозагрузка" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton x:Name="NavRestore" Style="{StaticResource NavItem}" GroupName="nav" Tag="restore" Checked="OnNav">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE777;" FontFamily="{StaticResource Icons}" FontSize="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Восстановление" Margin="13,0,0,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ===== контент ===== -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Button Style="{StaticResource CaptionButton}" Click="OnMinimize" WindowChrome.IsHitTestVisibleInChrome="True"><TextBlock Text="&#xE921;" FontFamily="{StaticResource Icons}" FontSize="10" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                <Button Style="{StaticResource CaptionButton}" Click="OnMaximize" WindowChrome.IsHitTestVisibleInChrome="True"><TextBlock x:Name="MaxGlyph" Text="&#xE922;" FontFamily="{StaticResource Icons}" FontSize="10" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+                <Button Style="{StaticResource CloseButton}" Click="OnClose" WindowChrome.IsHitTestVisibleInChrome="True"><TextBlock Text="&#xE8BB;" FontFamily="{StaticResource Icons}" FontSize="10" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/></Button>
+            </StackPanel>
+
+            <!-- Диагностика -->
+            <ScrollViewer x:Name="DiagPage" Grid.Row="1" VerticalScrollBarVisibility="Auto" CanContentScroll="False" Focusable="False">
+                <StackPanel Margin="40,0,40,40" MaxWidth="1100">
+                    <TextBlock Text="Диагностика ПК для игр" FontFamily="{StaticResource DisplayFont}" FontSize="30" FontWeight="SemiBold"/>
+                    <TextBlock Text="Ищем настройки, которые на самом деле съедают FPS и плавность, и исправляем их в один клик."
+                               FontSize="14" Foreground="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+
+                    <Border Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12"
+                            Padding="28,24" Margin="0,24,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:ScoreRing x:Name="Ring" Width="136" Height="136"/>
+                            <StackPanel Grid.Column="1" Margin="30,0,24,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="Verdict" Text="Проверяем ПК…" FontFamily="{StaticResource DisplayFont}" FontSize="22" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="Summary" Text="Это займёт пару секунд. Ничего не меняем, только смотрим."
+                                           FontSize="14" Foreground="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                                <Grid Margin="0,16,0,0" Height="4" x:Name="ProgressTrack">
+                                    <Border Background="#1C2026" CornerRadius="2"/>
+                                    <Border x:Name="ProgressFill" Background="{StaticResource AccentGradient}" CornerRadius="2"
+                                            HorizontalAlignment="Left" Width="0"/>
+                                </Grid>
+                                <TextBlock x:Name="ProgressText" FontSize="12" Foreground="{StaticResource Dim}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                            <Button x:Name="ScanButton" Grid.Column="2" Style="{StaticResource AccentButton}" VerticalAlignment="Center"
+                                    Click="OnScan" IsEnabled="False">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE72C;" FontFamily="{StaticResource Icons}" Foreground="{StaticResource OnAccent}" FontSize="14" Margin="0,1,9,0"/>
+                                    <TextBlock Text="Проверить снова" Foreground="{StaticResource OnAccent}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock x:Name="ProblemsHeader" Text="Что можно улучшить" FontSize="18" FontWeight="SemiBold" Margin="2,30,0,14" Visibility="Collapsed"/>
+                    <ItemsControl x:Name="ProblemsList" ItemTemplate="{StaticResource FindingCard}"/>
+
+                    <TextBlock x:Name="OkHeader" Text="В порядке" FontSize="18" FontWeight="SemiBold" Margin="2,22,0,14" Visibility="Collapsed"/>
+                    <ItemsControl x:Name="OkList" ItemTemplate="{StaticResource OkRow}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="2"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Замер FPS -->
+            <ui:FpsPage x:Name="FpsView" Grid.Row="1" Visibility="Collapsed"/>
+
+            <!-- Твики -->
+            <ContentControl x:Name="TweaksView" Grid.Row="1" Visibility="Collapsed" Focusable="False"/>
+            <ContentControl x:Name="CleanView" Grid.Row="1" Visibility="Collapsed" Focusable="False"/>
+            <ContentControl x:Name="StartupView" Grid.Row="1" Visibility="Collapsed" Focusable="False"/>
+            <ContentControl x:Name="RestoreView" Grid.Row="1" Visibility="Collapsed" Focusable="False"/>
+            <ContentControl x:Name="ChecksView" Grid.Row="1" Visibility="Collapsed" Focusable="False"/>
+
+        </Grid>
+    </Grid>
+</Window>

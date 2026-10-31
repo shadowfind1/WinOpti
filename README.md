@@ -1,148 +1,100 @@
-# WinOpti
+# WinOpti 2
 
-Оптимизатор Windows 10 и 11 для игр и повседневной работы. Отключает фоновую нагрузку и слежку, ускоряет
-отклик интерфейса и даёт играм больше ресурсов. Почти все твики срабатывают сразу, без перезагрузки и
-перезахода в систему, и любой из них можно откатить.
+Программа для игроков на Windows 10 и 11. Находит настоящие причины низкого FPS и фризов, исправляет их в один клик
+и показывает результат цифрами: замер FPS до и после, прямо в твоей игре.
 
 **Русский** · [English](#english)
 
-![WinOpti: вкладка «Игры и ввод»](docs/gaming.png)
+![Диагностика](docs/diag.png)
 
-| Телеметрия и фон | Очистка |
+| Замер FPS и «Что мешало игре» | Проверки |
 |---|---|
-| ![Телеметрия и фон](docs/privacy.png) | ![Очистка диска](docs/cleanup.png) |
+| ![Замер FPS](docs/fps.png) | ![Проверки](docs/checks.png) |
 
 ## Скачать
 
-1. Открой страницу [Releases](../../releases/latest) и скачай `WinOpti.exe` — это один файл, больше
-   ничего не нужно.
-2. Запусти его и разреши запуск от имени администратора — без этого Windows не даст менять настройки.
+> **WinOpti 2 сейчас в бета-версии.** Стабильная первая версия — [WinOpti 1.0.4](../../releases/tag/v1.0.4).
 
-Python ставить не нужно: всё уже внутри exe. Первые пару секунд после запуска программа распаковывается.
+1. Открой [WinOpti 2.0.0 beta](../../releases/tag/v2.0.0-beta) и скачай `WinOpti-2.0.0-beta.exe` — это один файл.
+2. Запусти и разреши запуск от имени администратора: без этого Windows не даст менять настройки и замерять FPS.
 
-> **Windows SmartScreen или антивирус могут предупредить** о неизвестной программе: exe не подписан
-> цифровой подписью, а такие программы (собранные PyInstaller) антивирусы иногда помечают по ошибке.
-> В SmartScreen нажми «Подробнее» → «Выполнить в любом случае». Весь исходный код — в этом репозитории.
+Нужен .NET Framework 4.8 — он уже встроен в Windows 10 (с 2019 года) и Windows 11.
+
+> **SmartScreen может предупредить** о неизвестной программе: exe пока не подписан цифровой подписью.
+> Нажми «Подробнее» → «Выполнить в любом случае». Весь исходный код — в этом репозитории.
 
 ## Что умеет
 
-| Вкладка | Что внутри |
+| Раздел | Что внутри |
 |---|---|
-| **Телеметрия и фон** | Телеметрия и её задачи в планировщике, журнал действий, веб-поиск Bing в Пуске, Copilot, Cortana, отчёты об ошибках |
-| **Интерфейс** | Анимации окон, прозрачность, задержка меню, виджеты, реклама на экране блокировки и автоустановка рекламных приложений, окно залипания клавиш |
-| **Производительность** | План питания «Максимальная производительность», Power Throttling, SysMain, индексирование поиска, фоновые приложения, Edge в фоне, ненужные службы |
-| **Игры и ввод** | Game DVR, игровой режим, приоритет активной программы, MMCSS для игр, аппаратное планирование GPU, ускорение мыши, задержка повтора клавиш |
-| **Система** | Раздача обновлений другим ПК, перезагрузка после обновлений |
-| **Автозагрузка** | Что запускается вместе с Windows: включение и выключение без удаления, подсказки, что можно выключить |
-| **Очистка** | Временные файлы, кэш обновлений Windows, кэш оптимизации доставки, отчёты об ошибках, корзина |
-| **Восстановление** | Откат любого изменения WinOpti, точки восстановления Windows, журнал |
+| **Диагностика** | 14 проверок того, что реально съедает FPS: частота монитора ниже возможной, медленная или разная память, план питания, VBS, игровой режим, Game DVR, ускорение мыши, драйвер видеокарты, игры на HDD, фоновая нагрузка. Оценка ПК от 0 до 100 и исправление в один клик |
+| **Замер FPS** | Средний FPS, 1% и 0.1% low, фризы — через Intel PresentMon, как у обзорщиков. Серия из 3 проходов с разбросом. «До» и «После», картинка результата для друзей |
+| **Что мешало игре** | Во время замера WinOpti смотрит, какие программы грузили процессор и видеокарту и кто просыпался в момент фризов. Видеокарта NVIDIA: перегрев, сброс частоты, нехватка питания. Процессор: сброс частоты под нагрузкой. Для каждой находки — кнопка исправления, а потом «Исправить всё и замерить снова» |
+| **Проверки** | Авто-игровой режим (сам включается, когда запускаешь игру), реальная частота опроса мыши, пинг до серверов Valve и где проблема — в Wi-Fi или у провайдера, игры на правильной видеокарте, монитор в разъёме видеокарты, настройки драйвера NVIDIA, советы для AMD Radeon |
+| **Твики** | 32 твика с описанием простыми словами, риском и откатом: телеметрия, фон, интерфейс, игры и ввод |
+| **Очистка** | Временные файлы, кэш обновлений, отчёты об ошибках, старые установщики драйверов, кэш шейдеров |
+| **Автозагрузка** | Программы, службы и приложения из Microsoft Store: сколько каждая занимает памяти прямо сейчас, подсказки, что можно выключить |
+| **Восстановление** | Откат любого изменения WinOpti, точки восстановления Windows, понятный журнал действий |
 
-У каждого твика указан риск и что именно он меняет. Поиск в меню находит твики по названию и описанию.
-Интерфейс на русском и английском (переключатель внизу меню).
+Без лагов: окно открывается за полсекунды, фоновый игровой режим занимает около 40 МБ и меньше 0,2% процессора.
 
-## Безопасность
+## Что уходит в интернет
 
-- Перед первым включением твика WinOpti создаёт точку восстановления Windows (если за последние сутки её
-  ещё не было). Это можно выключить галочкой внизу меню.
-- Исходные значения сохраняются, и на вкладке «Восстановление» любое изменение откатывается одной кнопкой.
-- Очистка удаляет только то, что Windows и программы создают заново сами; файлы младше часа не трогает.
+По умолчанию — ничего. Сеть нужна только для проверки пинга: список серверов берётся у Steam, сами пинги идут
+на серверы Valve и твой роутер. Сравнение «Твой ПК против похожих» включается только по кнопке и отправляет
+лишь модели процессора и видеокарты, объём памяти, разрешение экрана и FPS.
 
-Используешь на свой риск: это настройки системы, и на каждом ПК они могут вести себя по-своему.
-
-## Результат на моём ПК
-
-CS2, встроенная бенчмарк-карта, один и тот же ПК, два прогона: без твиков и со включёнными твиками WinOpti.
-
-| | Средний FPS | 1% low |
-|---|---|---|
-| Без твиков | 220,2 | 95,4 |
-| С WinOpti | 238,3 | 116,5 |
-| Разница | **+8%** | **+22%** |
-
-1% low — это самые просадочные кадры: чем выше, тем меньше статтеров. На другом железе результат будет другим.
-
-## Сборка из исходников
-
-Нужен Python 3 (проверено на 3.14) и Windows.
+## Собрать из исходников
 
 ```
-pip install -r requirements.txt
-python gui.py          # запустить окно (для изменений — от имени администратора)
-python build.py        # собрать dist/WinOpti.exe (один файл)
-python main.py list    # консольная версия: list, on, off, scan, clean
+dotnet build WinOpti.csproj -c Release
 ```
 
-Твики описаны в `tweaks.json`, их применение и откат — в `engine.py`.
+C# и WPF на .NET Framework 4.8. Сервер для сравнения ПК — в папке `cloud/` (Cloudflare Worker).
 
-## English
+Первая версия на Python — в ветке [`v1`](../../tree/v1).
 
-[Русский](#winopti) · **English**
+## Благодарности
 
-WinOpti is a Windows 10/11 optimizer for gaming and everyday work. It turns off background load and
-telemetry, speeds up UI response and gives games more resources. Almost every tweak applies immediately,
-without a reboot or re-login, and any of them can be reverted.
+- [Intel PresentMon](https://github.com/GameTechDev/PresentMon) — замер кадров (MIT, лицензия в `Tools/`).
+- Шрифты [Inter Tight](https://github.com/rsms/inter-tight) и [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) — SIL Open Font License.
 
-### Download
+---
 
-1. Open [Releases](../../releases/latest) and download `WinOpti.exe`: it is a single file, nothing else is needed.
-2. Run it and allow it to run as administrator: Windows does not let programs change settings otherwise.
+<a id="english"></a>
 
-No Python needed, everything is inside the exe. The first couple of seconds after launch it unpacks itself.
+# WinOpti 2 (English)
 
-> **Windows SmartScreen or an antivirus may warn** about an unknown program: the exe is not code-signed, and
-> such programs (built with PyInstaller) are sometimes flagged by mistake. In SmartScreen click
-> "More info" → "Run anyway". All the source code is in this repository.
+A tool for PC gamers on Windows 10 and 11. It finds the real causes of low FPS and stutter, fixes them in one click
+and proves the result with numbers: a before/after FPS benchmark in your own game.
 
-### Features
+> **The interface is in Russian for now; an English version is coming.** WinOpti 2 is in beta — the stable
+> release is [WinOpti 1.0.4](../../releases/tag/v1.0.4).
 
-| Tab | What's inside |
-|---|---|
-| **Telemetry & background** | Telemetry and its scheduled tasks, activity history, Bing web search in Start, Copilot, Cortana, error reporting |
-| **Interface** | Window animations, transparency, menu delay, widgets, lock screen ads and promo app installs, Sticky Keys popup |
-| **Performance** | Ultimate Performance power plan, Power Throttling, SysMain, search indexing, background apps, Edge in the background, unneeded services |
-| **Gaming & input** | Game DVR, Game Mode, foreground priority, MMCSS for games, hardware-accelerated GPU scheduling, mouse acceleration, key repeat delay |
-| **System** | Delivery Optimization to other PCs, restarts after updates |
-| **Startup** | What starts with Windows: turn entries on and off without deleting them, hints on what is safe to disable |
-| **Cleanup** | Temp files, Windows Update cache, Delivery Optimization cache, error reports, Recycle Bin |
-| **Restore** | Revert any WinOpti change, Windows restore points, history |
+**Download:** [WinOpti 2.0.0 beta](../../releases/tag/v2.0.0-beta) → `WinOpti-2.0.0-beta.exe`, run as administrator.
+Requires .NET Framework 4.8 (built into Windows 10 since 2019 and Windows 11). The exe is not code-signed yet,
+so SmartScreen may warn: click "More info" → "Run anyway".
 
-Every tweak shows its risk and exactly what it changes. Search in the menu finds tweaks by name and
-description. The interface is in Russian and English (toggle at the bottom of the menu).
+**Features**
 
-### Safety
+- **Diagnostics** — 14 checks for what actually costs FPS (monitor below its max refresh rate, slow or mixed RAM,
+  power plan, VBS, Game DVR, mouse acceleration, GPU driver age, games on an HDD, background load), a 0–100 score
+  and one-click fixes.
+- **FPS benchmark** — average FPS, 1% and 0.1% lows and stutters via Intel PresentMon, a 3-pass series with spread,
+  before/after comparison and a shareable result card.
+- **What hurt your game** — while benchmarking, WinOpti records which processes used CPU/GPU and which woke up during
+  stutters, plus NVIDIA GPU temperature, clock drops and power limits, and CPU frequency drops. Every finding has a
+  fix button, then "fix all and benchmark again".
+- **Checks** — automatic game mode, real mouse polling rate, ping and jitter to Valve servers (Wi-Fi vs ISP),
+  games on the right GPU, monitor plugged into the GPU, NVIDIA driver settings, AMD Radeon tips.
+- **Tweaks, cleanup, startup manager, restore** — every change can be rolled back.
 
-- Before the first tweak WinOpti creates a Windows restore point (if there was none in the last 24 hours).
-  You can turn this off with the checkbox at the bottom of the menu.
-- Original values are saved, and on the Restore tab any change is reverted with one button.
-- Cleanup deletes only what Windows and programs recreate themselves, and never touches files younger than an hour.
+**Privacy:** nothing is sent by default. The ping test talks to Steam's public server list and Valve servers.
+The "your PC vs similar PCs" comparison is opt-in and sends only CPU/GPU model, RAM size, resolution and FPS.
 
-Use at your own risk: these are system settings, and they may behave differently on every PC.
+**Build:** `dotnet build WinOpti.csproj -c Release` (C#/WPF, .NET Framework 4.8). The Python v1 lives in the
+[`v1`](../../tree/v1) branch.
 
-### Result on my PC
-
-CS2, built-in benchmark map, the same PC, two runs: without tweaks and with WinOpti tweaks on.
-
-| | Average FPS | 1% low |
-|---|---|---|
-| Without tweaks | 220.2 | 95.4 |
-| With WinOpti | 238.3 | 116.5 |
-| Difference | **+8%** | **+22%** |
-
-1% low is the worst frames: the higher it is, the less stutter. Results will differ on other hardware.
-
-### Build from source
-
-You need Python 3 (tested on 3.14) and Windows.
-
-```
-pip install -r requirements.txt
-python gui.py          # run the window (as administrator to change settings)
-python build.py        # build dist/WinOpti.exe (single file)
-python main.py list    # console version: list, on, off, scan, clean
-```
-
-Tweaks are described in `tweaks.json`, applying and reverting them is in `engine.py`.
-
-## Лицензия · License
+## License
 
 [MIT](LICENSE)
