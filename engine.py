@@ -206,6 +206,9 @@ def _svc_mode(name):
 
 def _svc_set(name, mode):
     rc, out = run(["sc.exe", "config", name, "start=", mode])
+    if rc != 0 and mode == "delayed-auto":
+        # не всем службам Windows разрешает отложенный запуск (SysMain: ошибка 87) — тогда обычный автозапуск
+        rc, out = run(["sc.exe", "config", name, "start=", "auto"])
     if rc != 0:
         raise RuntimeError(f"sc config {name}: {out.strip()}")
 
