@@ -128,7 +128,7 @@ namespace WinOpti.Cleanup
             {
                 var failed = was.Where(s => { SysInfo.Run("powershell", $"-NoProfile -Command \"Start-Service -Name {s}\""); return !Running(s); }).ToList();
                 if (failed.Count > 0)
-                    Warning = $"службы {string.Join(", ", failed)} не запустились обратно; Windows запустит их сама при проверке обновлений или после перезагрузки";
+                    Warning = L.T($"службы {string.Join(", ", failed)} не запустились обратно; Windows запустит их сама при проверке обновлений или после перезагрузки", $"services {string.Join(", ", failed)} didn’t start back up; Windows starts them itself on the next update check or after a restart");
             }
         }
     }
@@ -182,7 +182,7 @@ namespace WinOpti.Cleanup
         {
             var name = Path.GetFileName(path.TrimEnd('\\'));
             if (!name.Equals("Temp", StringComparison.OrdinalIgnoreCase) && !name.Equals("Tmp", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"подозрительная папка {path}, пропускаю");
+                throw new InvalidOperationException(L.T($"подозрительная папка {path}, пропускаю", $"suspicious folder {path}, skipping"));
             return path;
         }
 
@@ -190,53 +190,53 @@ namespace WinOpti.Cleanup
         {
             new CleanItem
             {
-                Id = "user_temp", Name = "Временные файлы",
-                Description = "Остатки установщиков, распакованные архивы, кэш программ. Файлы младше часа не трогаем, чтобы не помешать работающим программам.",
+                Id = "user_temp", Name = L.T("Временные файлы", "Temporary files"),
+                Description = L.T("Остатки установщиков, распакованные архивы, кэш программ. Файлы младше часа не трогаем, чтобы не помешать работающим программам.", "Installer leftovers, unpacked archives, app caches. Files newer than an hour are left alone so running apps aren’t disturbed."),
                 Roots = () => new[] { CheckTemp(Path.GetTempPath()) }, MinAge = TimeSpan.FromHours(1),
                 Exclude = () => new[] { Path.Combine(Path.GetTempPath(), @"NVIDIA Corporation\NV_Cache") }, // это кэш шейдеров — отдельный пункт
             },
             new CleanItem
             {
-                Id = "windows_temp", Name = "Временные файлы Windows", Admin = true,
-                Description = "Служебные временные файлы системы и установщиков в папке Windows\\Temp. Файлы младше часа не трогаем.",
+                Id = "windows_temp", Name = L.T("Временные файлы Windows", "Windows temporary files"), Admin = true,
+                Description = L.T("Служебные временные файлы системы и установщиков в папке Windows\\Temp. Файлы младше часа не трогаем.", "System and installer temp files in Windows\\Temp. Files newer than an hour are left alone."),
                 Roots = () => new[] { Path.Combine(Win, "Temp") }, MinAge = TimeSpan.FromHours(1),
             },
             new UpdateCache
             {
-                Id = "update_cache", Name = "Кэш обновлений Windows", Admin = true,
-                Description = "Файлы уже установленных обновлений. Windows их больше не использует. Не запускай очистку, пока идёт установка обновлений.",
+                Id = "update_cache", Name = L.T("Кэш обновлений Windows", "Windows Update cache"), Admin = true,
+                Description = L.T("Файлы уже установленных обновлений. Windows их больше не использует. Не запускай очистку, пока идёт установка обновлений.", "Files of updates that are already installed. Windows no longer uses them. Don’t clean while updates are installing."),
                 Roots = () => new[] { Path.Combine(Win, "SoftwareDistribution", "Download") },
             },
             new DeliveryCache
             {
-                Id = "delivery_cache", Name = "Кэш раздачи обновлений", Admin = true,
-                Description = "Копии обновлений и приложений, которые Windows хранит, чтобы раздавать другим компьютерам.",
+                Id = "delivery_cache", Name = L.T("Кэш раздачи обновлений", "Delivery Optimization cache"), Admin = true,
+                Description = L.T("Копии обновлений и приложений, которые Windows хранит, чтобы раздавать другим компьютерам.", "Copies of updates and apps Windows keeps to share with other PCs."),
                 Roots = () => new[] { Path.Combine(Win, @"ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache") },
             },
             new CleanItem
             {
-                Id = "error_reports", Name = "Отчёты об ошибках и дампы памяти", Admin = true,
-                Description = "Отчёты о вылетах программ и дампы после «синих экранов». Нужны только для диагностики, а занимать могут гигабайты.",
+                Id = "error_reports", Name = L.T("Отчёты об ошибках и дампы памяти", "Error reports and memory dumps"), Admin = true,
+                Description = L.T("Отчёты о вылетах программ и дампы после «синих экранов». Нужны только для диагностики, а занимать могут гигабайты.", "App crash reports and dumps from blue screens. Only useful for diagnostics, yet they can take gigabytes."),
                 Roots = () => new[] { "ReportArchive", "ReportQueue", "Temp" }.Select(d => Path.Combine(ProgramData, @"Microsoft\Windows\WER", d))
                     .Concat(new[] { Path.Combine(Win, "Minidump"), Path.Combine(Win, "MEMORY.DMP") }),
             },
             new CleanItem
             {
-                Id = "driver_installers", Name = "Старые установщики драйверов видеокарты", Admin = true,
-                Description = "После установки драйвера NVIDIA и AMD оставляют распакованный установщик — часто несколько гигабайт. Сам драйвер он не трогает: удаляются только файлы установки.",
+                Id = "driver_installers", Name = L.T("Старые установщики драйверов видеокарты", "Old GPU driver installers"), Admin = true,
+                Description = L.T("После установки драйвера NVIDIA и AMD оставляют распакованный установщик — часто несколько гигабайт. Сам драйвер он не трогает: удаляются только файлы установки.", "After installing a driver, NVIDIA and AMD leave the unpacked installer behind, often several gigabytes. The driver itself isn’t touched: only the setup files are deleted."),
                 Roots = () => new[] { Path.Combine(SysDrive, "NVIDIA"), Path.Combine(SysDrive, "AMD"), Path.Combine(ProgramData, @"NVIDIA Corporation\Downloader") },
             },
             new CleanItem
             {
-                Id = "shader_cache", Name = "Кэш шейдеров видеокарты", DefaultOn = false,
-                Description = "Видеокарта сохраняет сюда скомпилированные эффекты игр, чтобы не собирать их заново. Чисти, только если после обновления драйвера появились артефакты или статтеры: первые запуски игр после очистки будут подтормаживать, пока кэш соберётся снова.",
+                Id = "shader_cache", Name = L.T("Кэш шейдеров видеокарты", "GPU shader cache"), DefaultOn = false,
+                Description = L.T("Видеокарта сохраняет сюда скомпилированные эффекты игр, чтобы не собирать их заново. Чисти, только если после обновления драйвера появились артефакты или статтеры: первые запуски игр после очистки будут подтормаживать, пока кэш соберётся снова.", "The GPU stores compiled game effects here so it doesn’t rebuild them. Clean it only if artifacts or stutter appeared after a driver update: the first launches after cleaning will hitch until the cache rebuilds."),
                 Roots = () => new[] { @"NVIDIA\DXCache", @"NVIDIA\GLCache", "D3DSCache", @"AMD\DxCache", @"AMD\DxcCache", @"AMD\VkCache", @"AMD\GLCache" }
                     .Select(d => Path.Combine(Local, d)).Concat(new[] { Path.Combine(Local, @"Temp\NVIDIA Corporation\NV_Cache") }),
             },
             new RecycleBin
             {
-                Id = "recycle_bin", Name = "Корзина", DefaultOn = false,
-                Description = "Файлы, удалённые в корзину, на всех дисках. После очистки их уже не вернуть.",
+                Id = "recycle_bin", Name = L.T("Корзина", "Recycle Bin"), DefaultOn = false,
+                Description = L.T("Файлы, удалённые в корзину, на всех дисках. После очистки их уже не вернуть.", "Files in the Recycle Bin on all drives. Once emptied, they can’t be recovered."),
                 Roots = () => Enumerable.Empty<string>(),
             },
         };
@@ -244,10 +244,10 @@ namespace WinOpti.Cleanup
         public static string Format(long bytes)
         {
             double n = bytes;
-            if (n < 1024) return $"{n:0} Б";
-            n /= 1024; if (n < 1024) return $"{n:0} КБ";
-            n /= 1024; if (n < 1024) return $"{n:0.#} МБ";
-            return $"{n / 1024:0.##} ГБ";
+            if (n < 1024) return L.T($"{n:0} Б", $"{n:0} B");
+            n /= 1024; if (n < 1024) return L.T($"{n:0} КБ", $"{n:0} KB");
+            n /= 1024; if (n < 1024) return L.T($"{n:0.#} МБ", $"{n:0.#} MB");
+            return L.T($"{n / 1024:0.##} ГБ", $"{n / 1024:0.##} GB");
         }
     }
 }

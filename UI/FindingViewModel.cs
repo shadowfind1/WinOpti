@@ -51,12 +51,12 @@ namespace WinOpti.UI
         };
 
         static SolidColorBrush B(string hex) { var b = (SolidColorBrush)new BrushConverter().ConvertFrom(hex); b.Freeze(); return b; }
-        static readonly SolidColorBrush red = B("#FF5D6C"), orange = B("#FFB547"), blue = B("#6EA8FE"), green = B("#3ECF8E");
-        static readonly SolidColorBrush redSoft = B("#2A1519"), orangeSoft = B("#2A2112"), blueSoft = B("#131C2E"), greenSoft = B("#10231A");
+        static readonly SolidColorBrush red = B("#FF5D6C"), orange = B("#FFB347"), blue = B("#8FA8FF"), green = B("#4ADE80");
+        static readonly SolidColorBrush redSoft = B("#2A121A"), orangeSoft = B("#2A1F10"), blueSoft = B("#131C2E"), greenSoft = B("#0E2419");
 
         public Brush Tint => F.Severity switch { Severity.Critical => red, Severity.Warn => orange, Severity.Info => blue, _ => green };
         public Brush TintSoft => F.Severity switch { Severity.Critical => redSoft, Severity.Warn => orangeSoft, Severity.Info => blueSoft, _ => greenSoft };
-        public string SeverityText => F.Severity switch { Severity.Critical => "Важно", Severity.Warn => "Стоит исправить", Severity.Info => "Совет", _ => "В порядке" };
+        public string SeverityText => F.Severity switch { Severity.Critical => L.T("Важно", "Important"), Severity.Warn => L.T("Стоит исправить", "Worth fixing"), Severity.Info => L.T("Совет", "Tip"), _ => L.T("В порядке", "All good") };
 
         bool _busy, _done, _guideOpen;
         string _result;
@@ -67,11 +67,11 @@ namespace WinOpti.UI
         public bool Busy { get => _busy; private set { _busy = value; Changed(); Changed(nameof(CanFix)); } }
         public bool Done { get => _done; private set { _done = value; Changed(); Changed(nameof(CanFix)); Changed(nameof(ShowGuideButton)); } }
         public bool GuideOpen { get => _guideOpen; set { _guideOpen = value; Changed(); Changed(nameof(GuideButtonText)); } }
-        public string GuideButtonText => _guideOpen ? "Скрыть" : (F.Fix == null ? "Как исправить" : "Подробнее");
+        public string GuideButtonText => _guideOpen ? L.T("Скрыть", "Hide") : (F.Fix == null ? L.T("Как исправить", "How to fix") : L.T("Подробнее", "Details"));
         public string Result { get => _result; private set { _result = value; Changed(); Changed(nameof(HasResult)); } }
         public bool HasResult => !string.IsNullOrEmpty(_result);
         public Brush ResultBrush => _error ? red : green;
-        public string NeedsRebootText => F.FixNeedsReboot ? "нужна перезагрузка" : null;
+        public string NeedsRebootText => F.FixNeedsReboot ? L.T("нужна перезагрузка", "restart needed") : null;
         public bool NeedsReboot => F.FixNeedsReboot && !_done;
 
         public ICommand FixCommand { get; }
@@ -83,7 +83,7 @@ namespace WinOpti.UI
             if (F.FixNeedsAdmin && !SysInfo.IsAdmin)
             {
                 _error = true;
-                Result = "Нужны права администратора: запусти WinOpti от имени администратора.";
+                Result = L.T("Нужны права администратора: запусти WinOpti от имени администратора.", "Administrator rights needed: run WinOpti as administrator.");
                 Changed(nameof(ResultBrush));
                 return;
             }
@@ -100,7 +100,7 @@ namespace WinOpti.UI
             {
                 _error = true;
                 Result = e is UnauthorizedAccessException || e is System.Security.SecurityException
-                    ? "Windows не дала изменить настройку: нужны права администратора."
+                    ? L.T("Windows не дала изменить настройку: нужны права администратора.", "Windows blocked the change: administrator rights needed.")
                     : e.Message;
             }
             finally

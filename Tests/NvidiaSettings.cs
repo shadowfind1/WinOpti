@@ -109,7 +109,7 @@ namespace WinOpti.Tests
         public void Save()
         {
             int rc = Fn<SessionFn>(0xFCBC7E14)(_session);
-            if (rc != 0) throw new InvalidOperationException("NVAPI SaveSettings: " + rc + (rc == -137 ? " (нужны права администратора)" : ""));
+            if (rc != 0) throw new InvalidOperationException("NVAPI SaveSettings: " + rc + (rc == -137 ? L.T(" (нужны права администратора)", " (administrator rights needed)") : ""));
         }
 
         public void Dispose()

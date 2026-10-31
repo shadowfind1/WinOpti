@@ -125,7 +125,7 @@ namespace WinOpti.Tweaks
                 }
                 return null;
             }
-            catch (Exception e) { return "журнал не записан: " + e.Message; }
+            catch (Exception e) { return L.T("журнал не записан: ", "journal not written: ") + e.Message; }
         }
 
         /// <summary>Журнал WinOpti (общий с версией 1), новые сверху.</summary>
@@ -160,12 +160,12 @@ namespace WinOpti.Tweaks
         {
             if (_restoreChecked) return null;
             _restoreChecked = true;
-            if (!ProtectionOn) return "точка восстановления не создана: защита системы выключена";
+            if (!ProtectionOn) return L.T("точка восстановления не создана: защита системы выключена", "restore point not created: System Protection is off");
             var (code, newest) = SysInfo.Run("powershell", "-NoProfile -Command \"$p = Get-ComputerRestorePoint | Sort-Object SequenceNumber | Select-Object -Last 1; if ($p) { $p.ConvertToDateTime($p.CreationTime).ToString('o') }\"");
             if (code == 0 && DateTime.TryParse(newest.Trim(), null, DateTimeStyles.RoundtripKind, out var when) && DateTime.Now - when < TimeSpan.FromHours(24))
                 return null;
             var err = CreateRestorePoint("WinOpti");
-            return err == null ? null : "точка восстановления не создана: " + err;
+            return err == null ? null : L.T("точка восстановления не создана: ", "restore point not created: ") + err;
         }
 
         /// <summary>Включена ли защита системы (без неё Windows точки не создаёт).</summary>

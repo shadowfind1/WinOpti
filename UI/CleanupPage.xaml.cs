@@ -76,14 +76,14 @@ namespace WinOpti.UI
             if (!_showResult)
             {
                 Total.Text = "…";
-                Summary.Text = "Считаем, сколько места занято…";
+                Summary.Text = L.T("Считаем, сколько места занято…", "Measuring how much space is used…");
             }
             foreach (var vm in _items) vm.SizeValue = null;
             // каждый пункт считается в фоне отдельно: окно не ждёт самый медленный
             await Task.WhenAll(_items.Select(async vm =>
             {
                 try { vm.SizeValue = await Task.Run(() => vm.Item.Scan()); }
-                catch (Exception e) { vm.SizeValue = -1; if (vm.CanSelect) { vm.Error = true; vm.Result = "Не удалось посчитать: " + e.Message; } }
+                catch (Exception e) { vm.SizeValue = -1; if (vm.CanSelect) { vm.Error = true; vm.Result = L.T("Не удалось посчитать: ", "Couldn’t measure: ") + e.Message; } }
             }));
             _busy = false;
             RescanButton.IsEnabled = true;
@@ -97,9 +97,9 @@ namespace WinOpti.UI
             long chosen = _items.Where(i => i.Checked && i.CanSelect).Sum(i => Math.Max(0, i.Size));
             CleanButton.IsEnabled = chosen > 0;
             if (_showResult) return;
-            TotalCaption.Text = "Выбрано к очистке";
+            TotalCaption.Text = L.T("Выбрано к очистке", "Selected for cleanup");
             Total.Text = Cleaner.Format(chosen);
-            Summary.Text = $"Всего можно освободить {Cleaner.Format(all)}" + (_items.Any(i => !i.CanSelect) ? " (без пунктов, которым нужны права администратора)" : "");
+            Summary.Text = L.T($"Всего можно освободить {Cleaner.Format(all)}", $"You can free {Cleaner.Format(all)} in total") + (_items.Any(i => !i.CanSelect) ? L.T(" (без пунктов, которым нужны права администратора)", " (not counting items that need administrator rights)") : "");
         }
 
         void HideResult()
@@ -124,13 +124,13 @@ namespace WinOpti.UI
             HideResult();
             _busy = true;
             CleanButton.IsEnabled = RescanButton.IsEnabled = false;
-            CleanText.Text = "Чищу…";
+            CleanText.Text = L.T("Чищу…", "Cleaning…");
             long total = 0, target = chosen.Sum(i => i.Size);
             CleanViewModel current = null;
             int step = 0;
             double shown = 0; // число в шапке догоняет реальное плавно: даже секундная очистка видна как отсчёт
 
-            TotalCaption.Text = "Освобождено";
+            TotalCaption.Text = L.T("Освобождено", "Freed");
             Total.Text = Cleaner.Format(0);
             FillScale.ScaleX = 0;
             Fill.Background = (Brush)FindResource("Accent");
@@ -149,8 +149,8 @@ namespace WinOpti.UI
                 Total.Text = Cleaner.Format((long)shown);
                 if (cur != null)
                 {
-                    Summary.Text = $"Чищу «{cur.Name}» — {step} из {chosen.Count}";
-                    if (now > 0) cur.Result = $"Чищу… {Cleaner.Format(now)} из {Cleaner.Format(cur.Size)}";
+                    Summary.Text = L.T($"Чищу «{cur.Name}» — {step} из {chosen.Count}", $"Cleaning “{cur.Name}”, {step} of {chosen.Count}");
+                    if (now > 0) cur.Result = L.T($"Чищу… {Cleaner.Format(now)} из {Cleaner.Format(cur.Size)}", $"Cleaning… {Cleaner.Format(now)} of {Cleaner.Format(cur.Size)}");
                 }
                 FillScale.ScaleX = Math.Min(1, target > 0 ? shown / target : 0);
             };
@@ -162,39 +162,39 @@ namespace WinOpti.UI
                 current = vm;
                 step++;
                 vm.Item.Done = 0;
-                vm.Result = "Чищу…";
+                vm.Result = L.T("Чищу…", "Cleaning…");
                 vm.Error = false;
                 try
                 {
                     long freed = await Task.Run(() => vm.Item.Clean());
                     total += freed;
                     long left = Math.Max(0, vm.Size - freed);
-                    vm.Result = $"Освобождено {Cleaner.Format(freed)}" + (left > 1024 * 1024 ? $". {Cleaner.Format(left)} заняты программами — останутся до следующей очистки." : ".")
+                    vm.Result = L.T($"Освобождено {Cleaner.Format(freed)}", $"Freed {Cleaner.Format(freed)}") + (left > 1024 * 1024 ? L.T($". {Cleaner.Format(left)} заняты программами — останутся до следующей очистки.", $". {Cleaner.Format(left)} is in use by apps and stays until the next cleanup.") : ".")
                                 + (vm.Item.Warning != null ? " " + vm.Item.Warning : "");
                 }
                 catch (Exception ex)
                 {
                     App.Log(ex);
                     vm.Error = true;
-                    vm.Result = "Ошибка: " + ex.Message;
+                    vm.Result = L.T("Ошибка: ", "Error: ") + ex.Message;
                 }
             }
             current = null;
-            Summary.Text = "Почти готово…";
+            Summary.Text = L.T("Почти готово…", "Almost done…");
             // даём отсчёту дойти до конца и не обрываем анимацию раньше полутора секунд
             while (shown < total || DateTime.UtcNow - started < TimeSpan.FromSeconds(1.5)) await Task.Delay(50);
             timer.Stop();
 
             Spin.BeginAnimation(RotateTransform.AngleProperty, null);
             CleanIcon.Text = "";
-            CleanText.Text = "Очистить выбранное";
+            CleanText.Text = L.T("Очистить выбранное", "Clean selected");
             FillScale.ScaleX = 1;
             Fill.Background = (Brush)FindResource("Green");
             Total.Foreground = (Brush)FindResource("Green");
             Total.Text = Cleaner.Format(total);
-            TotalCaption.Text = total > 0 ? "Готово! Освобождено" : "Готово";
+            TotalCaption.Text = total > 0 ? L.T("Готово! Освобождено", "Done! Freed") : L.T("Готово", "Done");
             Summary.Text = FreeSpaceText();
-            if (total > 0) TweakEngine.LogEntry("cleanup", $"Очистка диска: освобождено {Cleaner.Format(total)}", "clean");
+            if (total > 0) TweakEngine.LogEntry("cleanup", L.T($"Очистка диска: освобождено {Cleaner.Format(total)}", $"Disk cleanup: freed {Cleaner.Format(total)}"), "clean");
             _showResult = true;
             _busy = false;
             await ScanAsync(); // размеры в списке обновятся, итог в шапке останется
@@ -205,9 +205,9 @@ namespace WinOpti.UI
             try
             {
                 var d = new System.IO.DriveInfo(System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.Windows)));
-                return $"Свободно на диске {d.Name.TrimEnd('\\')} {Cleaner.Format(d.AvailableFreeSpace)}";
+                return L.T($"Свободно на диске {d.Name.TrimEnd('\\')} {Cleaner.Format(d.AvailableFreeSpace)}", $"{Cleaner.Format(d.AvailableFreeSpace)} free on {d.Name.TrimEnd('\\')}");
             }
-            catch { return "Очистка завершена"; }
+            catch { return L.T("Очистка завершена", "Cleanup finished"); }
         }
     }
 }

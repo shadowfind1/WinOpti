@@ -1,37 +1,37 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Палитра «Графит»: почти чёрный фон, один яркий акцент — салатовый, цифры моноширинным шрифтом.
+    <!-- Палитра «Арена»: тёмно-синий почти чёрный фон, один неоновый акцент — голубой, заголовки и цифры широким Unbounded.
          Никаких DropShadowEffect и прозрачных окон: это главные источники лагов в WPF. -->
-    <Color x:Key="BgColor">#08090B</Color>
-    <SolidColorBrush x:Key="Bg" Color="#08090B"/>
-    <SolidColorBrush x:Key="Sidebar" Color="#08090B"/>
-    <SolidColorBrush x:Key="Card" Color="#0F1114"/>
-    <SolidColorBrush x:Key="CardHover" Color="#14171B"/>
-    <SolidColorBrush x:Key="CardAlt" Color="#14171B"/>
-    <SolidColorBrush x:Key="Line" Color="#1A1D22"/>
-    <SolidColorBrush x:Key="Text" Color="#E8EAED"/>
-    <SolidColorBrush x:Key="Muted" Color="#8B9099"/>
-    <SolidColorBrush x:Key="Dim" Color="#6B717B"/>
-    <SolidColorBrush x:Key="Accent" Color="#C6FF3D"/>
-    <!-- текст и значки поверх акцента: салатовый светлый, поэтому на нём тёмное -->
-    <SolidColorBrush x:Key="OnAccent" Color="#08090B"/>
-    <SolidColorBrush x:Key="Green" Color="#3ECF8E"/>
-    <SolidColorBrush x:Key="Orange" Color="#FFB547"/>
+    <Color x:Key="BgColor">#06080F</Color>
+    <SolidColorBrush x:Key="Bg" Color="#06080F"/>
+    <SolidColorBrush x:Key="Sidebar" Color="#06080F"/>
+    <SolidColorBrush x:Key="Card" Color="#0C111C"/>
+    <SolidColorBrush x:Key="CardHover" Color="#121927"/>
+    <SolidColorBrush x:Key="CardAlt" Color="#121927"/>
+    <SolidColorBrush x:Key="Line" Color="#161D2B"/>
+    <SolidColorBrush x:Key="Text" Color="#EEF2FA"/>
+    <SolidColorBrush x:Key="Muted" Color="#8A93A6"/>
+    <SolidColorBrush x:Key="Dim" Color="#6B7486"/>
+    <SolidColorBrush x:Key="Accent" Color="#3BE8FF"/>
+    <!-- текст и значки поверх акцента: голубой светлый, поэтому на нём тёмное -->
+    <SolidColorBrush x:Key="OnAccent" Color="#06080F"/>
+    <SolidColorBrush x:Key="Green" Color="#4ADE80"/>
+    <SolidColorBrush x:Key="Orange" Color="#FFB347"/>
     <SolidColorBrush x:Key="Red" Color="#FF5D6C"/>
-    <SolidColorBrush x:Key="Blue" Color="#6EA8FE"/>
-    <SolidColorBrush x:Key="GreenSoft" Color="#10231A"/>
-    <SolidColorBrush x:Key="OrangeSoft" Color="#2A2112"/>
-    <SolidColorBrush x:Key="RedSoft" Color="#2A1519"/>
+    <SolidColorBrush x:Key="Blue" Color="#8FA8FF"/>
+    <SolidColorBrush x:Key="GreenSoft" Color="#0E2419"/>
+    <SolidColorBrush x:Key="OrangeSoft" Color="#2A1F10"/>
+    <SolidColorBrush x:Key="RedSoft" Color="#2A121A"/>
     <SolidColorBrush x:Key="BlueSoft" Color="#131C2E"/>
 
-    <!-- раньше был градиент; в «Графите» акцент сплошной, ключ оставлен для совместимости -->
-    <SolidColorBrush x:Key="AccentGradient" Color="#C6FF3D"/>
+    <!-- раньше был градиент; сейчас акцент сплошной, ключ оставлен для совместимости -->
+    <SolidColorBrush x:Key="AccentGradient" Color="#3BE8FF"/>
 
     <!-- шрифты зашиты в программу (Assets\Fonts, лицензия OFL): на любом ПК выглядят одинаково -->
-    <FontFamily x:Key="UiFont">pack://application:,,,/Assets/Fonts/#Inter Tight, Segoe UI</FontFamily>
-    <FontFamily x:Key="DisplayFont">pack://application:,,,/Assets/Fonts/#Inter Tight, Segoe UI</FontFamily>
-    <FontFamily x:Key="NumFont">pack://application:,,,/Assets/Fonts/#JetBrains Mono, Consolas</FontFamily>
+    <FontFamily x:Key="UiFont">pack://application:,,,/Assets/Fonts/#Onest, Segoe UI</FontFamily>
+    <FontFamily x:Key="DisplayFont">pack://application:,,,/Assets/Fonts/#Unbounded, Segoe UI</FontFamily>
+    <FontFamily x:Key="NumFont">pack://application:,,,/Assets/Fonts/#Unbounded, Segoe UI</FontFamily>
     <FontFamily x:Key="Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <Style TargetType="TextBlock">
@@ -54,9 +54,14 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <Border x:Name="bg" CornerRadius="8" Background="{StaticResource Accent}"/>
-                        <Border x:Name="hi" CornerRadius="8" Background="White" Opacity="0"/>
-                        <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="bg" CornerRadius="12" Background="{StaticResource Accent}"/>
+                        <Border x:Name="hi" CornerRadius="12" Background="White" Opacity="0"/>
+                        <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <!-- текст-строка в кнопке иначе берёт общий светлый стиль TextBlock и пропадает на лаймовом фоне -->
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource OnAccent}"/></Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -85,13 +90,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="bg" CornerRadius="8" Background="Transparent" BorderBrush="#2A2E35" BorderThickness="1">
+                    <Border x:Name="bg" CornerRadius="12" Background="Transparent" BorderBrush="#253047" BorderThickness="1">
                         <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="#14171B"/>
-                            <Setter TargetName="bg" Property="BorderBrush" Value="#3A3F47"/>
+                            <Setter TargetName="bg" Property="Background" Value="#121927"/>
+                            <Setter TargetName="bg" Property="BorderBrush" Value="#34405A"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="bg" Property="Opacity" Value="0.4"/>
@@ -123,7 +128,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="#1A1D22"/>
+                            <Setter TargetName="bg" Property="Background" Value="#161D2B"/>
                             <Setter Property="Foreground" Value="{StaticResource Text}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -149,33 +154,31 @@
         </Setter>
     </Style>
 
-    <!-- пункт меню слева -->
+    <!-- вкладка меню в шапке: выбранная залита акцентом -->
     <Style x:Key="NavItem" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{StaticResource Muted}"/>
         <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Height" Value="42"/>
-        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Margin" Value="0,0,4,0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Grid>
-                        <Border x:Name="bg" CornerRadius="8" Background="Transparent"/>
-                        <Border x:Name="bar" Width="2" Height="22" CornerRadius="1" HorizontalAlignment="Left"
-                                Background="{StaticResource Accent}" Opacity="0"/>
-                        <ContentPresenter Margin="14,0" VerticalAlignment="Center"/>
-                    </Grid>
+                    <Border x:Name="bg" CornerRadius="20" Background="Transparent" Padding="15,0">
+                        <!-- текст напрямую, а не ContentPresenter: иначе берёт общий светлый стиль TextBlock и пропадает на голубой вкладке -->
+                        <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center"/>
+                    </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="#101215"/>
+                            <Setter TargetName="bg" Property="Background" Value="#121927"/>
                             <Setter Property="Foreground" Value="{StaticResource Text}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="#14171B"/>
-                            <Setter TargetName="bar" Property="Opacity" Value="1"/>
-                            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+                            <Setter TargetName="bg" Property="Background" Value="{StaticResource Accent}"/>
+                            <Setter Property="Foreground" Value="{StaticResource OnAccent}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -194,7 +197,7 @@
                             <Thumb>
                                 <Thumb.Template>
                                     <ControlTemplate TargetType="Thumb">
-                                        <Border CornerRadius="4" Background="#23272D" Margin="1,0"/>
+                                        <Border CornerRadius="4" Background="#222B3D" Margin="1,0"/>
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -216,7 +219,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="bg" CornerRadius="6" Padding="14,7" Background="Transparent">
+                    <Border x:Name="bg" CornerRadius="14" Padding="14,7" Background="Transparent">
                         <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -224,7 +227,7 @@
                             <Setter Property="Foreground" Value="{StaticResource Text}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="bg" Property="Background" Value="#1C2026"/>
+                            <Setter TargetName="bg" Property="Background" Value="#1A2233"/>
                             <Setter Property="Foreground" Value="{StaticResource Text}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -241,9 +244,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Grid Width="46" Height="26" Background="Transparent">
-                        <Border x:Name="track" CornerRadius="13" Background="#23272D"/>
+                        <Border x:Name="track" CornerRadius="13" Background="#222B3D"/>
                         <Border x:Name="on" CornerRadius="13" Background="{StaticResource Accent}" Opacity="0"/>
-                        <Ellipse x:Name="knob" Width="18" Height="18" Fill="#E8EAED" HorizontalAlignment="Left" Margin="4,0,0,0">
+                        <Ellipse x:Name="knob" Width="18" Height="18" Fill="#EEF2FA" HorizontalAlignment="Left" Margin="4,0,0,0">
                             <Ellipse.RenderTransform>
                                 <TranslateTransform x:Name="shift" X="0"/>
                             </Ellipse.RenderTransform>
@@ -273,7 +276,7 @@
                             </DataTrigger.ExitActions>
                         </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="track" Property="Background" Value="#2E333B"/>
+                            <Setter TargetName="track" Property="Background" Value="#2C3850"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4"/>
@@ -292,7 +295,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
                     <Grid Width="22" Height="22" Background="Transparent">
-                        <Border x:Name="box" CornerRadius="5" BorderThickness="1.5" BorderBrush="#3A3F47" Background="Transparent"/>
+                        <Border x:Name="box" CornerRadius="5" BorderThickness="1.5" BorderBrush="#34405A" Background="Transparent"/>
                         <Border x:Name="fill" CornerRadius="5" Background="{StaticResource Accent}" Opacity="0"/>
                         <TextBlock x:Name="mark" Text="&#xE73E;" FontFamily="{StaticResource Icons}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource OnAccent}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0"/>
@@ -304,7 +307,7 @@
                             <Setter TargetName="box" Property="BorderBrush" Value="Transparent"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="box" Property="BorderBrush" Value="#5C616B"/>
+                            <Setter TargetName="box" Property="BorderBrush" Value="#56627A"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.35"/>
@@ -324,10 +327,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="bg" CornerRadius="8" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="12,0">
+                    <Border x:Name="bg" CornerRadius="12" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}" BorderThickness="1" Padding="12,0">
                         <Grid>
                             <TextBlock Text="&#xE721;" FontFamily="{StaticResource Icons}" FontSize="13" Foreground="{StaticResource Dim}" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="hint" Text="Поиск твиков" Foreground="{StaticResource Dim}" Margin="24,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="hint" Text="{TemplateBinding Tag}" Foreground="{StaticResource Dim}" Margin="24,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
                             <ScrollViewer x:Name="PART_ContentHost" Margin="22,0,0,0" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
@@ -336,7 +339,7 @@
                             <Setter TargetName="hint" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="bg" Property="BorderBrush" Value="#6E8F22"/>
+                            <Setter TargetName="bg" Property="BorderBrush" Value="#1E8FA0"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

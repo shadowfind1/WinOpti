@@ -54,58 +54,58 @@ namespace WinOpti.Fps
             void Add(Known k, params string[] names) { foreach (var n in names) d[n] = k; }
             Add(new Known
             {
-                Title = "Защитник Windows", Defender = true, NoClose = true,
-                Advice = "Проверял файлы, которые читала игра. Можно добавить папку игры в исключения: Защитник перестанет сканировать её файлы, а остальной компьютер будет защищать как раньше.",
+                Title = L.T("Защитник Windows", "Windows Defender"), Defender = true, NoClose = true,
+                Advice = L.T("Проверял файлы, которые читала игра. Можно добавить папку игры в исключения: Защитник перестанет сканировать её файлы, а остальной компьютер будет защищать как раньше.", "Scanned the files the game was reading. You can add the game folder to exclusions: Defender stops scanning its files and keeps protecting the rest of the PC as before."),
             }, "MsMpEng", "MpDefenderCoreService", "NisSrv", "MpCmdRun");
             Add(new Known
             {
-                Title = "Обновление Windows", NoClose = true, Open = "ms-settings:windowsupdate", OpenText = "Открыть Центр обновления",
-                Advice = "Скачивало или устанавливало обновления прямо во время игры. Дай ему закончить до игры или поставь обновления на паузу в Центре обновления.",
+                Title = L.T("Обновление Windows", "Windows Update"), NoClose = true, Open = "ms-settings:windowsupdate", OpenText = L.T("Открыть Центр обновления", "Open Windows Update"),
+                Advice = L.T("Скачивало или устанавливало обновления прямо во время игры. Дай ему закончить до игры или поставь обновления на паузу в Центре обновления.", "Was downloading or installing updates during your game. Let it finish before playing, or pause updates in Windows Update."),
             }, "TiWorker", "TrustedInstaller", "MoUsoCoreWorker", "usocoreworker", "wuauclt", "UsoClient", "SIHClient", "WaaSMedicAgent", "mrt");
             Add(new Known
             {
-                Title = "Индексация поиска", NoClose = true, Tweak = "disable_search_indexing",
-                Advice = "Windows перебирала файлы, чтобы поиск работал быстрее. Если пользуешься поиском редко, индексацию можно выключить.",
+                Title = L.T("Индексация поиска", "Search indexing"), NoClose = true, Tweak = "disable_search_indexing",
+                Advice = L.T("Windows перебирала файлы, чтобы поиск работал быстрее. Если пользуешься поиском редко, индексацию можно выключить.", "Windows was going through files to speed up search. If you rarely use search, indexing can be turned off."),
             }, "SearchIndexer", "SearchProtocolHost", "SearchFilterHost");
             Add(new Known
             {
-                Title = "Телеметрия Windows", NoClose = true, Tweak = "disable_telemetry_tasks",
-                Advice = "Windows собирала сведения о компьютере для Microsoft. Для работы ПК это не нужно.",
+                Title = L.T("Телеметрия Windows", "Windows telemetry"), NoClose = true, Tweak = "disable_telemetry_tasks",
+                Advice = L.T("Windows собирала сведения о компьютере для Microsoft. Для работы ПК это не нужно.", "Windows was collecting data about your PC for Microsoft. Your PC doesn’t need it to work."),
             }, "CompatTelRunner", "DeviceCensus");
             Add(new Known
             {
-                Title = "Отчёты об ошибках Windows", NoClose = true, Tweak = "disable_error_reporting",
-                Advice = "Windows собирала отчёт о сбое какой-то программы и отправляла его в Microsoft.",
+                Title = L.T("Отчёты об ошибках Windows", "Windows Error Reporting"), NoClose = true, Tweak = "disable_error_reporting",
+                Advice = L.T("Windows собирала отчёт о сбое какой-то программы и отправляла его в Microsoft.", "Windows was building a crash report for some app and sending it to Microsoft."),
             }, "WerFault", "wermgr");
             Add(new Known
             {
-                Title = "Xbox Game Bar и запись игр", Tweak = "disable_game_dvr",
-                Advice = "Фоновая запись последних минут игры. Если не сохраняешь моменты через Win+Alt+G, она не нужна.",
+                Title = L.T("Xbox Game Bar и запись игр", "Xbox Game Bar and game recording"), Tweak = "disable_game_dvr",
+                Advice = L.T("Фоновая запись последних минут игры. Если не сохраняешь моменты через Win+Alt+G, она не нужна.", "Background recording of the last minutes of play. If you don’t save clips with Win+Alt+G, you don’t need it."),
             }, "GameBar", "GameBarFTServer", "bcastdvr");
             Add(new Known
             {
                 Title = "Microsoft Edge", Tweak = "disable_edge_background",
-                Advice = "Edge работал в фоне, даже если его окна закрыты.",
+                Advice = L.T("Edge работал в фоне, даже если его окна закрыты.", "Edge was running in the background even with its windows closed."),
             }, "msedge");
             Add(new Known
             {
-                Title = "Сжатие памяти", NoClose = true,
-                Advice = "Windows сжимала оперативную память — значит, её не хватало. Закрывай браузер перед игрой; если такое постоянно, стоит добавить памяти.",
+                Title = L.T("Сжатие памяти", "Memory compression"), NoClose = true,
+                Advice = L.T("Windows сжимала оперативную память — значит, её не хватало. Закрывай браузер перед игрой; если такое постоянно, стоит добавить памяти.", "Windows was compressing RAM, which means it was running short. Close the browser before playing; if it happens all the time, add more RAM."),
             }, "Memory Compression");
             Add(new Known
             {
-                Title = "Драйверы и ядро Windows", NoClose = true,
-                Advice = "Процессор занимали драйверы. Чаще всего это драйвер сети, звука или устаревший драйвер видеокарты — обнови их с сайта производителя.",
+                Title = L.T("Драйверы и ядро Windows", "Drivers and Windows kernel"), NoClose = true,
+                Advice = L.T("Процессор занимали драйверы. Чаще всего это драйвер сети, звука или устаревший драйвер видеокарты — обнови их с сайта производителя.", "Drivers were using the CPU. Most often it’s the network, audio or an outdated GPU driver: update them from the maker’s site."),
             }, "System");
-            Add(new Known { Title = "Google Chrome", Advice = "Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто." }, "chrome");
-            Add(new Known { Title = "Яндекс Браузер", Advice = "Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто." }, "browser");
-            Add(new Known { Title = "Opera", Advice = "Вкладки браузера тратят процессор и видеокарту, даже когда окно свёрнуто." }, "opera");
-            Add(new Known { Title = "Firefox", Advice = "Вкладки браузера тратят процессор и видеокарту, даже когда окно свёрнуто." }, "firefox");
-            Add(new Known { Title = "Discord", Advice = "Оверлей и аппаратное ускорение Discord нагружают систему. В настройках Discord можно выключить оверлей в игре." }, "Discord");
-            Add(new Known { Title = "OBS", Advice = "Запись или стрим. Если ничего не записывал, закрой OBS перед игрой." }, "obs64");
-            Add(new Known { Title = "Steam (магазин и чат)", Advice = "Встроенный браузер Steam: окна магазина, библиотеки и чата. Сверни Steam в трей, а не держи открытым." }, "steamwebhelper");
-            Add(new Known { Title = "Живые обои", Advice = "Анимированные обои рисуются постоянно и отнимают видеокарту у игры." }, "wallpaper32", "wallpaper64", "Lively", "livelywpf");
-            Add(new Known { Title = "OneDrive", Advice = "Синхронизировал файлы во время игры." }, "OneDrive");
+            Add(new Known { Title = "Google Chrome", Advice = L.T("Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто.", "Browser tabs (especially video and streams) use CPU and GPU even when the window is minimized.") }, "chrome");
+            Add(new Known { Title = L.T("Яндекс Браузер", "Yandex Browser"), Advice = L.T("Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто.", "Browser tabs (especially video and streams) use CPU and GPU even when the window is minimized.") }, "browser");
+            Add(new Known { Title = "Opera", Advice = L.T("Вкладки браузера тратят процессор и видеокарту, даже когда окно свёрнуто.", "Browser tabs use CPU and GPU even when the window is minimized.") }, "opera");
+            Add(new Known { Title = "Firefox", Advice = L.T("Вкладки браузера тратят процессор и видеокарту, даже когда окно свёрнуто.", "Browser tabs use CPU and GPU even when the window is minimized.") }, "firefox");
+            Add(new Known { Title = "Discord", Advice = L.T("Оверлей и аппаратное ускорение Discord нагружают систему. В настройках Discord можно выключить оверлей в игре.", "Discord’s overlay and hardware acceleration load the system. You can turn off the in-game overlay in Discord settings.") }, "Discord");
+            Add(new Known { Title = "OBS", Advice = L.T("Запись или стрим. Если ничего не записывал, закрой OBS перед игрой.", "Recording or streaming. If you weren’t recording, close OBS before playing.") }, "obs64");
+            Add(new Known { Title = L.T("Steam (магазин и чат)", "Steam (store and chat)"), Advice = L.T("Встроенный браузер Steam: окна магазина, библиотеки и чата. Сверни Steam в трей, а не держи открытым.", "Steam’s built-in browser: the store, library and chat windows. Minimize Steam to the tray instead of keeping it open.") }, "steamwebhelper");
+            Add(new Known { Title = L.T("Живые обои", "Live wallpaper"), Advice = L.T("Анимированные обои рисуются постоянно и отнимают видеокарту у игры.", "Animated wallpaper renders all the time and takes GPU away from the game.") }, "wallpaper32", "wallpaper64", "Lively", "livelywpf");
+            Add(new Known { Title = "OneDrive", Advice = L.T("Синхронизировал файлы во время игры.", "Was syncing files during your game.") }, "OneDrive");
             return d;
         }
 
@@ -200,40 +200,40 @@ namespace WinOpti.Fps
                 if (thermal >= 2 || (maxT >= 85 && drop >= 10))
                     found.Add(new Thief
                     {
-                        Process = "hw:gpu-heat", Title = "Видеокарта перегревалась и сбрасывала частоту",
-                        Detail = $"До {maxT}°, частота падала с {peak:0} до {low:0} МГц (−{drop:0}%), впервые на {FirstAt(s => hot(s) || s.GpuSensors.Value.TempC >= 85):0}-й секунде",
+                        Process = "hw:gpu-heat", Title = L.T("Видеокарта перегревалась и сбрасывала частоту", "The GPU overheated and dropped its clock"),
+                        Detail = L.T($"До {maxT}°, частота падала с {peak:0} до {low:0} МГц (−{drop:0}%), впервые на {FirstAt(s => hot(s) || s.GpuSensors.Value.TempC >= 85):0}-й секунде", $"Up to {maxT}°, clock fell from {peak:0} to {low:0} MHz (−{drop:0}%), first at second {FirstAt(s => hot(s) || s.GpuSensors.Value.TempC >= 85):0}"),
                         StutterHits = HitsWhere(hot),
-                        Advice = "Почисти видеокарту и корпус от пыли, проверь, что корпусные вентиляторы выдувают горячий воздух, или подними обороты вентиляторов видеокарты (MSI Afterburner). Нормально в игре — до 80–83°.",
+                        Advice = L.T("Почисти видеокарту и корпус от пыли, проверь, что корпусные вентиляторы выдувают горячий воздух, или подними обороты вентиляторов видеокарты (MSI Afterburner). Нормально в игре — до 80–83°.", "Clean the dust out of the GPU and case, make sure the case fans exhaust hot air, or raise the GPU fan speed (MSI Afterburner). Up to 80–83° is normal in games."),
                     });
                 else if (maxT >= 83)
                     found.Add(new Thief
                     {
-                        Process = "hw:gpu-warm", Title = "Видеокарта на грани перегрева",
-                        Detail = $"До {maxT}° — частоту пока не сбрасывала, но запаса почти нет",
-                        Advice = "Летом или в более тяжёлой игре начнутся сбросы частоты. Стоит почистить от пыли и проверить продув корпуса.",
+                        Process = "hw:gpu-warm", Title = L.T("Видеокарта на грани перегрева", "The GPU is close to overheating"),
+                        Detail = L.T($"До {maxT}° — частоту пока не сбрасывала, но запаса почти нет", $"Up to {maxT}°: no clock drops yet, but almost no headroom"),
+                        Advice = L.T("Летом или в более тяжёлой игре начнутся сбросы частоты. Стоит почистить от пыли и проверить продув корпуса.", "In summer or a heavier game it will start dropping clocks. Clean out the dust and check case airflow."),
                     });
 
                 Func<LoadSample, bool> weak = s => (s.GpuSensors.Value.Reasons & Tests.NvidiaSettings.Throttle.InsufficientPower) != 0;
                 if (gpu.Any(weak))
                     found.Add(new Thief
                     {
-                        Process = "hw:gpu-power", Title = "Видеокарте не хватало питания",
-                        Detail = "Драйвер сообщил о недостаточном питании", StutterHits = HitsWhere(weak),
-                        Advice = "Проверь, что все разъёмы питания видеокарты подключены отдельными кабелями от блока питания (не одним кабелем-«раздвойкой»), и что мощности блока хватает.",
+                        Process = "hw:gpu-power", Title = L.T("Видеокарте не хватало питания", "The GPU was short on power"),
+                        Detail = L.T("Драйвер сообщил о недостаточном питании", "The driver reported insufficient power"), StutterHits = HitsWhere(weak),
+                        Advice = L.T("Проверь, что все разъёмы питания видеокарты подключены отдельными кабелями от блока питания (не одним кабелем-«раздвойкой»), и что мощности блока хватает.", "Make sure every GPU power connector has its own cable from the PSU (not one daisy-chained cable), and that the PSU is powerful enough."),
                     });
                 if (gpu.Any(s => (s.GpuSensors.Value.Reasons & Tests.NvidiaSettings.Throttle.Battery) != 0))
                     found.Add(new Thief
                     {
-                        Process = "hw:battery", Title = "Ноутбук играл от батареи",
-                        Detail = "От батареи видеокарта работает в урезанном режиме",
-                        Advice = "Подключи зарядку: от сети видеокарта ноутбука выдаёт в разы больше FPS.",
+                        Process = "hw:battery", Title = L.T("Ноутбук играл от батареи", "The laptop was on battery"),
+                        Detail = L.T("От батареи видеокарта работает в урезанном режиме", "On battery the GPU runs in a reduced mode"),
+                        Advice = L.T("Подключи зарядку: от сети видеокарта ноутбука выдаёт в разы больше FPS.", "Plug in the charger: a laptop GPU gives several times more FPS on mains power."),
                     });
                 if (!found.Any() && maxT > 0)
                     found.Add(new Thief
                     {
-                        Process = "hw:gpu-ok", Title = "Видеокарта в норме",
-                        Detail = $"До {maxT}°, частота держалась {low:0}–{peak:0} МГц",
-                        Advice = "Перегрева, сброса частоты и нехватки питания не было.",
+                        Process = "hw:gpu-ok", Title = L.T("Видеокарта в норме", "The GPU is fine"),
+                        Detail = L.T($"До {maxT}°, частота держалась {low:0}–{peak:0} МГц", $"Up to {maxT}°, clock held at {low:0}–{peak:0} MHz"),
+                        Advice = L.T("Перегрева, сброса частоты и нехватки питания не было.", "No overheating, clock drops or power shortage."),
                     });
             }
 
@@ -251,20 +251,20 @@ namespace WinOpti.Fps
                     try { laptop = SysInfo.IsLaptop; } catch { }
                     found.Add(new Thief
                     {
-                        Process = "hw:cpu-throttle", Title = "Процессор сбрасывал частоту под нагрузкой",
-                        Detail = $"Частота проседала до {bottom / top * 100:0}% от рабочей, впервые на {FirstAt(slow):0}-й секунде",
+                        Process = "hw:cpu-throttle", Title = L.T("Процессор сбрасывал частоту под нагрузкой", "The CPU dropped its clock under load"),
+                        Detail = L.T($"Частота проседала до {bottom / top * 100:0}% от рабочей, впервые на {FirstAt(slow):0}-й секунде", $"Clock sagged to {bottom / top * 100:0}% of normal, first at second {FirstAt(slow):0}"),
                         StutterHits = HitsWhere(slow),
                         Advice = laptop
-                            ? "У ноутбуков это обычно перегрев или режим экономии: играй от розетки, на подставке с хорошим продувом, и поставь режим «Максимальная производительность» в фирменной программе ноутбука."
-                            : "Обычно это перегрев (пыль, высохшая термопаста, слабый кулер) или ограничение питания в BIOS. Проверь, что кулер процессора крутится и не забит пылью.",
+                            ? L.T("У ноутбуков это обычно перегрев или режим экономии: играй от розетки, на подставке с хорошим продувом, и поставь режим «Максимальная производительность» в фирменной программе ноутбука.", "On laptops it’s usually heat or a power-saving mode: play plugged in, on a stand with good airflow, and pick the max performance mode in the laptop’s own control app.")
+                            : L.T("Обычно это перегрев (пыль, высохшая термопаста, слабый кулер) или ограничение питания в BIOS. Проверь, что кулер процессора крутится и не забит пылью.", "Usually it’s heat (dust, dried thermal paste, a weak cooler) or a BIOS power limit. Check that the CPU cooler spins and isn’t clogged with dust."),
                     });
                 }
                 else if (top > 0)
                     found.Add(new Thief
                     {
-                        Process = "hw:cpu-ok", Title = "Процессор держал частоту",
-                        Detail = $"Под нагрузкой — {top:0}% от базовой частоты" + (top > 102 ? " (работал турбо-режим)" : ""),
-                        Advice = "Перегрева и ограничения питания не было.",
+                        Process = "hw:cpu-ok", Title = L.T("Процессор держал частоту", "The CPU held its clock"),
+                        Detail = L.T($"Под нагрузкой — {top:0}% от базовой частоты", $"Under load: {top:0}% of base clock") + (top > 102 ? L.T(" (работал турбо-режим)", " (turbo was working)") : ""),
+                        Advice = L.T("Перегрева и ограничения питания не было.", "No overheating or power limits."),
                     });
             }
             return found;
@@ -293,9 +293,9 @@ namespace WinOpti.Fps
             if (paths.TryGetValue(game, out var gamePath) && SysInfo.IsHdd(gamePath) == true)
                 thieves.Insert(0, new Thief
                 {
-                    Process = "hw:hdd", Title = "Игра установлена на жёсткий диск (HDD)",
-                    Detail = "Диск " + Path.GetPathRoot(gamePath).TrimEnd('\\') + " — механический, он в 10–50 раз медленнее SSD",
-                    Advice = "Отсюда долгие загрузки и фризы, когда игра подгружает новые текстуры. Перенеси игру на SSD: Steam → игра → Свойства → Установленные файлы → Переместить папку установки.",
+                    Process = "hw:hdd", Title = L.T("Игра установлена на жёсткий диск (HDD)", "The game is installed on a hard drive (HDD)"),
+                    Detail = L.T("Диск ", "Drive ") + Path.GetPathRoot(gamePath).TrimEnd('\\') + L.T(" — механический, он в 10–50 раз медленнее SSD", " is mechanical, 10–50 times slower than an SSD"),
+                    Advice = L.T("Отсюда долгие загрузки и фризы, когда игра подгружает новые текстуры. Перенеси игру на SSD: Steam → игра → Свойства → Установленные файлы → Переместить папку установки.", "That means long loads and stutter when the game streams new textures. Move the game to an SSD: Steam → game → Properties → Installed Files → Move install folder."),
                 });
 
             foreach (var t in thieves.Where(x => !x.Hardware))
@@ -308,25 +308,25 @@ namespace WinOpti.Fps
                 if (k?.Tweak != null)
                 {
                     var tw = tweaks.FirstOrDefault(x => x.Id == k.Tweak);
-                    if (tw != null && tw.Supported && TweakEngine.GetState(tw) != TweakState.On) { t.Action = "tweak:" + tw.Id; t.ActionText = "Включить твик"; }
+                    if (tw != null && tw.Supported && TweakEngine.GetState(tw) != TweakState.On) { t.Action = "tweak:" + tw.Id; t.ActionText = L.T("Включить твик", "Enable tweak"); }
                 }
                 else if (k?.Defender == true)
                 {
                     paths.TryGetValue(game, out var gameExe);
                     var folder = GameFolder(gameExe);
-                    if (folder != null) { t.Action = "defender:" + folder; t.ActionText = "Добавить игру в исключения"; }
+                    if (folder != null) { t.Action = "defender:" + folder; t.ActionText = L.T("Добавить игру в исключения", "Add game to exclusions"); }
                 }
                 else if (k?.Open != null) { t.Action = "open:" + k.Open; t.ActionText = k.OpenText; }
 
                 if (t.Action == null && exe != null && startup != null)
                 {
                     var item = startup.FirstOrDefault(s => s.Enabled && s.Target.Equals(exe, StringComparison.OrdinalIgnoreCase));
-                    if (item != null) { t.Action = "startup:" + item.Id; t.ActionText = "Убрать из автозагрузки"; }
+                    if (item != null) { t.Action = "startup:" + item.Id; t.ActionText = L.T("Убрать из автозагрузки", "Remove from startup"); }
                 }
                 bool systemExe = exe == null || exe.StartsWith(win + "\\", StringComparison.OrdinalIgnoreCase);
-                if (t.Action == null && k?.NoClose != true && !systemExe) { t.Action = "close:" + t.Process; t.ActionText = "Закрыть"; }
+                if (t.Action == null && k?.NoClose != true && !systemExe) { t.Action = "close:" + t.Process; t.ActionText = L.T("Закрыть", "Close"); }
                 if (t.Advice == null)
-                    t.Advice = systemExe ? "Служебный процесс Windows." : "Программа работала в фоне во время игры. Если она не нужна, закрывай её перед игрой.";
+                    t.Advice = systemExe ? L.T("Служебный процесс Windows.", "A Windows system process.") : L.T("Программа работала в фоне во время игры. Если она не нужна, закрывай её перед игрой.", "This app ran in the background during your game. If you don’t need it, close it before playing.");
             }
         }
 
@@ -371,21 +371,21 @@ namespace WinOpti.Fps
                     var tw = Tweak.LoadAll().First(x => x.Id == arg);
                     TweakEngine.EnsureRestorePoint();
                     var warn = TweakEngine.Apply(tw);
-                    return $"Твик «{tw.Name}» включён." + (warn != null ? " " + warn : "");
+                    return L.T($"Твик «{tw.Name}» включён.", $"Tweak “{tw.Name}” is on.") + (warn != null ? " " + warn : "");
                 case "startup":
-                    var item = StartupManager.List().items.FirstOrDefault(s => s.Id == arg) ?? throw new InvalidOperationException("запись автозагрузки не найдена");
+                    var item = StartupManager.List().items.FirstOrDefault(s => s.Id == arg) ?? throw new InvalidOperationException(L.T("запись автозагрузки не найдена", "startup entry not found"));
                     StartupManager.SetEnabled(item, false);
-                    return "Больше не запускается вместе с Windows.";
+                    return L.T("Больше не запускается вместе с Windows.", "No longer starts with Windows.");
                 case "defender":
                     var (code, output) = SysInfo.Run("powershell", $"-NoProfile -Command \"$ErrorActionPreference='Stop'; Add-MpPreference -ExclusionPath '{arg.Replace("'", "''")}'\"");
                     if (code != 0) throw new InvalidOperationException(output.Trim().Split('\n')[0]);
-                    TweakEngine.LogEntry("defender_exclusion", "Исключение Защитника: " + arg, "defender_exclusion");
-                    return $"Папка {arg} добавлена в исключения Защитника.";
+                    TweakEngine.LogEntry("defender_exclusion", L.T("Исключение Защитника: ", "Defender exclusion: ") + arg, "defender_exclusion");
+                    return L.T($"Папка {arg} добавлена в исключения Защитника.", $"Folder {arg} added to Defender exclusions.");
                 case "close":
                     int n = 0;
                     foreach (var p in System.Diagnostics.Process.GetProcessesByName(arg))
                         try { p.Kill(); n++; } catch { } finally { p.Dispose(); }
-                    return n > 0 ? "Закрыто." : "Программа уже закрыта.";
+                    return n > 0 ? L.T("Закрыто.", "Closed.") : L.T("Программа уже закрыта.", "The app is already closed.");
                 case "open":
                     System.Diagnostics.Process.Start(new ProcessStartInfo(arg) { UseShellExecute = true });
                     return null;

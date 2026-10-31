@@ -141,7 +141,7 @@ namespace WinOpti.Tweaks
                      "Register-ScheduledTask -TaskName 'WinOptiExplorer' -Principal $p -Force -Action (New-ScheduledTaskAction -Execute 'explorer.exe') | Out-Null; " +
                      "Start-ScheduledTask -TaskName 'WinOptiExplorer'; Start-Sleep -Seconds 2; Unregister-ScheduledTask -TaskName 'WinOptiExplorer' -Confirm:$false";
             var (code, output) = SysInfo.Run("powershell", $"-NoProfile -Command \"{ps}\"");
-            if (code != 0) throw new InvalidOperationException("проводник не запустился, запусти explorer.exe вручную: " + output.Trim());
+            if (code != 0) throw new InvalidOperationException(L.T("проводник не запустился, запусти explorer.exe вручную: ", "Explorer didn’t start, run explorer.exe manually: ") + output.Trim());
         }
 
         /// <summary>-> текст предупреждения или null. Сбой не откатывает твик: значения уже записаны, эффект будет после перезахода.</summary>
@@ -153,7 +153,7 @@ namespace WinOpti.Tweaks
                 try { if (All.TryGetValue(name, out var act)) act(); }
                 catch (Exception e) { errors.Add($"{name}: {e.Message}"); }
             }
-            return errors.Count == 0 ? null : "не удалось применить сразу, нужен перезаход (" + string.Join("; ", errors) + ")";
+            return errors.Count == 0 ? null : L.T("не удалось применить сразу, нужен перезаход (", "couldn’t apply right away, sign out and back in (") + string.Join("; ", errors) + ")";
         }
     }
 }

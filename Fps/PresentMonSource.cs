@@ -29,7 +29,7 @@ namespace WinOpti.Fps
             var path = Path.Combine(dir, FileName);
             using (var res = Assembly.GetExecutingAssembly().GetManifestResourceStream(Resource))
             {
-                if (res == null) throw new InvalidOperationException("В сборке нет модуля замера кадров.");
+                if (res == null) throw new InvalidOperationException(L.T("В сборке нет модуля замера кадров.", "This build has no frame capture module."));
                 if (File.Exists(path) && new FileInfo(path).Length == res.Length) return path;
                 Directory.CreateDirectory(dir);
                 using (var f = File.Create(path)) res.CopyTo(f);
@@ -40,7 +40,7 @@ namespace WinOpti.Fps
         public FrameCapture Capture(TimeSpan duration, CancellationToken cancel)
         {
             if (!Sys.SysInfo.IsAdmin)
-                throw new InvalidOperationException("Для замера FPS нужны права администратора: Windows отдаёт данные о кадрах только им. Запусти WinOpti от имени администратора.");
+                throw new InvalidOperationException(L.T("Для замера FPS нужны права администратора: Windows отдаёт данные о кадрах только им. Запусти WinOpti от имени администратора.", "The FPS test needs administrator rights: Windows only gives frame data to admins. Run WinOpti as administrator."));
             var exe = ExtractExe();
             var csv = Path.Combine(Path.GetTempPath(), $"winopti_frames_{Guid.NewGuid():N}.csv");
             var args = $"--output_file \"{csv}\" --timed {(int)Math.Ceiling(duration.TotalSeconds) + WarmupSeconds} --terminate_after_timed " +
@@ -68,8 +68,8 @@ namespace WinOpti.Fps
                     {
                         var msg = err.Result.Trim();
                         throw new InvalidOperationException(msg.IndexOf("access denied", StringComparison.OrdinalIgnoreCase) >= 0
-                            ? "Windows не дала начать замер: нужны права администратора."
-                            : "Замер не получился" + (msg.Length > 0 ? ": " + msg.Split('\n').Last().Trim() : "."));
+                            ? L.T("Windows не дала начать замер: нужны права администратора.", "Windows didn’t allow the test to start: administrator rights needed.")
+                            : L.T("Замер не получился", "The test failed") + (msg.Length > 0 ? ": " + msg.Split('\n').Last().Trim() : "."));
                     }
                 }
                 return Parse(csv, WarmupSeconds);
@@ -92,7 +92,7 @@ namespace WinOpti.Fps
                 if (header == null) return capture;
                 int Col(string name) => Array.FindIndex(header, h => string.Equals(h.Trim(), name, StringComparison.OrdinalIgnoreCase));
                 int app = Col("Application"), ms = Col("MsBetweenPresents"), time = Col("TimeInSeconds");
-                if (app < 0 || ms < 0) throw new InvalidOperationException("Неизвестный формат данных замера.");
+                if (app < 0 || ms < 0) throw new InvalidOperationException(L.T("Неизвестный формат данных замера.", "Unknown capture data format."));
                 string line;
                 while ((line = r.ReadLine()) != null)
                 {

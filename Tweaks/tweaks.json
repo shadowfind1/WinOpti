@@ -11,7 +11,7 @@
     ],
     "after": null,
     "description": "Windows постоянно собирает данные о том, как ты пользуешься компьютером, и отправляет их в Microsoft. Твик сводит это к минимуму. Например, в фоне перестаёт работать «сборщик», который иногда грузит процессор прямо во время игры.",
-    "description_en": "Minimum diagnostic level, the DiagTrack service and the Compatibility Appraiser task. On Home/Pro Windows still keeps the basic level.",
+    "description_en": "Windows constantly collects data about how you use your PC and sends it to Microsoft. This tweak cuts that to the minimum. For example, the background \"collector\" that sometimes loads the CPU right in the middle of a game stops running.",
     "actions": [
       {
         "type": "registry",
@@ -49,7 +49,7 @@
       "search"
     ],
     "description": "Когда ищешь что-то в Пуске, Windows заодно отправляет запрос в интернет и показывает результаты Bing. Твик оставляет только поиск по компьютеру. Например, набираешь «стим» — сразу находится Steam, а не открывается сайт в браузере.",
-    "description_en": "Start menu search looks only on your PC, without internet requests.",
+    "description_en": "When you search in Start, Windows also sends the query to the internet and shows Bing results. This tweak keeps search on your PC only. For example, type \"steam\" and Steam shows up right away instead of a website opening in the browser.",
     "actions": [
       {
         "type": "registry",
@@ -162,7 +162,7 @@
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
     "description": "Windows запоминает, какие программы и файлы ты открывал, и может отправлять эту историю в Microsoft. Твик её выключает. Например, в «Представлении задач» (Win+Tab) пропадёт лента недавних файлов.",
-    "description_en": "Windows doesn't record or send the history of launched programs and opened files.",
+    "description_en": "Windows remembers which apps and files you opened and may send that history to Microsoft. This tweak turns it off. For example, the recent files timeline disappears from Task View (Win+Tab).",
     "actions": [
       {
         "type": "registry",
@@ -205,7 +205,7 @@
     ],
     "after": null,
     "description": "Когда программа вылетает, Windows собирает отчёт и отправляет его в Microsoft. Тебе от этого пользы нет. Твик это выключает: после вылета игры не будет висеть окно «Поиск решения проблемы».",
-    "description_en": "Windows doesn't send program crash reports to Microsoft.",
+    "description_en": "When an app crashes, Windows builds a report and sends it to Microsoft. You get nothing out of it. This tweak turns it off: no more \"Checking for a solution\" window hanging around after a game crash.",
     "actions": [
       {
         "type": "registry",
@@ -398,7 +398,7 @@
     ],
     "after": null,
     "description": "По расписанию Windows запускает задачи, которые собирают данные о программах, дисках и флешках. Одна из них иногда на пару минут грузит процессор и диск. Например, игра вдруг начинает фризить, а в диспетчере задач висит «Microsoft Compatibility Telemetry». Твик выключает эти задачи.",
-    "description_en": "Tasks that periodically collect data about programs, disks and USB devices for Microsoft. Compatibility Appraiser noticeably loads the CPU and disk while doing it.",
+    "description_en": "Windows runs scheduled tasks that collect data about your apps, drives and USB sticks. One of them sometimes loads the CPU and disk for a couple of minutes. For example, a game suddenly starts stuttering and Task Manager shows \"Microsoft Compatibility Telemetry\". This tweak turns those tasks off.",
     "actions": [
       {
         "type": "task",
@@ -441,7 +441,7 @@
       "tray"
     ],
     "description": "Убирает ИИ-помощника Copilot и его кнопку с панели задач. Если ты им не пользуешься — меньше лишнего в системе и на панели.",
-    "description_en": "Removes the Copilot AI assistant from Windows and its taskbar button.",
+    "description_en": "Removes the Copilot AI assistant and its taskbar button. If you don't use it, that's less clutter in the system and on the taskbar.",
     "actions": [
       {
         "type": "registry",
@@ -477,7 +477,7 @@
       "search"
     ],
     "description": "Выключает голосового помощника Cortana: он не запускается в фоне и не собирает данные. Обычный поиск в Пуске работает как раньше. В Windows 11 Cortana уже удалена, там твик ничего не меняет.",
-    "description_en": "The AllowCortana policy: the voice assistant doesn't start or collect data. Regular search keeps working. Cortana is already removed in Windows 11.",
+    "description_en": "Turns off the Cortana voice assistant: it doesn't start in the background or collect data. Regular search in Start works as before. Cortana is already gone in Windows 11, so there the tweak changes nothing.",
     "actions": [
       {
         "type": "registry",
@@ -594,7 +594,7 @@
     ],
     "after": "Экран блокировки — со следующей блокировки или перезагрузки",
     "description": "Windows сама ставит «рекомендованные» приложения — игры вроде Candy Crush, соцсети — и показывает рекламу и «интересные факты» на экране блокировки. Твик это прекращает. Например, после обновления в Пуске больше не появятся игры, которые ты не ставил. Уже установленные приложения остаются.",
-    "description_en": "Windows stops installing \"suggested\" apps (games, social networks) on its own and stops showing ads, tips and \"fun facts\" on the lock screen. On Windows 11 the news widgets leave the lock screen too. Already installed apps stay.",
+    "description_en": "Windows installs \"recommended\" apps by itself, like Candy Crush and social networks, and shows ads and \"fun facts\" on the lock screen. This tweak stops that. For example, after an update, games you never installed won't show up in Start. Apps already installed stay.",
     "actions": [
       {
         "type": "registry",
@@ -721,7 +721,7 @@
       "explorer"
     ],
     "description": "Убирает виджеты Windows 11 — панель с новостями и погодой, которая висит слева на панели задач и работает в фоне. Например, перестанет выпрыгивать лента новостей, когда случайно ведёшь мышью к углу экрана.",
-    "description_en": "Turns off Windows 11 widgets (news, weather): the taskbar button and the widgets board itself, including newer Windows 11 versions (24H2 and later).",
+    "description_en": "Removes Windows 11 widgets: the news and weather panel on the left of the taskbar that runs in the background. For example, the news feed stops popping up when your mouse drifts to the screen corner.",
     "actions": [
       {
         "type": "registry",
@@ -780,7 +780,7 @@
       "theme"
     ],
     "description": "Убирает полупрозрачные эффекты в Пуске, на панели задач и в окнах. Видеокарте чуть меньше работы, а текст на панелях читается чётче.",
-    "description_en": "Removes transparency effects: slightly less GPU load and a higher-contrast interface.",
+    "description_en": "Removes the see-through effects in Start, the taskbar and windows. A bit less work for the GPU, and text on panels reads more clearly.",
     "actions": [
       {
         "type": "registry",
@@ -809,7 +809,7 @@
       "tray"
     ],
     "description": "Окна открываются, сворачиваются и закрываются мгновенно, без плавной анимации. Например, нажал «свернуть» — окно сразу исчезло, а не «уплывает» вниз. Особенно заметно на слабых ПК.",
-    "description_en": "Windows open, close, minimize and maximize instantly, without animation. The taskbar has no animations either. The interface feels faster, especially on weak PCs.",
+    "description_en": "Windows open, minimize and close instantly, without smooth animations. For example, press minimize and the window is gone at once instead of sliding down. Most noticeable on slower PCs.",
     "actions": [
       {
         "type": "registry",
@@ -855,7 +855,7 @@
       "menu_delay"
     ],
     "description": "Подменю открываются сразу, а не через полсекунды. Например, наводишь мышь на «Отправить» в меню правой кнопки — список появляется мгновенно.",
-    "description_en": "The submenu opening delay goes from 400 ms down to zero.",
+    "description_en": "Submenus open right away instead of after half a second. For example, hover over \"Send to\" in the right-click menu and the list appears instantly.",
     "actions": [
       {
         "type": "registry",
@@ -883,7 +883,7 @@
       "accessibility"
     ],
     "description": "Если в игре быстро нажать Shift пять раз, Windows выкидывает тебя на рабочий стол с окном «Включить залипание клавиш?». Твик убирает это окно.",
-    "description_en": "Pressing Shift five times and similar shortcuts no longer bring up a popup (handy in games).",
+    "description_en": "Press Shift five times fast in a game and Windows throws you to the desktop with a \"Turn on Sticky Keys?\" window. This tweak removes that window.",
     "keywords": "клавиатура keyboard shift",
     "actions": [
       {
@@ -1314,7 +1314,7 @@
     ],
     "after": null,
     "description": "Включает скрытый режим питания «Максимальная производительность»: процессор не сбрасывает частоту ради экономии энергии и отвечает без задержек. Например, меньше микрофризов, когда в игре резко растёт нагрузка. ПК при этом потребляет больше, а на ноутбуке быстрее сядет батарея. При выключении вернётся прежний режим.",
-    "description_en": "Enables the hidden Ultimate Performance plan: the CPU and devices don't go into power saving, less latency. The PC runs hotter and uses more power; on a laptop it greatly shortens battery life. Reverting restores your previous plan.",
+    "description_en": "Turns on the hidden Ultimate Performance power plan: the CPU doesn't drop its clock to save power and responds without delay. For example, less micro-stutter when the load in a game spikes. The PC uses more power, and a laptop battery drains faster. Turning it off brings back your previous plan.",
     "keywords": "питание электропитание power plan fps",
     "actions": [
       {
@@ -1389,7 +1389,7 @@
     "after": "Сработает при следующем входе в систему",
     "after_en": "Takes effect at your next sign-in",
     "description": "После входа в Windows программы из автозагрузки запускаются не сразу, а с искусственной задержкой. Твик её убирает. Например, Discord и Steam открываются сразу, как только появился рабочий стол.",
-    "description_en": "Windows stops artificially delaying startup programs after you sign in.",
+    "description_en": "After you sign in, startup apps don't launch right away but after an artificial delay. This tweak removes it. For example, Discord and Steam open as soon as the desktop appears.",
     "actions": [
       {
         "type": "registry",
@@ -1415,7 +1415,7 @@
     "after": "Перезайди в систему",
     "after_en": "Sign out and back in",
     "description": "Приложения из Microsoft Store (Почта, Погода, Xbox и другие) не работают в фоне, когда закрыты. Это экономит память и процессор. Минус: у этих приложений могут пропасть уведомления — например, о новых письмах во встроенной Почте.",
-    "description_en": "Microsoft Store apps don't run in the background. Saves resources, but some apps will stop showing notifications.",
+    "description_en": "Microsoft Store apps (Mail, Weather, Xbox and others) don't run in the background when closed. That saves memory and CPU. Downside: these apps may stop showing notifications, for example about new emails in the built-in Mail app.",
     "actions": [
       {
         "type": "registry",
@@ -1440,7 +1440,7 @@
     ],
     "after": null,
     "description": "Служба SysMain заранее загружает в память программы, которые ты часто открываешь. На SSD от неё почти нет пользы, а на слабых ПК она бывает причиной «Диск загружен на 100%». Например, после включения ПК всё лагает пару минут — часто это она. Если Windows стоит на обычном жёстком диске (HDD), лучше не выключать: программы будут открываться медленнее.",
-    "description_en": "The service preloads frequently used programs into memory. On an SSD the gain is barely noticeable, and on weak PCs it can cause \"disk at 100%\". Better not to disable on an HDD: programs will open slower.",
+    "description_en": "The SysMain service preloads apps you often open into memory. On an SSD it barely helps, and on slower PCs it's a common cause of \"Disk at 100%\". For example, if everything lags for a couple of minutes after boot, this is often why. If Windows is on a regular hard drive (HDD), better leave it on: apps will open more slowly.",
     "actions": [
       {
         "type": "service",
@@ -1462,7 +1462,7 @@
     ],
     "after": null,
     "description": "Windows постоянно перебирает файлы на диске, чтобы поиск работал быстрее. Это нагрузка на диск и процессор, иногда прямо во время игры. Минус: поиск файлов в Пуске и проводнике станет медленнее, а в Outlook может не работать.",
-    "description_en": "The Windows Search service stops constantly scanning files. Less disk and CPU load, but file search in Start and Explorer gets slower, and it may not work in Outlook.",
+    "description_en": "Windows constantly goes through the files on your drive to make search faster. That loads the disk and CPU, sometimes right during a game. Downside: file search in Start and Explorer gets slower, and it may stop working in Outlook.",
     "actions": [
       {
         "type": "service",
@@ -1484,7 +1484,7 @@
     ],
     "after": null,
     "description": "Edge запускается вместе с Windows и остаётся в памяти даже после закрытия, чтобы потом открыться быстрее. Твик это запрещает. Например, если ты сидишь в Chrome, Edge больше не будет тихо занимать память.",
-    "description_en": "Edge doesn't start with Windows (\"startup boost\") and doesn't stay in memory after you close its window.",
+    "description_en": "Edge starts with Windows and stays in memory even after you close it, so it can open faster later. This tweak blocks that. For example, if you use Chrome, Edge stops quietly taking up memory.",
     "actions": [
       {
         "type": "registry",
@@ -1519,7 +1519,7 @@
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
     "description": "Windows нарочно замедляет программы в фоне, чтобы экономить энергию. Иногда она тормозит то, что тебе нужно, — например, Discord или запись в OBS, пока ты в игре. Твик это выключает. На ноутбуке батарея сядет быстрее.",
-    "description_en": "Windows stops artificially slowing down background programs to save power. Shortens battery life on a laptop.",
+    "description_en": "Windows deliberately slows down background apps to save power. Sometimes it slows down what you need, like Discord or OBS recording while you play. This tweak turns that off. A laptop battery drains faster.",
     "actions": [
       {
         "type": "registry",
@@ -1544,7 +1544,7 @@
     ],
     "after": null,
     "description": "Выключает службы, которые почти никому не нужны: факс, демо-режим для витрин магазинов, сервис push-сообщений и раздачу медиатеки Windows Media Player. Например, если у тебя нет факса, его служба просто зря висит в памяти.",
-    "description_en": "Fax, the retail demo mode, WAP push messages (used by telemetry) and Windows Media Player library sharing.",
+    "description_en": "Turns off services almost nobody needs: fax, the retail store demo mode, push message routing and Windows Media Player library sharing. For example, if you don't have a fax, its service just sits in memory for nothing.",
     "actions": [
       {
         "type": "service",
@@ -1584,7 +1584,7 @@
     ],
     "after": null,
     "description": "Windows сама скачивает обновления для приложения «Карты». Если ты не пользуешься офлайн-картами (почти никто не пользуется), это лишние загрузки в фоне. Твик их выключает.",
-    "description_en": "The service and tasks that download map updates for the Maps app. Not needed if you don't use offline maps.",
+    "description_en": "Windows downloads updates for the Maps app by itself. If you don't use offline maps (almost nobody does), that's extra background downloads. This tweak turns them off.",
     "actions": [
       {
         "type": "service",
@@ -1614,7 +1614,7 @@
     ],
     "after": null,
     "description": "Выключает службы Xbox: вход в Xbox Live, облачные сохранения и сеть Xbox. Если играешь в Steam, Epic или Riot — они не нужны. Не выключай, если играешь через приложение Xbox или Game Pass или пользуешься аксессуарами Xbox.",
-    "description_en": "Xbox Live sign-in, cloud saves and Xbox networking. Don't disable if you play via the Xbox app or Game Pass, or use Xbox accessories.",
+    "description_en": "Turns off Xbox services: Xbox Live sign-in, cloud saves and Xbox networking. If you play on Steam, Epic or Riot, you don't need them. Don't turn them off if you play through the Xbox app or Game Pass, or use Xbox accessories.",
     "actions": [
       {
         "type": "service",
@@ -1655,7 +1655,7 @@
     "after": "Перезапусти игру, если она открыта",
     "after_en": "Restart the game if it's running",
     "description": "Xbox Game Bar постоянно записывает видео игры в фоне, чтобы можно было сохранить последние секунды. Это нагрузка на видеокарту, даже если ты ничего не сохраняешь, — минус несколько FPS. Твик выключает фоновую запись. OBS и NVIDIA ShadowPlay работают как раньше.",
-    "description_en": "Turns off Xbox Game Bar's background gameplay capture, which can lower FPS.",
+    "description_en": "Xbox Game Bar constantly records your game in the background so you can save the last seconds. That loads the GPU even if you never save anything and costs a few FPS. This tweak turns off background recording. OBS and NVIDIA ShadowPlay work as before.",
     "keywords": "fps xbox запись",
     "actions": [
       {
@@ -1702,7 +1702,7 @@
       "mouse"
     ],
     "description": "Выключает «Повышенную точность указателя». С ней быстрое движение мыши уводит курсор дальше, чем медленное на то же расстояние. Например, в шутере резкий флик проскакивает мимо головы. Без ускорения прицел двигается ровно настолько, насколько ты двинул мышь.",
-    "description_en": "Removes \"Enhance pointer precision\": the cursor moves in proportion to your hand movement.",
+    "description_en": "Turns off \"Enhance pointer precision\". With it on, a fast mouse movement sends the cursor further than a slow one over the same distance. For example, in a shooter a quick flick overshoots the head. Without acceleration, your crosshair moves exactly as far as you move the mouse.",
     "keywords": "мышка mouse курсор cursor",
     "actions": [
       {
@@ -1749,7 +1749,7 @@
       "keyboard"
     ],
     "description": "Когда держишь клавишу, Windows ждёт полсекунды, прежде чем начать её повторять. Твик сокращает паузу вдвое и ставит максимальную скорость повтора. Например, стрелки и Backspace в тексте работают заметно быстрее. В играх зажатые клавиши это не меняет — там отклик и так мгновенный.",
-    "description_en": "A held key starts repeating after ~250 ms instead of ~500 ms, at maximum speed. Faster response when holding keys in games, typing and moving the cursor with arrows.",
+    "description_en": "When you hold a key, Windows waits half a second before repeating it. This tweak halves the delay and sets the fastest repeat rate. For example, arrow keys and Backspace in text get noticeably faster. In games held keys don't change: response there is already instant.",
     "keywords": "клавиатура keyboard клавиши повтор repeat",
     "actions": [
       {
@@ -1784,7 +1784,7 @@
     ],
     "after": null,
     "description": "Во время игры Windows откладывает установку обновлений и уведомления и отдаёт игре больше ресурсов. Например, посреди катки не начнёт ставиться обновление. Обычно режим и так включён — твик проверяет и включает, если он выключен.",
-    "description_en": "While you play, Windows postpones updates and notifications and gives the game more resources. Usually on by default.",
+    "description_en": "During a game, Windows postpones updates and notifications and gives the game more resources. For example, an update won't start installing mid-match. The mode is usually already on: the tweak checks and turns it on if it's off.",
     "actions": [
       {
         "type": "registry",
@@ -1810,7 +1810,7 @@
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
     "description": "Программа, в которой ты сейчас (например, игра), получает больше времени процессора, чем то, что работает в фоне. Например, браузер с кучей вкладок меньше отнимает у игры.",
-    "description_en": "The window you're working with (the game) gets longer CPU time slices than background processes (Win32PrioritySeparation = 38).",
+    "description_en": "The app you're in right now (a game, for example) gets more CPU time than what runs in the background. For example, a browser with lots of tabs takes less away from the game.",
     "actions": [
       {
         "type": "registry",
@@ -1836,7 +1836,7 @@
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
     "description": "В Windows есть служба, которая делит ресурсы между играми, видео и звуком. Твик говорит ей отдавать играм высокий приоритет, а фоновым задачам оставлять 10% вместо 20%. Например, фоновая работа Windows меньше мешает игре.",
-    "description_en": "The MMCSS service gives games high CPU and disk priority and leaves background tasks 10% instead of 20%.",
+    "description_en": "Windows has a service that splits resources between games, video and audio. This tweak tells it to give games high priority and leave background tasks 10% instead of 20%. For example, Windows background work gets in the way of your game less.",
     "actions": [
       {
         "type": "registry",
@@ -1889,7 +1889,7 @@
     "after": "Перезагрузка",
     "after_en": "Restart the PC",
     "description": "Видеокарта сама управляет своей памятью и очередью кадров вместо процессора. Чуть меньше задержка и нагрузка на процессор, а в новых играх без этого не работает DLSS Frame Generation. Нужна видеокарта NVIDIA GTX 10xx, AMD RX 5000 или новее и свежий драйвер.",
-    "description_en": "The graphics card manages its own memory and work queue: slightly less latency and CPU load. Requires an NVIDIA GTX 10xx / AMD RX 5000 or newer and a recent driver.",
+    "description_en": "The GPU manages its own memory and frame queue instead of the CPU. Slightly lower latency and CPU load, and newer games need it for DLSS Frame Generation. Requires an NVIDIA GTX 10xx, AMD RX 5000 or newer GPU and a recent driver.",
     "actions": [
       {
         "type": "registry",
@@ -1914,7 +1914,7 @@
     ],
     "after": null,
     "description": "Windows больше не перезагружает ПК сама, пока ты за ним сидишь. Например, не будет такого, что отошёл на минуту — а игра закрыта и ставится обновление. Обновления ставятся как обычно, а перезагружаешь ты, когда удобно. В Параметрах появится надпись «Некоторыми параметрами управляет ваша организация» — это нормально. В Windows Home может не сработать.",
-    "description_en": "Windows won't restart the PC by itself while you're signed in: updates download and install automatically, and you reboot when convenient. The policy only works together with the \"scheduled install\" mode, so that is enabled too; Settings will show \"Some settings are managed by your organization\". Update policies may not apply on Windows Home.",
+    "description_en": "Windows no longer restarts the PC by itself while you're using it. For example, no more stepping away for a minute and coming back to a closed game and an update installing. Updates install as usual, and you restart when it suits you. Settings will show \"Some settings are managed by your organization\", which is normal. May not work on Windows Home.",
     "actions": [
       {
         "type": "registry",
@@ -1966,7 +1966,7 @@
     ],
     "after": null,
     "description": "Windows раздаёт скачанные обновления другим компьютерам через твой интернет, как торрент. Это отнимает скорость и может поднимать пинг в игре. Твик выключает раздачу: обновления качаются только с серверов Microsoft.",
-    "description_en": "Windows downloads updates only from Microsoft servers and doesn't share them with other computers over the internet.",
+    "description_en": "Windows shares downloaded updates with other computers over your internet connection, like a torrent. That eats bandwidth and can raise your ping in games. This tweak turns sharing off: updates download only from Microsoft servers.",
     "actions": [
       {
         "type": "registry",

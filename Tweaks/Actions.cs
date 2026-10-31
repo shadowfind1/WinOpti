@@ -246,7 +246,7 @@ namespace WinOpti.Tweaks
             if (ServiceMode(name) == null)
             {
                 if (start == "disabled") return;
-                throw new InvalidOperationException($"служба {name} не найдена");
+                throw new InvalidOperationException(L.T($"служба {name} не найдена", $"service {name} not found"));
             }
             ServiceSet(name, start);
             if (start == "disabled") SysInfo.Run("sc.exe", $"stop \"{name}\""); // уже остановлена — не важно
@@ -294,7 +294,7 @@ namespace WinOpti.Tweaks
         static void Command(string cmd)
         {
             var (code, output) = SysInfo.Run("cmd.exe", "/c " + cmd);
-            if (code != 0) throw new InvalidOperationException($"{cmd}: {(output.Trim().Length > 0 ? output.Trim() : "код " + code)}");
+            if (code != 0) throw new InvalidOperationException($"{cmd}: {(output.Trim().Length > 0 ? output.Trim() : L.T("код ", "code ") + code)}");
         }
 
         static bool CommandDetect(D a)
@@ -348,9 +348,9 @@ namespace WinOpti.Tweaks
                 else if (source.Length > 0)
                 {
                     var (code, output) = SysInfo.Run("powercfg", $"-duplicatescheme {source} {guid}");
-                    if (code != 0) throw new InvalidOperationException("не удалось создать схему питания: " + output.Trim());
+                    if (code != 0) throw new InvalidOperationException(L.T("не удалось создать схему питания: ", "couldn’t create the power plan: ") + output.Trim());
                 }
-                else throw new InvalidOperationException("этой схемы питания нет на ПК (часто так на ноутбуках с Modern Standby)");
+                else throw new InvalidOperationException(L.T("этой схемы питания нет на ПК (часто так на ноутбуках с Modern Standby)", "this power plan doesn’t exist on this PC (common on laptops with Modern Standby)"));
             }
             SetScheme(guid);
         }

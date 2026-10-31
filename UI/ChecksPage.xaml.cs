@@ -38,11 +38,11 @@ namespace WinOpti.UI
         {
             bool running;
             (_gameModeOn, running) = await Task.Run(() => (Game.GameMode.Enabled, Game.GameMode.Running));
-            GameModeState.Text = _gameModeOn ? (running ? "включён, работает" : "включён, запустится при входе в Windows") : "выключен";
+            GameModeState.Text = _gameModeOn ? (running ? L.T("включён, работает", "on, running") : L.T("включён, запустится при входе в Windows", "on, starts when you sign in to Windows")) : L.T("выключен", "off");
             GameModeState.Foreground = (Brush)FindResource(_gameModeOn ? "Green" : "Muted");
             GameModeChip.Background = (Brush)FindResource(_gameModeOn ? "GreenSoft" : "CardAlt");
             GameModeButton.Style = (Style)FindResource(_gameModeOn ? "GhostButton" : "AccentButton");
-            GameModeButtonText.Text = _gameModeOn ? "Выключить" : "Включить";
+            GameModeButtonText.Text = _gameModeOn ? L.T("Выключить", "Turn off") : L.T("Включить", "Turn on");
             GameModeButtonText.Foreground = (Brush)FindResource(_gameModeOn ? "Text" : "OnAccent");
             GameModeButton.IsEnabled = true;
         }
@@ -51,7 +51,7 @@ namespace WinOpti.UI
         {
             if (!Sys.SysInfo.IsAdmin)
             {
-                ShowGameMode("Чтобы включить режим, запусти WinOpti от имени администратора: режиму нужно менять план питания и приоритеты программ.", "Orange");
+                ShowGameMode(L.T("Чтобы включить режим, запусти WinOpti от имени администратора: режиму нужно менять план питания и приоритеты программ.", "To turn on the mode, run WinOpti as administrator: it needs to change the power plan and app priorities."), "Orange");
                 return;
             }
             GameModeButton.IsEnabled = false;
@@ -59,13 +59,13 @@ namespace WinOpti.UI
             try
             {
                 await Task.Run(() => { if (turnOn) Game.GameMode.Enable(); else Game.GameMode.Disable(); });
-                ShowGameMode(turnOn ? "Готово. Запусти любую игру — режим включится сам. Что он делал, видно в «Восстановлении» → «Журнал»."
-                                    : "Выключено. Всё, что режим менял во время игры, возвращено.", "Green");
+                ShowGameMode(turnOn ? L.T("Готово. Запусти любую игру — режим включится сам. Что он делал, видно в «Восстановлении» → «Журнал».", "Done. Launch any game and the mode kicks in by itself. What it did is shown in Restore → Journal.")
+                                    : L.T("Выключено. Всё, что режим менял во время игры, возвращено.", "Turned off. Everything the mode changed during games has been restored."), "Green");
             }
             catch (Exception ex)
             {
                 App.Log(ex);
-                ShowGameMode("Не получилось: " + ex.Message, "Red");
+                ShowGameMode(L.T("Не получилось: ", "Failed: ") + ex.Message, "Red");
             }
             await LoadGameModeAsync();
         }
@@ -83,17 +83,17 @@ namespace WinOpti.UI
         // показываем, что поставить и где, и открываем AMD Software.
         static readonly (string title, string value, bool on, string why)[] AmdTips =
         {
-            ("Radeon Anti-Lag", "Вкл", true,
-             "Аналог режима низкой задержки у NVIDIA: процессор не готовит кадры впрок, и выстрел появляется на экране раньше. " +
-             "Если в самой игре есть AMD Anti-Lag 2 (например, в CS2) — включай его в настройках игры, он работает точнее."),
-            ("Radeon Chill", "Выкл", false,
-             "Снижает FPS, когда ты не двигаешься, ради тишины и меньшего нагрева. В шутерах это даёт просадку как раз в момент, когда начинаешь двигаться."),
-            ("Radeon Boost", "Выкл", false,
-             "Понижает разрешение при резком движении мыши — FPS растёт, но картинка мылится именно тогда, когда нужно разглядеть противника."),
-            ("Enhanced Sync", "Выкл", false,
-             "Убирает разрывы картинки без обычной вертикальной синхронизации, но у многих даёт рывки и мерцание. Если монитор с FreeSync — лучше он."),
-            ("AMD FreeSync", "Вкл, если монитор поддерживает", true,
-             "Монитор подстраивается под FPS игры: нет разрывов картинки и почти нет добавочной задержки. Включается в разделе «Дисплей»."),
+            ("Radeon Anti-Lag", L.T("Вкл", "On"), true,
+             L.T("Аналог режима низкой задержки у NVIDIA: процессор не готовит кадры впрок, и выстрел появляется на экране раньше. ", "Like NVIDIA’s low latency mode: the CPU doesn’t queue frames ahead, so your shot shows up on screen sooner. ") +
+             L.T("Если в самой игре есть AMD Anti-Lag 2 (например, в CS2) — включай его в настройках игры, он работает точнее.", "If the game itself has AMD Anti-Lag 2 (CS2, for example), turn that on in the game settings: it works more precisely.")),
+            ("Radeon Chill", L.T("Выкл", "Off"), false,
+             L.T("Снижает FPS, когда ты не двигаешься, ради тишины и меньшего нагрева. В шутерах это даёт просадку как раз в момент, когда начинаешь двигаться.", "Lowers FPS when you’re not moving, for less noise and heat. In shooters that means a dip right when you start moving.")),
+            ("Radeon Boost", L.T("Выкл", "Off"), false,
+             L.T("Понижает разрешение при резком движении мыши — FPS растёт, но картинка мылится именно тогда, когда нужно разглядеть противника.", "Lowers the resolution on fast mouse movement: FPS goes up, but the picture blurs exactly when you need to spot an enemy.")),
+            ("Enhanced Sync", L.T("Выкл", "Off"), false,
+             L.T("Убирает разрывы картинки без обычной вертикальной синхронизации, но у многих даёт рывки и мерцание. Если монитор с FreeSync — лучше он.", "Removes tearing without regular V-Sync, but for many people it causes hitches and flicker. If your monitor has FreeSync, use that instead.")),
+            ("AMD FreeSync", L.T("Вкл, если монитор поддерживает", "On, if the monitor supports it"), true,
+             L.T("Монитор подстраивается под FPS игры: нет разрывов картинки и почти нет добавочной задержки. Включается в разделе «Дисплей».", "The monitor matches the game’s FPS: no tearing and almost no added latency. Turn it on in the Display section.")),
         };
 
         static string AmdSoftwarePath()
@@ -122,7 +122,7 @@ namespace WinOpti.UI
                 var head = new WrapPanel();
                 head.Children.Add(new TextBlock { Text = title, FontSize = 14.5, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center });
                 var chip = new Border { Background = (Brush)FindResource(on ? "GreenSoft" : "CardAlt"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 2, 8, 2), VerticalAlignment = VerticalAlignment.Center };
-                chip.Child = new TextBlock { Text = "Поставь: " + value, FontSize = 11.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(on ? "Green" : "Muted") };
+                chip.Child = new TextBlock { Text = L.T("Поставь: ", "Set to: ") + value, FontSize = 11.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(on ? "Green" : "Muted") };
                 head.Children.Add(chip);
                 row.Children.Add(head);
                 row.Children.Add(new TextBlock { Text = why, FontSize = 12.5, Foreground = (Brush)FindResource("Muted"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0), LineHeight = 18 });
@@ -131,7 +131,7 @@ namespace WinOpti.UI
             if (AmdSoftwarePath() == null)
             {
                 AmdOpen.Visibility = Visibility.Collapsed;
-                AmdMessage.Text = "AMD Software не найден. Скачай драйвер с сайта amd.com — вместе с ним ставится и AMD Software: Adrenalin Edition.";
+                AmdMessage.Text = L.T("AMD Software не найден. Скачай драйвер с сайта amd.com — вместе с ним ставится и AMD Software: Adrenalin Edition.", "AMD Software not found. Download the driver from amd.com: AMD Software: Adrenalin Edition installs with it.");
                 AmdMessage.Visibility = Visibility.Visible;
             }
         }
@@ -141,9 +141,34 @@ namespace WinOpti.UI
             try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(AmdSoftwarePath()) { UseShellExecute = true }); }
             catch (Exception ex)
             {
-                AmdMessage.Text = "Не удалось открыть AMD Software: " + ex.Message;
+                AmdMessage.Text = L.T("Не удалось открыть AMD Software: ", "Couldn’t open AMD Software: ") + ex.Message;
                 AmdMessage.Visibility = Visibility.Visible;
             }
+        }
+
+        int _amdShots;
+
+        async void OnAmdProbe(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            button.IsEnabled = false;
+            try
+            {
+                var file = await Task.Run(Tests.AmdProbe.Snapshot);
+                _amdShots++;
+                AmdProbeText.Text = _amdShots == 1
+                    ? L.T($"Снимок 1 на рабочем столе ({System.IO.Path.GetFileName(file)}). Теперь поменяй Anti-Lag в AMD Software и сделай второй.",
+                          $"Snapshot 1 is on the desktop ({System.IO.Path.GetFileName(file)}). Now change Anti-Lag in AMD Software and take the second one.")
+                    : L.T($"Снимок {_amdShots} готов. Пришли файлы winopti-amd-*.txt с рабочего стола разработчику — спасибо!",
+                          $"Snapshot {_amdShots} is ready. Send the winopti-amd-*.txt files from the desktop to the developer — thanks!");
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{file}\"");
+            }
+            catch (Exception ex)
+            {
+                App.Log(ex);
+                AmdProbeText.Text = L.T("Не получилось сделать снимок: ", "Couldn’t take the snapshot: ") + ex.Message;
+            }
+            finally { button.IsEnabled = true; }
         }
 
         // ---------- драйвер NVIDIA ----------
@@ -161,19 +186,19 @@ namespace WinOpti.UI
         {
             new NvOption
             {
-                Title = "Режим управления электропитанием", ButtonText = "Максимальная производительность", LogName = "NVIDIA: максимальная производительность",
-                Explain = "Видеокарта держит рабочие частоты и не сбрасывает их между сценами — меньше микрофризов при резкой смене нагрузки. Минус: в простое чуть больше потребление и нагрев.",
+                Title = L.T("Режим управления электропитанием", "Power management mode"), ButtonText = L.T("Максимальная производительность", "Prefer maximum performance"), LogName = L.T("NVIDIA: максимальная производительность", "NVIDIA: maximum performance"),
+                Explain = L.T("Видеокарта держит рабочие частоты и не сбрасывает их между сценами — меньше микрофризов при резкой смене нагрузки. Минус: в простое чуть больше потребление и нагрев.", "The GPU keeps its working clocks and doesn’t drop them between scenes: less micro-stutter on sudden load changes. Downside: slightly more power and heat at idle."),
                 Ids = new[] { Tests.NvidiaSettings.PowerMode }, Values = new uint[] { 1 },
-                Describe = v => v[0] == 1 ? "Максимальная производительность" : v[0] == 0 ? "Адаптивный" : v[0] == 5 ? "Оптимальное энергопотребление" : "По умолчанию драйвера",
+                Describe = v => v[0] == 1 ? L.T("Максимальная производительность", "Prefer maximum performance") : v[0] == 0 ? L.T("Адаптивный", "Adaptive") : v[0] == 5 ? L.T("Оптимальное энергопотребление", "Optimal power") : L.T("По умолчанию драйвера", "Driver default"),
                 IsGood = v => v[0] == 1,
             },
             new NvOption
             {
-                Title = "Режим низкой задержки", ButtonText = "Включить", LogName = "NVIDIA: режим низкой задержки",
-                Explain = "Процессор не готовит кадры впрок, поэтому выстрел и движение мыши появляются на экране раньше. Сильнее всего заметно, когда видеокарта загружена на 100%. " +
-                          "Если в игре есть NVIDIA Reflex (CS2, Valorant, Fortnite) — включи его в настройках игры, он работает ещё лучше.",
+                Title = L.T("Режим низкой задержки", "Low latency mode"), ButtonText = L.T("Включить", "Turn on"), LogName = L.T("NVIDIA: режим низкой задержки", "NVIDIA: low latency mode"),
+                Explain = L.T("Процессор не готовит кадры впрок, поэтому выстрел и движение мыши появляются на экране раньше. Сильнее всего заметно, когда видеокарта загружена на 100%. ", "The CPU doesn’t queue frames ahead, so shots and mouse movement show up on screen sooner. Most noticeable when the GPU is at 100%. ") +
+                          L.T("Если в игре есть NVIDIA Reflex (CS2, Valorant, Fortnite) — включи его в настройках игры, он работает ещё лучше.", "If the game has NVIDIA Reflex (CS2, Valorant, Fortnite), turn it on in the game settings: it works even better."),
                 Ids = new[] { Tests.NvidiaSettings.MaxPrerendered }, Values = new uint[] { 1 },
-                Describe = v => v[0] == 1 ? "Вкл" : "Выкл (решает игра)",
+                Describe = v => v[0] == 1 ? L.T("Вкл", "On") : L.T("Выкл (решает игра)", "Off (game decides)"),
                 IsGood = v => v[0] == 1,
             },
         };
@@ -204,24 +229,24 @@ namespace WinOpti.UI
             var text = new StackPanel { Margin = new Thickness(0, 0, 20, 0) };
             text.Children.Add(new TextBlock { Text = o.Title, FontSize = 14.5, FontWeight = FontWeights.SemiBold });
             bool good = o.IsGood(current);
-            text.Children.Add(new TextBlock { Text = "Сейчас: " + o.Describe(current), FontSize = 12.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(good ? "Green" : "Orange"), Margin = new Thickness(0, 3, 0, 0) });
+            text.Children.Add(new TextBlock { Text = L.T("Сейчас: ", "Now: ") + o.Describe(current), FontSize = 12.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(good ? "Green" : "Orange"), Margin = new Thickness(0, 3, 0, 0) });
             text.Children.Add(new TextBlock { Text = o.Explain, FontSize = 12.5, Foreground = (Brush)FindResource("Muted"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0), LineHeight = 18 });
             row.Children.Add(text);
             var button = new Button
             {
                 Style = (Style)FindResource(good ? "GhostButton" : "SmallAccentButton"), Padding = new Thickness(14, 7, 14, 7), VerticalAlignment = VerticalAlignment.Center,
-                Content = good ? "Сбросить по умолчанию" : o.ButtonText,
+                Content = good ? L.T("Сбросить по умолчанию", "Reset to default") : o.ButtonText,
             };
             Grid.SetColumn(button, 1);
             button.Click += async (s, e) =>
             {
-                if (!Sys.SysInfo.IsAdmin) { ShowNv("Чтобы менять настройки драйвера, запусти WinOpti от имени администратора.", "Orange"); return; }
+                if (!Sys.SysInfo.IsAdmin) { ShowNv(L.T("Чтобы менять настройки драйвера, запусти WinOpti от имени администратора.", "Run WinOpti as administrator to change driver settings."), "Orange"); return; }
                 button.IsEnabled = false;
                 try
                 {
                     await Task.Run(() =>
                     {
-                        using (var nv = Tests.NvidiaSettings.Open() ?? throw new InvalidOperationException("драйвер NVIDIA не ответил"))
+                        using (var nv = Tests.NvidiaSettings.Open() ?? throw new InvalidOperationException(L.T("драйвер NVIDIA не ответил", "the NVIDIA driver didn’t respond")))
                         {
                             for (int k = 0; k < o.Ids.Length; k++)
                                 if (good) nv.Reset(o.Ids[k]); else nv.Set(o.Ids[k], o.Values[k]);
@@ -229,12 +254,12 @@ namespace WinOpti.UI
                         }
                     });
                     Tweaks.TweakEngine.LogEntry("nvidia:" + o.Ids[0].ToString("X8"), o.LogName, good ? "off" : "on");
-                    ShowNv(good ? "Вернули значение драйвера по умолчанию." : "Готово. Перезапусти игру, если она открыта: драйвер применяет настройки при запуске.", "Green");
+                    ShowNv(good ? L.T("Вернули значение драйвера по умолчанию.", "Restored the driver default.") : L.T("Готово. Перезапусти игру, если она открыта: драйвер применяет настройки при запуске.", "Done. Restart the game if it’s open: the driver applies settings at launch."), "Green");
                 }
                 catch (Exception ex)
                 {
                     App.Log(ex);
-                    ShowNv("Не получилось: " + ex.Message, "Red");
+                    ShowNv(L.T("Не получилось: ", "Failed: ") + ex.Message, "Red");
                 }
                 await LoadNvidiaAsync();
             };
@@ -269,7 +294,7 @@ namespace WinOpti.UI
             catch (Exception ex)
             {
                 App.Log(ex);
-                GpuSummary.Text = "Не удалось определить видеокарты: " + ex.Message;
+                GpuSummary.Text = L.T("Не удалось определить видеокарты: ", "Couldn’t detect GPUs: ") + ex.Message;
                 return;
             }
             var discrete = gpus.FirstOrDefault(g => !g.Integrated);
@@ -278,26 +303,26 @@ namespace WinOpti.UI
 
             if (monitorOnIgpu != null)
             {
-                MonitorWarningText.Text = $"Монитор подключён к разъёму материнской платы ({monitorOnIgpu}), а не к видеокарте {discrete.Name}. " +
-                                          "Так игры теряют FPS: кадры идут через встроенную графику. Переткни кабель монитора в разъём видеокарты — " +
-                                          "он на задней стенке ниже, в горизонтальной планке.";
+                MonitorWarningText.Text = L.T($"Монитор подключён к разъёму материнской платы ({monitorOnIgpu}), а не к видеокарте {discrete.Name}. ", $"Your monitor is plugged into the motherboard port ({monitorOnIgpu}), not the {discrete.Name} graphics card. ") +
+                                          L.T("Так игры теряют FPS: кадры идут через встроенную графику. Переткни кабель монитора в разъём видеокарты — ", "Games lose FPS this way: frames go through the integrated graphics. Move the monitor cable to the graphics card port: ") +
+                                          L.T("он на задней стенке ниже, в горизонтальной планке.", "it’s lower on the back panel, in the horizontal bracket.");
                 MonitorWarning.Visibility = Visibility.Visible;
             }
 
-            if (gpus.Count == 0) { GpuSummary.Text = "Не удалось определить видеокарту."; return; }
+            if (gpus.Count == 0) { GpuSummary.Text = L.T("Не удалось определить видеокарту.", "Couldn’t detect the GPU."); return; }
             if (discrete == null)
             {
-                GpuSummary.Text = $"Только встроенная графика — {integrated.Name}. Выбирать нечего: для игр это самое слабое место ПК, игровая видеокарта дала бы прирост в разы.";
+                GpuSummary.Text = L.T($"Только встроенная графика — {integrated.Name}. Выбирать нечего: для игр это самое слабое место ПК, игровая видеокарта дала бы прирост в разы.", $"Only integrated graphics: {integrated.Name}. Nothing to choose: for games this is the PC’s weakest spot, a gaming GPU would be several times faster.");
                 return;
             }
             if (integrated == null)
             {
-                GpuSummary.Text = $"Одна видеокарта — {discrete.Name}. Все игры идут через неё, выбирать нечего." +
-                                  (monitorOnIgpu == null ? " Монитор подключён к ней — всё правильно." : "");
+                GpuSummary.Text = L.T($"Одна видеокарта — {discrete.Name}. Все игры идут через неё, выбирать нечего.", $"One GPU: {discrete.Name}. All games run on it, nothing to choose.") +
+                                  (monitorOnIgpu == null ? L.T(" Монитор подключён к ней — всё правильно.", " The monitor is plugged into it, all correct.") : "");
                 return;
             }
-            GpuSummary.Text = $"Две видеокарты: мощная {discrete.Name} и встроенная {integrated.Name}. Windows иногда запускает игру на встроенной — " +
-                              "и FPS падает в 2–3 раза. Ниже видно, к какой привязана каждая игра.";
+            GpuSummary.Text = L.T($"Две видеокарты: мощная {discrete.Name} и встроенная {integrated.Name}. Windows иногда запускает игру на встроенной — ", $"Two GPUs: the powerful {discrete.Name} and the integrated {integrated.Name}. Windows sometimes runs a game on the integrated one, ") +
+                              L.T("и FPS падает в 2–3 раза. Ниже видно, к какой привязана каждая игра.", "and FPS drops 2–3 times. Below you can see which one each game uses.");
             RenderGames();
         }
 
@@ -306,7 +331,7 @@ namespace WinOpti.UI
             GpuGames.Children.Clear();
             if (_games.Count == 0)
             {
-                GpuGames.Children.Add(new TextBlock { Text = "Установленных игр не нашли (ищем в Steam, Epic Games и Riot).", FontSize = 13, Foreground = (Brush)FindResource("Dim"), Margin = new Thickness(0, 8, 0, 0) });
+                GpuGames.Children.Add(new TextBlock { Text = L.T("Установленных игр не нашли (ищем в Steam, Epic Games и Riot).", "No installed games found (we look in Steam, Epic Games and Riot)."), FontSize = 13, Foreground = (Brush)FindResource("Dim"), Margin = new Thickness(0, 8, 0, 0) });
                 GpuAllButton.Visibility = Visibility.Collapsed;
                 return;
             }
@@ -320,14 +345,14 @@ namespace WinOpti.UI
                 text.Children.Add(new TextBlock { Text = g.Name, FontSize = 14, FontWeight = FontWeights.SemiBold });
                 text.Children.Add(new TextBlock { Text = g.Exe, FontSize = 11.5, Foreground = (Brush)FindResource("Dim"), TextTrimming = TextTrimming.CharacterEllipsis });
                 row.Children.Add(text);
-                var (label, color) = g.Preference == 2 ? ("мощная", "Green") : g.Preference == 1 ? ("встроенная", "Red") : ("решает Windows", "Orange");
+                var (label, color) = g.Preference == 2 ? (L.T("мощная", "powerful"), "Green") : g.Preference == 1 ? (L.T("встроенная", "integrated"), "Red") : (L.T("решает Windows", "Windows decides"), "Orange");
                 var chip = new Border { Background = (Brush)FindResource(color + "Soft"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(12, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center };
                 chip.Child = new TextBlock { Text = label, FontSize = 11.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(color) };
                 Grid.SetColumn(chip, 1);
                 row.Children.Add(chip);
                 if (g.Preference != 2)
                 {
-                    var b = new Button { Style = (Style)FindResource("GhostButton"), Content = "На мощную", Padding = new Thickness(14, 6, 14, 6), VerticalAlignment = VerticalAlignment.Center };
+                    var b = new Button { Style = (Style)FindResource("GhostButton"), Content = L.T("На мощную", "Use powerful"), Padding = new Thickness(14, 6, 14, 6), VerticalAlignment = VerticalAlignment.Center };
                     var game = g;
                     b.Click += (s, e) => { SetGame(game); RenderGames(); };
                     Grid.SetColumn(b, 2);
@@ -337,7 +362,7 @@ namespace WinOpti.UI
             }
             int left = _games.Count(g => g.Preference != 2);
             GpuAllButton.Visibility = left > 0 ? Visibility.Visible : Visibility.Collapsed;
-            GpuAllText.Text = $"Все игры — на мощную ({left})";
+            GpuAllText.Text = L.T($"Все игры — на мощную ({left})", $"All games on powerful GPU ({left})");
         }
 
         void SetGame(InstalledGame g)
@@ -345,7 +370,7 @@ namespace WinOpti.UI
             try
             {
                 GpuCheck.SetHighPerformance(g);
-                Tweaks.TweakEngine.LogEntry("gpu:" + g.Exe, "Игра на мощной видеокарте: " + g.Name, "gpu_pref");
+                Tweaks.TweakEngine.LogEntry("gpu:" + g.Exe, L.T("Игра на мощной видеокарте: ", "Game on powerful GPU: ") + g.Name, "gpu_pref");
             }
             catch (Exception ex) { App.Log(ex); }
         }
@@ -369,11 +394,11 @@ namespace WinOpti.UI
                 _mouse = new MouseRate(src);
             }
             MouseButton.IsEnabled = false;
-            MouseButtonText.Text = "Идёт проверка…";
+            MouseButtonText.Text = L.T("Идёт проверка…", "Testing…");
             MouseResult.Visibility = Visibility.Collapsed;
             MousePad.Visibility = Visibility.Visible;
-            MouseLive.Text = "Води мышью быстро кругами";
-            MouseHint.Text = "Без остановок, 3 секунды движения. Кнопки нажимать не нужно.";
+            MouseLive.Text = L.T("Води мышью быстро кругами", "Move your mouse fast in circles");
+            MouseHint.Text = L.T("Без остановок, 3 секунды движения. Кнопки нажимать не нужно.", "Don’t stop, 3 seconds of movement. No need to click.");
             MouseFillScale.ScaleX = 0;
             try
             {
@@ -386,10 +411,10 @@ namespace WinOpti.UI
                     double moving = _mouse.MovingSeconds;
                     MouseFillScale.ScaleX = Math.Min(1, moving / MouseSeconds);
                     var (live, _) = _mouse.Result();
-                    if (live > 0) { MouseLive.Text = $"≈ {live:0} Гц"; MouseHint.Text = "Продолжай двигать…"; }
+                    if (live > 0) { MouseLive.Text = L.T($"≈ {live:0} Гц", $"≈ {live:0} Hz"); MouseHint.Text = L.T("Продолжай двигать…", "Keep moving…"); }
                     if (moving >= MouseSeconds) break;
                     if (DateTime.UtcNow - started > TimeSpan.FromSeconds(30))
-                        throw new TimeoutException("Мышь почти не двигалась. Нажми «Проверить» и води мышью кругами, не останавливаясь.");
+                        throw new TimeoutException(L.T("Мышь почти не двигалась. Нажми «Проверить» и води мышью кругами, не останавливаясь.", "The mouse barely moved. Press Test and move it in circles without stopping."));
                 }
                 _mouse.Stop();
                 ShowMouseResult(_mouse.Result());
@@ -404,39 +429,39 @@ namespace WinOpti.UI
             }
             MousePad.Visibility = Visibility.Collapsed;
             MouseButton.IsEnabled = true;
-            MouseButtonText.Text = "Проверить ещё раз";
+            MouseButtonText.Text = L.T("Проверить ещё раз", "Test again");
         }
 
         void ShowMouseResult((double measured, int standard) r)
         {
             MouseResult.Visibility = Visibility.Visible;
-            MouseHz.Text = $"{r.standard} Гц";
+            MouseHz.Text = L.T($"{r.standard} Гц", $"{r.standard} Hz");
             string text, color;
             if (r.standard <= 125)
             {
                 color = "Red";
-                text = "Мало для игр: мышь сообщает о движении раз в 8 мс, прицел запаздывает. Если мышь игровая — включи 1000 Гц в её программе " +
-                       "(Logitech G HUB, Razer Synapse, SteelSeries GG и т. п.) или кнопкой на дне мыши. Обычные офисные мыши быстрее 125 Гц не умеют.";
+                text = L.T("Мало для игр: мышь сообщает о движении раз в 8 мс, прицел запаздывает. Если мышь игровая — включи 1000 Гц в её программе ", "Too low for games: the mouse reports every 8 ms, so your crosshair lags. If it’s a gaming mouse, set 1000 Hz in its software ") +
+                       L.T("(Logitech G HUB, Razer Synapse, SteelSeries GG и т. п.) или кнопкой на дне мыши. Обычные офисные мыши быстрее 125 Гц не умеют.", "(Logitech G HUB, Razer Synapse, SteelSeries GG, etc.) or with the button on the bottom. Regular office mice can’t go above 125 Hz.");
             }
             else if (r.standard <= 500)
             {
                 color = "Orange";
-                text = $"Терпимо, но для игр лучше 1000 Гц: сейчас мышь обновляется раз в {1000.0 / r.standard:0.#} мс. " +
-                       "Если мышь умеет 1000 Гц — включи в её программе или кнопкой на дне мыши.";
+                text = L.T($"Терпимо, но для игр лучше 1000 Гц: сейчас мышь обновляется раз в {1000.0 / r.standard:0.#} мс. ", $"Acceptable, but 1000 Hz is better for games: right now the mouse updates every {1000.0 / r.standard:0.#} ms. ") +
+                       L.T("Если мышь умеет 1000 Гц — включи в её программе или кнопкой на дне мыши.", "If your mouse supports 1000 Hz, set it in its software or with the button on the bottom.");
             }
             else if (r.standard == 1000)
             {
                 color = "Green";
-                text = "Отлично — это стандарт для игр: мышь сообщает о движении каждую миллисекунду.";
+                text = L.T("Отлично — это стандарт для игр: мышь сообщает о движении каждую миллисекунду.", "Great, that’s the gaming standard: the mouse reports every millisecond.");
             }
             else
             {
                 color = "Green";
-                text = "Очень высокая частота — прицел максимально отзывчивый. Если на слабом процессоре в играх бывают просадки FPS, попробуй 1000 Гц: " +
-                       "высокая частота опроса заметно нагружает процессор.";
+                text = L.T("Очень высокая частота — прицел максимально отзывчивый. Если на слабом процессоре в играх бывают просадки FPS, попробуй 1000 Гц: ", "Very high rate: the most responsive aim. If you get FPS dips on a weaker CPU, try 1000 Hz: ") +
+                       L.T("высокая частота опроса заметно нагружает процессор.", "a high polling rate puts noticeable load on the CPU.");
             }
             if (r.measured < r.standard * 0.85)
-                text += $" Намерили {r.measured:0} Гц: похоже, мышь двигалась медленно. Для точности повтори и води быстрее.";
+                text += L.T($" Намерили {r.measured:0} Гц: похоже, мышь двигалась медленно. Для точности повтори и води быстрее.", $" Measured {r.measured:0} Hz: looks like the mouse moved slowly. Repeat and move faster for accuracy.");
             MouseVerdict.Text = text;
             MouseVerdict.Foreground = (Brush)FindResource(color == "Green" ? "Text" : color);
             MouseHz.Foreground = (Brush)FindResource(color);
@@ -451,14 +476,14 @@ namespace WinOpti.UI
             if (_pingCancel != null) { _pingCancel.Cancel(); return; }
             _pingCancel = new CancellationTokenSource();
             var token = _pingCancel.Token;
-            PingButtonText.Text = "Остановить";
+            PingButtonText.Text = L.T("Остановить", "Stop");
             PingProgress.Visibility = Visibility.Visible;
             PingTable.Visibility = Visibility.Collapsed;
             PingVerdict.Visibility = Visibility.Collapsed;
             PingFillScale.ScaleX = 0;
             try
             {
-                PingPhase.Text = "Ищем ближайшие серверы Valve…";
+                PingPhase.Text = L.T("Ищем ближайшие серверы Valve…", "Finding the nearest Valve servers…");
                 var (gateway, wifi, adapter) = await Task.Run(PingTest.Connection);
                 List<PingTarget> nearest;
                 try { nearest = await Task.Run(() => PingTest.Nearest(PingTest.ValveRelays(), 3)); }
@@ -469,11 +494,11 @@ namespace WinOpti.UI
                 }
                 token.ThrowIfCancellationRequested();
                 var targets = new List<PingTarget>();
-                if (gateway != null) targets.Add(new PingTarget { Name = "Твой роутер", Address = gateway });
+                if (gateway != null) targets.Add(new PingTarget { Name = L.T("Твой роутер", "Your router"), Address = gateway });
                 targets.AddRange(nearest);
-                if (nearest.Count == 0) targets.Add(new PingTarget { Name = "Cloudflare (общий интернет)", Address = "1.1.1.1" });
+                if (nearest.Count == 0) targets.Add(new PingTarget { Name = L.T("Cloudflare (общий интернет)", "Cloudflare (general internet)"), Address = "1.1.1.1" });
 
-                PingPhase.Text = "Пингуем 15 секунд. Не запускай ничего тяжёлого, чтобы замер был честным.";
+                PingPhase.Text = L.T("Пингуем 15 секунд. Не запускай ничего тяжёлого, чтобы замер был честным.", "Pinging for 15 seconds. Don’t start anything heavy so the test is fair.");
                 var stats = await Task.Run(() => PingTest.Series(targets, PingCount, PingInterval,
                     p => Dispatcher.BeginInvoke(new Action(() => PingFillScale.ScaleX = p)), token));
                 ShowPing(stats, gateway != null, wifi, nearest.Count == 0);
@@ -483,11 +508,11 @@ namespace WinOpti.UI
             {
                 App.Log(ex);
                 PingVerdict.Visibility = Visibility.Visible;
-                PingVerdict.Text = "Не получилось: " + ex.Message;
+                PingVerdict.Text = L.T("Не получилось: ", "Failed: ") + ex.Message;
                 PingVerdict.Foreground = (Brush)FindResource("Red");
             }
             PingProgress.Visibility = Visibility.Collapsed;
-            PingButtonText.Text = "Проверить ещё раз";
+            PingButtonText.Text = L.T("Проверить ещё раз", "Test again");
             _pingCancel = null;
         }
 
@@ -505,20 +530,20 @@ namespace WinOpti.UI
                 PingTable.Children.Add(tb);
             }
             PingTable.RowDefinitions.Add(new RowDefinition());
-            Cell(0, 0, "Куда", "Dim", 12);
-            Cell(0, 1, "Пинг", "Dim", 12);
-            Cell(0, 2, "Скачки", "Dim", 12);
-            Cell(0, 3, "Потери", "Dim", 12);
+            Cell(0, 0, L.T("Куда", "Target"), "Dim", 12);
+            Cell(0, 1, L.T("Пинг", "Ping"), "Dim", 12);
+            Cell(0, 2, L.T("Скачки", "Jitter"), "Dim", 12);
+            Cell(0, 3, L.T("Потери", "Loss"), "Dim", 12);
             for (int i = 0; i < stats.Count; i++)
             {
                 var s = stats[i];
                 PingTable.RowDefinitions.Add(new RowDefinition());
                 bool router = hasGateway && i == 0;
                 Cell(i + 1, 0, s.Target.Name, "Text", 14, true);
-                if (s.Sent == s.Lost) { Cell(i + 1, 1, "не отвечает", "Red", 14); continue; }
-                Cell(i + 1, 1, $"{s.Avg:0} мс", router ? (s.Avg > 10 ? "Orange" : "Green") : s.Avg < 40 ? "Green" : s.Avg < 80 ? "Orange" : "Red", 14, true);
-                Cell(i + 1, 2, $"±{s.Jitter:0} мс", s.Jitter < 5 ? "Green" : s.Jitter < 15 ? "Orange" : "Red", 14);
-                Cell(i + 1, 3, s.Lost == 0 ? "нет" : $"{s.LossPercent:0.#}%", s.Lost == 0 ? "Green" : s.LossPercent < 2 ? "Orange" : "Red", 14);
+                if (s.Sent == s.Lost) { Cell(i + 1, 1, L.T("не отвечает", "no reply"), "Red", 14); continue; }
+                Cell(i + 1, 1, L.T($"{s.Avg:0} мс", $"{s.Avg:0} ms"), router ? (s.Avg > 10 ? "Orange" : "Green") : s.Avg < 40 ? "Green" : s.Avg < 80 ? "Orange" : "Red", 14, true);
+                Cell(i + 1, 2, L.T($"±{s.Jitter:0} мс", $"±{s.Jitter:0} ms"), s.Jitter < 5 ? "Green" : s.Jitter < 15 ? "Orange" : "Red", 14);
+                Cell(i + 1, 3, s.Lost == 0 ? L.T("нет", "none") : $"{s.LossPercent:0.#}%", s.Lost == 0 ? "Green" : s.LossPercent < 2 ? "Orange" : "Red", 14);
             }
             PingTable.Visibility = Visibility.Visible;
 
@@ -529,31 +554,31 @@ namespace WinOpti.UI
             if (best != null && !noValve && best.Avg < 2)
             {
                 color = "Orange";
-                text = "Пинг до далёких серверов почти нулевой — так не бывает. Похоже, включён VPN или прокси, и отвечает он, а не серверы. Выключи его и повтори проверку.";
+                text = L.T("Пинг до далёких серверов почти нулевой — так не бывает. Похоже, включён VPN или прокси, и отвечает он, а не серверы. Выключи его и повтори проверку.", "Ping to distant servers is almost zero, which is impossible. Looks like a VPN or proxy is on and it’s answering instead of the servers. Turn it off and test again.");
             }
             else if (gw != null && (gw.Jitter > 5 || gw.Lost > 0 || gw.Avg > 10))
             {
                 color = "Red";
                 text = wifi
-                    ? "Скачки начинаются уже на пути до роутера — виноват Wi-Fi, а не интернет. Подключи ПК кабелем или поставь его ближе к роутеру, без стен между ними. Если нельзя — переключись на Wi-Fi 5 ГГц."
-                    : "Скачки начинаются уже на пути до роутера: виновата домашняя сеть. Проверь кабель, перезагрузи роутер и посмотри, не качает ли кто-то в сети торренты или обновления.";
+                    ? L.T("Скачки начинаются уже на пути до роутера — виноват Wi-Fi, а не интернет. Подключи ПК кабелем или поставь его ближе к роутеру, без стен между ними. Если нельзя — переключись на Wi-Fi 5 ГГц.", "Jitter starts on the way to your router, so Wi-Fi is to blame, not the internet. Use a cable or move the PC closer to the router with no walls between. If you can’t, switch to 5 GHz Wi-Fi.")
+                    : L.T("Скачки начинаются уже на пути до роутера: виновата домашняя сеть. Проверь кабель, перезагрузи роутер и посмотри, не качает ли кто-то в сети торренты или обновления.", "Jitter starts on the way to your router: your home network is to blame. Check the cable, restart the router and see if anyone on the network is downloading torrents or updates.");
             }
             else if (best != null && (best.Jitter > 10 || best.LossPercent >= 1))
             {
                 color = "Orange";
-                text = "До роутера всё ровно, а скачки дальше — на стороне провайдера. Если так бывает по вечерам, это перегрузка сети провайдера: напиши в поддержку и приложи эти цифры.";
+                text = L.T("До роутера всё ровно, а скачки дальше — на стороне провайдера. Если так бывает по вечерам, это перегрузка сети провайдера: напиши в поддержку и приложи эти цифры.", "Everything is steady up to the router; the jitter is further out, on your ISP’s side. If it happens in the evenings, the ISP network is congested: contact support and attach these numbers.");
             }
             else if (best != null && best.Avg >= 80)
             {
                 color = "Orange";
-                text = $"Сеть стабильная, но ближайший сервер Valve далеко ({best.Target.Name}, {best.Avg:0} мс). Это расстояние, а не неисправность — исправить его настройками Windows нельзя.";
+                text = L.T($"Сеть стабильная, но ближайший сервер Valve далеко ({best.Target.Name}, {best.Avg:0} мс). Это расстояние, а не неисправность — исправить его настройками Windows нельзя.", $"The network is stable, but the nearest Valve server is far away ({best.Target.Name}, {best.Avg:0} ms). That’s distance, not a fault: Windows settings can’t fix it.");
             }
             else
             {
                 color = "Green";
-                text = "Сеть в порядке: пинг ровный, потерь нет." + (wifi ? " Ты подключён по Wi-Fi: сейчас стабильно, но для игр кабель всегда надёжнее." : "");
+                text = L.T("Сеть в порядке: пинг ровный, потерь нет.", "The network is fine: steady ping, no loss.") + (wifi ? L.T(" Ты подключён по Wi-Fi: сейчас стабильно, но для игр кабель всегда надёжнее.", " You’re on Wi-Fi: stable right now, but a cable is always more reliable for games.") : "");
             }
-            if (noValve) text += " Список серверов Valve не загрузился, поэтому мерили до Cloudflare — это общий пинг в интернет.";
+            if (noValve) text += L.T(" Список серверов Valve не загрузился, поэтому мерили до Cloudflare — это общий пинг в интернет.", " The Valve server list didn’t load, so we measured to Cloudflare: that’s your general internet ping.");
             PingVerdict.Text = text;
             PingVerdict.Foreground = (Brush)FindResource(color == "Green" ? "Text" : color);
             PingVerdict.Visibility = Visibility.Visible;

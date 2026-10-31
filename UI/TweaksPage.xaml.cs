@@ -16,8 +16,8 @@ namespace WinOpti.UI
     {
         internal static readonly (string id, string name)[] Cats =
         {
-            ("all", "Все"), ("privacy", "Телеметрия и фон"), ("interface", "Интерфейс"),
-            ("performance", "Производительность"), ("gaming", "Игры и ввод"), ("system", "Система"),
+            ("all", L.T("Все", "All")), ("privacy", L.T("Телеметрия и фон", "Telemetry and background")), ("interface", L.T("Интерфейс", "Interface")),
+            ("performance", L.T("Производительность", "Performance")), ("gaming", L.T("Игры и ввод", "Gaming and input")), ("system", L.T("Система", "System")),
         };
 
         readonly List<TweakViewModel> _items;
@@ -49,7 +49,7 @@ namespace WinOpti.UI
         /// <summary>Состояние читаем в фоне по 4 твика сразу: задачи и службы опрашиваются внешними утилитами, окно не должно ждать.</summary>
         async Task LoadAsync()
         {
-            Status.Text = "Проверяем, что уже включено…";
+            Status.Text = L.T("Проверяем, что уже включено…", "Checking what’s already on…");
             var gate = new SemaphoreSlim(4);
             await Task.WhenAll(_items.Select(async vm =>
             {
@@ -63,7 +63,7 @@ namespace WinOpti.UI
         {
             var supported = _items.Where(i => i.T.Supported).ToList();
             int on = supported.Count(i => i.IsOn);
-            Status.Text = $"Включено {on} из {supported.Count}" + (supported.Any(i => i.IsPartial) ? $" · частично: {supported.Count(i => i.IsPartial)}" : "");
+            Status.Text = L.T($"Включено {on} из {supported.Count}", $"{on} of {supported.Count} on") + (supported.Any(i => i.IsPartial) ? L.T($" · частично: {supported.Count(i => i.IsPartial)}", $" · partly: {supported.Count(i => i.IsPartial)}") : "");
         }
 
         void OnSearch(object sender, TextChangedEventArgs e) => Refilter();
@@ -78,7 +78,7 @@ namespace WinOpti.UI
         async Task<string> RestorePointAsync()
         {
             var old = Status.Text;
-            Status.Text = "Создаю точку восстановления Windows перед первым изменением — это до минуты…";
+            Status.Text = L.T("Создаю точку восстановления Windows перед первым изменением — это до минуты…", "Creating a Windows restore point before the first change, up to a minute…");
             try { return await Task.Run(TweakEngine.EnsureRestorePoint); }
             finally { Status.Text = old; UpdateStatus(); }
         }

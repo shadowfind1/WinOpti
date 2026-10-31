@@ -45,7 +45,14 @@ namespace WinOpti.Tweaks
                     DescriptionEn = Str(d, "description_en"),
                     Hidden = d.TryGetValue("hidden", out var h) && h is bool b && b,
                 };
-                t.Keywords = Strings(d, "keywords") is List<string> kw ? string.Join(" ", kw) : Str(d, "keywords");
+                t.Keywords = (Strings(d, "keywords") is List<string> kw ? string.Join(" ", kw) : Str(d, "keywords")) + " " + t.Name + " " + t.NameEn;
+                if (L.En)
+                {
+                    // английский интерфейс: везде, где показывается твик, берём английский текст
+                    t.Name = t.NameEn ?? t.Name;
+                    t.Description = t.DescriptionEn ?? t.Description;
+                    t.After = Str(d, "after_en") ?? t.After;
+                }
                 t.Windows = Strings(d, "windows") ?? t.Windows;
                 t.Refresh = Strings(d, "refresh") ?? t.Refresh;
                 if (d.TryGetValue("actions", out var acts) && acts is IEnumerable e)

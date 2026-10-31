@@ -47,12 +47,12 @@ namespace WinOpti.Tests
     {
         static readonly Dictionary<string, string> CityRu = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["sto"] = "Стокгольм", ["sto2"] = "Стокгольм", ["waw"] = "Варшава", ["fra"] = "Франкфурт", ["vie"] = "Вена", ["ams"] = "Амстердам",
-            ["par"] = "Париж", ["lhr"] = "Лондон", ["mad"] = "Мадрид", ["hel"] = "Хельсинки", ["dxb"] = "Дубай", ["bom2"] = "Мумбаи",
-            ["maa2"] = "Ченнаи", ["sgp"] = "Сингапур", ["hkg"] = "Гонконг", ["tyo"] = "Токио", ["seo"] = "Сеул", ["syd"] = "Сидней",
-            ["jnb"] = "Йоханнесбург", ["gru"] = "Сан-Паулу", ["eze"] = "Буэнос-Айрес", ["scl"] = "Сантьяго", ["lim"] = "Лима",
-            ["iad"] = "Вашингтон", ["atl"] = "Атланта", ["ord"] = "Чикаго", ["dfw"] = "Даллас", ["lax"] = "Лос-Анджелес", ["sea"] = "Сиэтл",
-            ["dfra"] = "Франкфурт", ["dvie"] = "Вена", ["dlhr"] = "Лондон", ["dfjr"] = "Фуджейра",
+            ["sto"] = L.T("Стокгольм", "Stockholm"), ["sto2"] = L.T("Стокгольм", "Stockholm"), ["waw"] = L.T("Варшава", "Warsaw"), ["fra"] = L.T("Франкфурт", "Frankfurt"), ["vie"] = L.T("Вена", "Vienna"), ["ams"] = L.T("Амстердам", "Amsterdam"),
+            ["par"] = L.T("Париж", "Paris"), ["lhr"] = L.T("Лондон", "London"), ["mad"] = L.T("Мадрид", "Madrid"), ["hel"] = L.T("Хельсинки", "Helsinki"), ["dxb"] = L.T("Дубай", "Dubai"), ["bom2"] = L.T("Мумбаи", "Mumbai"),
+            ["maa2"] = L.T("Ченнаи", "Chennai"), ["sgp"] = L.T("Сингапур", "Singapore"), ["hkg"] = L.T("Гонконг", "Hong Kong"), ["tyo"] = L.T("Токио", "Tokyo"), ["seo"] = L.T("Сеул", "Seoul"), ["syd"] = L.T("Сидней", "Sydney"),
+            ["jnb"] = L.T("Йоханнесбург", "Johannesburg"), ["gru"] = L.T("Сан-Паулу", "São Paulo"), ["eze"] = L.T("Буэнос-Айрес", "Buenos Aires"), ["scl"] = L.T("Сантьяго", "Santiago"), ["lim"] = L.T("Лима", "Lima"),
+            ["iad"] = L.T("Вашингтон", "Washington"), ["atl"] = L.T("Атланта", "Atlanta"), ["ord"] = L.T("Чикаго", "Chicago"), ["dfw"] = L.T("Даллас", "Dallas"), ["lax"] = L.T("Лос-Анджелес", "Los Angeles"), ["sea"] = L.T("Сиэтл", "Seattle"),
+            ["dfra"] = L.T("Франкфурт", "Frankfurt"), ["dvie"] = L.T("Вена", "Vienna"), ["dlhr"] = L.T("Лондон", "London"), ["dfjr"] = L.T("Фуджейра", "Fujairah"),
         };
 
         /// <summary>Шлюз (роутер) и тип подключения основного сетевого адаптера.</summary>
@@ -77,7 +77,7 @@ namespace WinOpti.Tests
                 json = web.DownloadString("https://api.steampowered.com/ISteamApps/GetSDRConfig/v1/?appid=730");
             }
             var root = new JavaScriptSerializer { MaxJsonLength = int.MaxValue }.DeserializeObject(json) as Dictionary<string, object>;
-            var pops = root?["pops"] as Dictionary<string, object> ?? throw new InvalidOperationException("Steam вернул неожиданный ответ");
+            var pops = root?["pops"] as Dictionary<string, object> ?? throw new InvalidOperationException(L.T("Steam вернул неожиданный ответ", "Steam returned an unexpected response"));
             var list = new List<PingTarget>();
             foreach (var kv in pops)
             {

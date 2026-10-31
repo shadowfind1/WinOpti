@@ -1,9 +1,9 @@
-# Логотип «Графит»: салатовый скруглённый квадрат, две тёмные стрелки вверх.
+# Логотип «Арена»: голубой скруглённый квадрат, две тёмные стрелки вверх.
 # Пишет Assets/logo.png (512 px) и Assets/winopti.ico (16–256 px). Запуск из папки WinOpti2.
 from PIL import Image, ImageDraw
 
-LIME = (198, 255, 61, 255)
-INK = (8, 9, 11, 255)
+ACCENT = (59, 232, 255, 255)
+INK = (6, 8, 15, 255)
 
 
 def draw(size):
@@ -11,7 +11,7 @@ def draw(size):
     s = size * k
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle([0, 0, s - 1, s - 1], radius=int(s * 0.24), fill=LIME)
+    d.rounded_rectangle([0, 0, s - 1, s - 1], radius=int(s * 0.24), fill=ACCENT)
     u = s / 24  # сетка 24×24, как у значка в макете
     w = max(int(u * 2.9), 1)
     for y in (12.5, 18.5):

@@ -30,14 +30,14 @@ namespace WinOpti.UI
             _undo = null;
             DisableButton.IsEnabled = RefreshButton.IsEnabled = false;
             Total.Text = "…";
-            Summary.Text = "Смотрим, что запускается вместе с Windows…";
+            Summary.Text = L.T("Смотрим, что запускается вместе с Windows…", "Looking at what starts with Windows…");
             List<StartupItem> items;
             string warning;
             try { (items, warning) = await Task.Run(() => StartupManager.List()); }
             catch (Exception e)
             {
                 App.Log(e);
-                (items, warning) = (new List<StartupItem>(), "Не удалось прочитать автозагрузку: " + e.Message);
+                (items, warning) = (new List<StartupItem>(), L.T("Не удалось прочитать автозагрузку: ", "Couldn’t read startup items: ") + e.Message);
             }
             _items = items.Select(i => new StartupViewModel(i, _admin)).ToList();
             foreach (var vm in _items) vm.StateChanged += UpdateTotals;
@@ -63,31 +63,25 @@ namespace WinOpti.UI
         {
             if (_busy) return;
             int on = _items.Count(v => v.IsOn && !v.IsService), svc = _items.Count(v => v.IsOn && v.IsService);
-            Total.Text = $"{on} {Plural(on, "программа", "программы", "программ")}";
+            Total.Text = L.N(on, "программа", "программы", "программ", "app", "apps");
             var running = _items.Where(v => v.IsOn && v.Running).ToList();
             int extra = Recommended.Count();
             var parts = new List<string>();
-            if (svc > 0) parts.Add($"плюс {svc} {Plural(svc, "служба", "службы", "служб")}");
-            if (running.Count > 0) parts.Add($"сейчас занимают {Cleaner.Format(running.Sum(v => v.Item.RamBytes))} памяти");
-            parts.Add(extra > 0 ? $"без вреда можно выключить {extra}" : "лишнего не нашли");
+            if (svc > 0) parts.Add(L.T("плюс ", "plus ") + L.N(svc, "служба", "службы", "служб", "service", "services"));
+            if (running.Count > 0) parts.Add(L.T($"сейчас занимают {Cleaner.Format(running.Sum(v => v.Item.RamBytes))} памяти", $"using {Cleaner.Format(running.Sum(v => v.Item.RamBytes))} of RAM now"));
+            parts.Add(extra > 0 ? L.T($"без вреда можно выключить {extra}", $"{extra} can be safely turned off") : L.T("лишнего не нашли", "nothing extra found"));
             var text = string.Join(", ", parts) + ".";
             Summary.Text = char.ToUpper(text[0]) + text.Substring(1);
             if (_undo != null)
             {
-                DisableText.Text = "Вернуть как было";
+                DisableText.Text = L.T("Вернуть как было", "Undo");
                 DisableButton.IsEnabled = true;
             }
             else
             {
-                DisableText.Text = extra > 0 ? $"Выключить лишнее ({extra})" : "Выключить лишнее";
+                DisableText.Text = extra > 0 ? L.T($"Выключить лишнее ({extra})", $"Turn off extras ({extra})") : L.T("Выключить лишнее", "Turn off extras");
                 DisableButton.IsEnabled = extra > 0;
             }
-        }
-
-        static string Plural(int n, string one, string few, string many)
-        {
-            int m10 = n % 10, m100 = n % 100;
-            return m10 == 1 && m100 != 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
         }
 
         async void OnDisableRecommended(object sender, RoutedEventArgs e)
@@ -96,7 +90,7 @@ namespace WinOpti.UI
             var targets = undo ? _undo : Recommended.ToList();
             _busy = true;
             DisableButton.IsEnabled = RefreshButton.IsEnabled = false;
-            DisableText.Text = undo ? "Возвращаю…" : "Выключаю…";
+            DisableText.Text = undo ? L.T("Возвращаю…", "Restoring…") : L.T("Выключаю…", "Turning off…");
             foreach (var vm in targets) await vm.SetAsync(undo); // по очереди: schtasks и реестр, быстро
             _undo = undo ? null : targets.Where(v => !v.IsOn).ToList();
             if (_undo != null && _undo.Count == 0) _undo = null;

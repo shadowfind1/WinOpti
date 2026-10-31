@@ -5,7 +5,8 @@ using System.Windows.Media;
 
 namespace WinOpti.UI
 {
-    /// <summary>Кольцо «готовность к играм» 0–100. Рисуется одним OnRender без вложенных элементов — дёшево анимировать.</summary>
+    /// <summary>Оценка «готовность к играм» 0–100: большая цифра и шкала из 20 делений.
+    /// Рисуется одним OnRender без вложенных элементов — дёшево анимировать.</summary>
     public sealed class ScoreRing : FrameworkElement
     {
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
@@ -19,16 +20,22 @@ namespace WinOpti.UI
         public double Value { get => (double)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
         public bool ShowNumber { get => (bool)GetValue(ShowNumberProperty); set => SetValue(ShowNumberProperty, value); }
 
-        static readonly Brush Track = Frozen(new SolidColorBrush(Color.FromRgb(0x1C, 0x20, 0x26)));
-        static readonly Pen TrackPen = FrozenPen(Track, 12);
+        const int Segments = 20;
+        const double BarHeight = 26, Gap = 4;
+
+        static readonly Brush Track = Frozen(new SolidColorBrush(Color.FromRgb(0x1A, 0x22, 0x33)));
+        static readonly Brush MutedBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x8A, 0x93, 0xA6)));
+        static readonly Typeface Display = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Assets/Fonts/#Unbounded"),
+            FontStyles.Normal, FontWeights.ExtraBold, FontStretches.Normal);
+        static readonly Typeface DisplayMedium = new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Assets/Fonts/#Unbounded"),
+            FontStyles.Normal, FontWeights.Medium, FontStretches.Normal);
 
         static Brush Frozen(Brush b) { b.Freeze(); return b; }
-        static Pen FrozenPen(Brush b, double w) { var p = new Pen(b, w) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round }; p.Freeze(); return p; }
 
-        /// <summary>Цвет по оценке: красный → оранжевый → зелёный.</summary>
+        /// <summary>Цвет по оценке: красный → оранжевый → голубой акцент.</summary>
         static Color ScoreColor(double v)
         {
-            Color a = Color.FromRgb(0xFF, 0x5D, 0x6C), b = Color.FromRgb(0xF5, 0xA6, 0x23), c = Color.FromRgb(0xC6, 0xFF, 0x3D);
+            Color a = Color.FromRgb(0xFF, 0x5D, 0x6C), b = Color.FromRgb(0xFF, 0xB3, 0x47), c = Color.FromRgb(0x3B, 0xE8, 0xFF);
             if (v < 60) return Lerp(a, b, Math.Max(0, (v - 30) / 30));
             return Lerp(b, c, Math.Min(1, (v - 60) / 30));
         }
@@ -38,40 +45,34 @@ namespace WinOpti.UI
 
         protected override void OnRender(DrawingContext dc)
         {
-            double size = Math.Min(ActualWidth, ActualHeight);
-            if (size <= 0) return;
-            double thick = 12, r = size / 2 - thick / 2;
-            var center = new Point(ActualWidth / 2, ActualHeight / 2);
-            dc.DrawEllipse(null, TrackPen, center, r, r);
-
+            double w = ActualWidth, h = ActualHeight;
+            if (w <= 0 || h <= 0) return;
             double v = Math.Max(0, Math.Min(100, Value));
-            var color = ScoreColor(v);
-            if (v > 0.2)
+            var brush = new SolidColorBrush(ScoreColor(v));
+            brush.Freeze();
+
+            // шкала внизу: деления заполняются по очереди, последнее — частично (плавно при анимации)
+            double seg = (w - Gap * (Segments - 1)) / Segments, y = h - BarHeight, filled = v / 100 * Segments;
+            for (int i = 0; i < Segments; i++)
             {
-                var pen = new Pen(new SolidColorBrush(color), thick) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
-                double angle = 359.99 * v / 100;
-                double a0 = -90 * Math.PI / 180, a1 = (angle - 90) * Math.PI / 180;
-                var p0 = new Point(center.X + r * Math.Cos(a0), center.Y + r * Math.Sin(a0));
-                var p1 = new Point(center.X + r * Math.Cos(a1), center.Y + r * Math.Sin(a1));
-                var g = new StreamGeometry();
-                using (var ctx = g.Open())
-                {
-                    ctx.BeginFigure(p0, false, false);
-                    ctx.ArcTo(p1, new Size(r, r), 0, angle > 180, SweepDirection.Clockwise, true, false);
-                }
-                g.Freeze();
-                dc.DrawGeometry(null, pen, g);
+                var rect = new Rect(i * (seg + Gap), y, seg, BarHeight);
+                dc.DrawRoundedRectangle(Track, null, rect, 3, 3);
+                double part = Math.Max(0, Math.Min(1, filled - i));
+                if (part <= 0) continue;
+                dc.PushOpacity(part);
+                dc.DrawRoundedRectangle(brush, null, rect, 3, 3);
+                dc.Pop();
             }
 
             if (!ShowNumber) return;
             double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+            double size = Math.Min(96, Math.Min(w * 0.34, (h - BarHeight - 16) * 0.85));
             var num = new FormattedText(Math.Round(v).ToString(CultureInfo.InvariantCulture), CultureInfo.CurrentUICulture,
-                FlowDirection.LeftToRight, new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Assets/Fonts/#JetBrains Mono"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal),
-                size * 0.3, new SolidColorBrush(Color.FromRgb(0xE8, 0xEA, 0xED)), dpi);
-            dc.DrawText(num, new Point(center.X - num.Width / 2, center.Y - num.Height / 2 - size * 0.04));
-            var cap = new FormattedText("из 100", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
-                new Typeface(new FontFamily(new Uri("pack://application:,,,/"), "./Assets/Fonts/#Inter Tight"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal), size * 0.085, new SolidColorBrush(Color.FromRgb(0x8B, 0x90, 0x99)), dpi);
-            dc.DrawText(cap, new Point(center.X - cap.Width / 2, center.Y + num.Height / 2 - size * 0.08));
+                FlowDirection.LeftToRight, Display, size, brush, dpi);
+            var cap = new FormattedText("/100", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, DisplayMedium, size * 0.22, MutedBrush, dpi);
+            double top = y - 16 - num.Height;
+            dc.DrawText(num, new Point(0, top));
+            dc.DrawText(cap, new Point(num.Width + 8, top + num.Baseline - cap.Baseline));
         }
     }
 }

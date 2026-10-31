@@ -47,58 +47,58 @@ namespace WinOpti.Startup
 
         static readonly (string id, RegistryHive hive, string path, string approved, string where)[] RegSources =
         {
-            ("hkcu_run", RegistryHive.CurrentUser, Run, "Run", "реестр, текущий пользователь"),
-            ("hklm_run", RegistryHive.LocalMachine, Run, "Run", "реестр, все пользователи"),
-            ("hklm_run32", RegistryHive.LocalMachine, Run32, "Run32", "реестр, все пользователи (32-бит)"),
-            ("hkcu_run32", RegistryHive.CurrentUser, Run32, "Run32", "реестр, текущий пользователь (32-бит)"),
+            ("hkcu_run", RegistryHive.CurrentUser, Run, "Run", L.T("реестр, текущий пользователь", "registry, current user")),
+            ("hklm_run", RegistryHive.LocalMachine, Run, "Run", L.T("реестр, все пользователи", "registry, all users")),
+            ("hklm_run32", RegistryHive.LocalMachine, Run32, "Run32", L.T("реестр, все пользователи (32-бит)", "registry, all users (32-bit)")),
+            ("hkcu_run32", RegistryHive.CurrentUser, Run32, "Run32", L.T("реестр, текущий пользователь (32-бит)", "registry, current user (32-bit)")),
         };
 
         static readonly (string id, RegistryHive hive, string folder, string where)[] FolderSources =
         {
-            ("user_folder", RegistryHive.CurrentUser, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup)), "папка «Автозагрузка», текущий пользователь"),
-            ("common_folder", RegistryHive.LocalMachine, Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), "папка «Автозагрузка», все пользователи"),
+            ("user_folder", RegistryHive.CurrentUser, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Startup)), L.T("папка «Автозагрузка», текущий пользователь", "Startup folder, current user")),
+            ("common_folder", RegistryHive.LocalMachine, Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), L.T("папка «Автозагрузка», все пользователи", "Startup folder, all users")),
         };
 
         // Подсказки: (подстроки в имени, пути или издателе, текст). Keep проверяем первым.
         static readonly (string[] keys, string text)[] Keep =
         {
-            (new[] { "securityhealth" }, "значок «Безопасности Windows»"),
-            (new[] { "vanguard", "vgtray" }, "античит Riot: без него не запустятся Valorant и League of Legends"),
-            (new[] { "faceit ac", "faceitac" }, "античит FACEIT"),
-            (new[] { "realtek", "rtkaud", "ravcpl", "rthdvcpl" }, "звуковой драйвер"),
-            (new[] { "synaptics", "syntp", "elan", "etdctrl" }, "драйвер тачпада"),
-            (new[] { "igfx", "intel" }, "драйвер Intel"),
-            (new[] { "avp.exe", "kaspersky", "eset", "egui", "avast", "avgui", "drweb", "360tray", "defender" }, "антивирус"),
-            (new[] { "ctfmon" }, "языковая панель и ввод текста"),
-            (new[] { "nvidia", "nvcontainer", "nvdisplay" }, "служба драйвера NVIDIA: без неё не работают панель управления NVIDIA и настройки видеокарты"),
-            (new[] { "amd external events", "amdrsserv", "radeon" }, "служба драйвера AMD: настройки видеокарты"),
-            (new[] { "lghub", "logitech", "razer", "steelseries", "corsair", "icue", "bloody" }, "ПО мыши или клавиатуры: настройки DPI, макросы и подсветка"),
+            (new[] { "securityhealth" }, L.T("значок «Безопасности Windows»", "Windows Security tray icon")),
+            (new[] { "vanguard", "vgtray" }, L.T("античит Riot: без него не запустятся Valorant и League of Legends", "Riot anti-cheat: Valorant and League of Legends won’t start without it")),
+            (new[] { "faceit ac", "faceitac" }, L.T("античит FACEIT", "FACEIT anti-cheat")),
+            (new[] { "realtek", "rtkaud", "ravcpl", "rthdvcpl" }, L.T("звуковой драйвер", "audio driver")),
+            (new[] { "synaptics", "syntp", "elan", "etdctrl" }, L.T("драйвер тачпада", "touchpad driver")),
+            (new[] { "igfx", "intel" }, L.T("драйвер Intel", "Intel driver")),
+            (new[] { "avp.exe", "kaspersky", "eset", "egui", "avast", "avgui", "drweb", "360tray", "defender" }, L.T("антивирус", "antivirus")),
+            (new[] { "ctfmon" }, L.T("языковая панель и ввод текста", "language bar and text input")),
+            (new[] { "nvidia", "nvcontainer", "nvdisplay" }, L.T("служба драйвера NVIDIA: без неё не работают панель управления NVIDIA и настройки видеокарты", "NVIDIA driver service: the NVIDIA Control Panel and GPU settings need it")),
+            (new[] { "amd external events", "amdrsserv", "radeon" }, L.T("служба драйвера AMD: настройки видеокарты", "AMD driver service: GPU settings")),
+            (new[] { "lghub", "logitech", "razer", "steelseries", "corsair", "icue", "bloody" }, L.T("ПО мыши или клавиатуры: настройки DPI, макросы и подсветка", "mouse or keyboard software: DPI settings, macros and lighting")),
         };
         static readonly (string[] keys, string text)[] Disable =
         {
-            (new[] { "steam" }, "лаунчер: сам запустится, когда откроешь игру"),
-            (new[] { "epicgames", "epic games" }, "лаунчер Epic Games"),
-            (new[] { "riotclient" }, "лаунчер Riot"),
-            (new[] { "eadesktop", "ea desktop", "origin" }, "лаунчер EA"),
-            (new[] { "battle.net" }, "лаунчер Battle.net"),
-            (new[] { "ubisoft", "upc.exe" }, "лаунчер Ubisoft"),
-            (new[] { "roblox" }, "лаунчер Roblox"),
-            (new[] { "faceit" }, "клиент FACEIT: запусти его перед игрой"),
-            (new[] { "discord" }, "мессенджер: оставь, если нужен сразу после включения ПК"),
-            (new[] { "telegram", "viber", "whatsapp", "skype", "teams", "zoom" }, "мессенджер: оставь, если нужен сразу после включения ПК"),
-            (new[] { "spotify", "yandex music", "яндекс музыка" }, "музыка: запускается за секунду вручную"),
-            (new[] { "onedrive" }, "облако: выключи, если не синхронизируешь файлы"),
-            (new[] { "edgeupdate", "browser update", "gupdate", "brave update" }, "обновления браузера: браузер проверит их сам, когда ты его откроешь"),
-            (new[] { "autolaunch", "browser.exe", "opera" }, "фоновый запуск браузера ради «быстрого старта»"),
-            (new[] { "yourphone", "phone link", "связь с телефоном" }, "«Связь с телефоном»: выключи, если не подключаешь телефон к ПК"),
-            (new[] { "pcmanager", "pc manager" }, "Microsoft PC Manager — ещё одна программа для очистки, Windows без неё работает так же"),
-            (new[] { "lively" }, "живые обои: постоянно нагружают видеокарту, особенно заметно в играх"),
-            (new[] { "googleupdate", "google update" }, "обновления Google: проверятся сами при запуске Chrome"),
-            (new[] { "adobe", "acrotray" }, "служебные программы и обновления Adobe"),
-            (new[] { "jusched", "java update" }, "проверка обновлений Java"),
-            (new[] { "ituneshelper" }, "помощник iTunes"),
-            (new[] { "ccleaner" }, "фоновый мониторинг CCleaner"),
-            (new[] { "utorrent", "qbittorrent", "bittorrent" }, "торрент-клиент"),
+            (new[] { "steam" }, L.T("лаунчер: сам запустится, когда откроешь игру", "launcher: starts by itself when you open a game")),
+            (new[] { "epicgames", "epic games" }, L.T("лаунчер Epic Games", "Epic Games launcher")),
+            (new[] { "riotclient" }, L.T("лаунчер Riot", "Riot launcher")),
+            (new[] { "eadesktop", "ea desktop", "origin" }, L.T("лаунчер EA", "EA launcher")),
+            (new[] { "battle.net" }, L.T("лаунчер Battle.net", "Battle.net launcher")),
+            (new[] { "ubisoft", "upc.exe" }, L.T("лаунчер Ubisoft", "Ubisoft launcher")),
+            (new[] { "roblox" }, L.T("лаунчер Roblox", "Roblox launcher")),
+            (new[] { "faceit" }, L.T("клиент FACEIT: запусти его перед игрой", "FACEIT client: start it before you play")),
+            (new[] { "discord" }, L.T("мессенджер: оставь, если нужен сразу после включения ПК", "messenger: keep it if you need it right after the PC starts")),
+            (new[] { "telegram", "viber", "whatsapp", "skype", "teams", "zoom" }, L.T("мессенджер: оставь, если нужен сразу после включения ПК", "messenger: keep it if you need it right after the PC starts")),
+            (new[] { "spotify", "yandex music", "яндекс музыка" }, L.T("музыка: запускается за секунду вручную", "music: takes a second to start by hand")),
+            (new[] { "onedrive" }, L.T("облако: выключи, если не синхронизируешь файлы", "cloud storage: turn off if you don’t sync files")),
+            (new[] { "edgeupdate", "browser update", "gupdate", "brave update" }, L.T("обновления браузера: браузер проверит их сам, когда ты его откроешь", "browser updates: the browser checks for them when you open it")),
+            (new[] { "autolaunch", "browser.exe", "opera" }, L.T("фоновый запуск браузера ради «быстрого старта»", "background browser launch for “fast start”")),
+            (new[] { "yourphone", "phone link", "связь с телефоном" }, L.T("«Связь с телефоном»: выключи, если не подключаешь телефон к ПК", "Phone Link: turn off if you don’t connect your phone to the PC")),
+            (new[] { "pcmanager", "pc manager" }, L.T("Microsoft PC Manager — ещё одна программа для очистки, Windows без неё работает так же", "Microsoft PC Manager: yet another cleanup app, Windows works the same without it")),
+            (new[] { "lively" }, L.T("живые обои: постоянно нагружают видеокарту, особенно заметно в играх", "live wallpaper: constantly loads the GPU, especially noticeable in games")),
+            (new[] { "googleupdate", "google update" }, L.T("обновления Google: проверятся сами при запуске Chrome", "Google updates: checked by Chrome itself when it starts")),
+            (new[] { "adobe", "acrotray" }, L.T("служебные программы и обновления Adobe", "Adobe helpers and updates")),
+            (new[] { "jusched", "java update" }, L.T("проверка обновлений Java", "Java update check")),
+            (new[] { "ituneshelper" }, L.T("помощник iTunes", "iTunes helper")),
+            (new[] { "ccleaner" }, L.T("фоновый мониторинг CCleaner", "CCleaner background monitoring")),
+            (new[] { "utorrent", "qbittorrent", "bittorrent" }, L.T("торрент-клиент", "torrent client")),
         };
 
         static (string hint, string text) HintFor(string text)
@@ -184,7 +184,7 @@ namespace WinOpti.Startup
                     yield return new StartupItem
                     {
                         Id = "task:" + path, Source = Source.Task, Name = Path.GetFileName(f), Command = command,
-                        Exe = command.Length > 0 ? ExeOf(command) : "", Where = "задача планировщика",
+                        Exe = command.Length > 0 ? ExeOf(command) : "", Where = L.T("задача планировщика", "scheduled task"),
                         Enabled = !(enabled != null && enabled.Value.Trim().Equals("false", StringComparison.OrdinalIgnoreCase)),
                         Admin = true, TaskPath = path,
                     };
@@ -233,7 +233,7 @@ namespace WinOpti.Startup
                 yield return new StartupItem
                 {
                     Id = "service:" + name, Source = Source.Service, Name = s["DisplayName"] as string ?? name, Command = cmd, Exe = exe,
-                    Where = "служба", Enabled = auto, Admin = true, ServiceName = name,
+                    Where = L.T("служба", "service"), Enabled = auto, Admin = true, ServiceName = name,
                 };
             }
         }
@@ -314,7 +314,7 @@ namespace WinOpti.Startup
                                     list.Add(new StartupItem
                                     {
                                         Id = $@"store:{family}\{task}", Source = Source.Store, Name = name, Command = family, Exe = "",
-                                        Where = "приложение из Microsoft Store", Enabled = StoreEnabled(state), Locked = state >= 3,
+                                        Where = L.T("приложение из Microsoft Store", "Microsoft Store app"), Enabled = StoreEnabled(state), Locked = state >= 3,
                                         StoreKey = $@"{StoreRoot}SystemAppData\{family}\{task}", Target = folder ?? "",
                                     });
                                 }
@@ -382,9 +382,9 @@ namespace WinOpti.Startup
                 }
             }
             try { items.AddRange(Tasks()); }
-            catch (Exception e) { warning = "задачи планировщика не прочитаны: " + e.Message; }
+            catch (Exception e) { warning = L.T("задачи планировщика не прочитаны: ", "scheduled tasks not read: ") + e.Message; }
             try { items.AddRange(Services()); }
-            catch (Exception e) { warning = (warning == null ? "" : warning + "; ") + "службы не прочитаны: " + e.Message; }
+            catch (Exception e) { warning = (warning == null ? "" : warning + "; ") + L.T("службы не прочитаны: ", "services not read: ") + e.Message; }
             items.AddRange(StoreApps());
 
             foreach (var it in items)
@@ -400,7 +400,7 @@ namespace WinOpti.Startup
                     catch { }
                 }
                 (it.Hint, it.HintText) = HintFor(string.Join(" ", it.Name, it.Exe, it.Target, it.Company));
-                if (it.Missing) (it.Hint, it.HintText) = ("disable", "программы уже нет на компьютере, а запись о запуске осталась. Выключение ничего не сломает");
+                if (it.Missing) (it.Hint, it.HintText) = ("disable", L.T("программы уже нет на компьютере, а запись о запуске осталась. Выключение ничего не сломает", "the app is gone from this PC but its startup entry remains. Turning it off won’t break anything"));
             }
             MeasureUsage(items);
             return (items.OrderBy(i => !i.Enabled).ThenBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ToList(), warning);
@@ -441,14 +441,14 @@ namespace WinOpti.Startup
 
         public static void SetEnabled(StartupItem it, bool enable)
         {
-            if (it.Locked) throw new InvalidOperationException("запуском управляет политика организации");
+            if (it.Locked) throw new InvalidOperationException(L.T("запуском управляет политика организации", "startup is controlled by your organization’s policy"));
             if (it.Source == Source.Task) Actions.TaskSet(it.TaskPath, enable);
             else if (it.Source == Source.Service) ServiceSet(it.ServiceName, enable);
             else if (it.Source == Source.Store) Reg.SetDword(RegistryHive.CurrentUser, it.StoreKey, "State", enable ? 2 : 1);
             else
                 using (var k = Reg.Root(it.Hive).CreateSubKey(it.Approved, true))
                     k.SetValue(it.ValueName, ApprovedBytes(enable), RegistryValueKind.Binary);
-            TweakEngine.LogEntry("startup:" + it.Id, "Автозагрузка: " + it.Name, enable ? "startup_on" : "startup_off");
+            TweakEngine.LogEntry("startup:" + it.Id, L.T("Автозагрузка: ", "Startup: ") + it.Name, enable ? "startup_on" : "startup_off");
         }
 
         /// <summary>Перечитать состояние одной записи (после переключения).</summary>

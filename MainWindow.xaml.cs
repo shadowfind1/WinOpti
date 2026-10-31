@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -33,11 +34,14 @@ namespace WinOpti
                 MaxGlyph.Text = WindowState == WindowState.Maximized ? "" : "";
             };
             bool admin = SysInfo.IsAdmin;
-            AdminText.Text = admin ? "Права администратора" : "Без прав администратора";
+            AdminText.Text = admin ? L.T("Права администратора", "Administrator rights") : L.T("Без прав администратора", "No administrator rights");
             AdminDot.Fill = (System.Windows.Media.Brush)FindResource(admin ? "Green" : "Orange");
-            SystemText.Text = Environment.OSVersion.Version.Build >= 22000 ? $"Windows 11 · сборка {Environment.OSVersion.Version.Build}"
-                                                                           : $"Windows 10 · сборка {Environment.OSVersion.Version.Build}";
+            SystemText.Text = Environment.OSVersion.Version.Build >= 22000 ? L.T($"Windows 11 · сборка {Environment.OSVersion.Version.Build}", $"Windows 11 · build {Environment.OSVersion.Version.Build}")
+                                                                           : L.T($"Windows 10 · сборка {Environment.OSVersion.Version.Build}", $"Windows 10 · build {Environment.OSVersion.Version.Build}");
+            (L.En ? LangEn : LangRu).IsChecked = true;
+            _langReady = true;
             Loaded += async (s, e) => await ScanAsync();
+            Loaded += async (s, e) => await CheckUpdateAsync();
 #if DEBUG
             if (Environment.GetCommandLineArgs().Contains("--page=fps")) NavFps.IsChecked = true; // для скриншотов
             if (Environment.GetCommandLineArgs().Contains("--page=tweaks")) NavTweaks.IsChecked = true;
@@ -59,10 +63,10 @@ namespace WinOpti
             ScanButton.IsEnabled = false;
             _problems.Clear();
             _ok.Clear();
-            DiagPage.ScrollToTop();
+            DiagScroll.ScrollToTop();
             ProblemsHeader.Visibility = OkHeader.Visibility = Visibility.Collapsed;
-            Verdict.Text = "Проверяем ПК…";
-            Summary.Text = "Это займёт пару секунд. Ничего не меняем, только смотрим.";
+            Verdict.Text = L.T("Проверяем ПК…", "Checking your PC…");
+            Summary.Text = L.T("Это займёт пару секунд. Ничего не меняем, только смотрим.", "Takes a couple of seconds. Nothing is changed, we only look.");
             AnimateRing(0, 0.3);
             SetProgress(0);
 
@@ -73,7 +77,7 @@ namespace WinOpti
                 catch (Exception ex) { App.Log(ex); return new List<Finding>(); }
             }), c => c);
             int total = pending.Count, done = 0;
-            ProgressText.Text = $"Проверено 0 из {total}";
+            ProgressText.Text = L.T($"Проверено 0 из {total}", $"Checked 0 of {total}");
 
             while (pending.Count > 0)
             {
@@ -83,8 +87,8 @@ namespace WinOpti
                 foreach (var f in t.Result) Add(f);
                 SetProgress((double)done / total);
                 ProgressText.Text = done < total
-                    ? $"Проверено {done} из {total} · сейчас: {string.Join(", ", pending.Values.Take(2).Select(c => c.Name.ToLowerInvariant()))}"
-                    : $"Проверено {total} из {total} · {DateTime.Now:HH:mm}";
+                    ? L.T($"Проверено {done} из {total} · сейчас: {string.Join(", ", pending.Values.Take(2).Select(c => c.Name.ToLowerInvariant()))}", $"Checked {done} of {total} · now: {string.Join(", ", pending.Values.Take(2).Select(c => c.Name.ToLowerInvariant()))}")
+                    : L.T($"Проверено {total} из {total} · {DateTime.Now:HH:mm}", $"Checked {total} of {total} · {DateTime.Now:HH:mm}");
                 UpdateScore();
             }
 
@@ -120,21 +124,22 @@ namespace WinOpti
 
             int fixable = open.Count(p => p.CanFix);
             int serious = open.Count(p => p.F.Severity >= Severity.Warn);
-            Verdict.Text = score >= 90 ? "ПК готов к играм" : score >= 70 ? "Хорошо, но есть что подтянуть"
-                         : score >= 45 ? "Есть что исправить" : "ПК теряет много производительности";
+            Verdict.Text = score >= 90 ? L.T("ПК готов к играм", "Your PC is ready for games") : score >= 70 ? L.T("Хорошо, но есть что подтянуть", "Good, but a few things can be better")
+                         : score >= 45 ? L.T("Есть что исправить", "Some things need fixing") : L.T("ПК теряет много производительности", "Your PC is losing a lot of performance");
             if (open.Count == 0)
-                Summary.Text = "Ни одной проблемы, которая съедает FPS. Можно идти играть.";
+                Summary.Text = L.T("Ни одной проблемы, которая съедает FPS. Можно идти играть.", "Nothing that costs FPS. Go play.");
             else
-                Summary.Text = $"Нашли {Plural(open.Count, "пункт", "пункта", "пунктов")}" +
-                               (serious > 0 ? $", из них важных: {serious}" : "") +
-                               (fixable > 0 ? $". {Plural(fixable, "исправляется", "исправляются", "исправляются", false)} в один клик." : ".");
+                Summary.Text = L.T("Нашли ", "Found ") + L.N(open.Count, "пункт", "пункта", "пунктов", "issue", "issues") +
+                               (serious > 0 ? L.T($", из них важных: {serious}", $", {serious} important") : "") +
+                               (fixable > 0 ? ". " + L.N(fixable, "исправляется", "исправляются", "исправляются", "can be fixed", "can be fixed") + L.T(" в один клик.", " in one click.") : ".");
         }
 
-        static string Plural(int n, string one, string few, string many, bool withNumber = true)
+        bool _langReady;
+
+        // смена языка перезапускает программу: так все страницы гарантированно перерисуются
+        void OnLang(object sender, RoutedEventArgs e)
         {
-            int a = Math.Abs(n) % 100, b = a % 10;
-            string w = a > 10 && a < 20 ? many : b == 1 ? one : b >= 2 && b <= 4 ? few : many;
-            return withNumber ? $"{n} {w}" : $"{n} {w}";
+            if (_langReady) L.Switch(sender == LangEn);
         }
 
         void AnimateRing(double to, double seconds)
@@ -148,6 +153,57 @@ namespace WinOpti
             double width = ProgressTrack.ActualWidth * share;
             var anim = new DoubleAnimation(width, TimeSpan.FromSeconds(0.35)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
             ProgressFill.BeginAnimation(WidthProperty, anim);
+        }
+
+        void OnGoFps(object sender, RoutedEventArgs e) => NavFps.IsChecked = true;
+
+        // ---------- обновление ----------
+
+        Update.Updater.Release _update;
+        bool _updating;
+
+        async Task CheckUpdateAsync()
+        {
+            if (Environment.GetCommandLineArgs().Contains("--updated"))
+            {
+                await Task.Run(Update.Updater.AfterUpdate);
+                UpdateButton.ToolTip = null;
+                UpdateButton.Content = L.T($"Обновлено до {Update.Updater.Current}", $"Updated to {Update.Updater.Current}");
+                UpdateButton.Visibility = Visibility.Visible;
+                await Task.Delay(6000);
+                UpdateButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+            await Task.Delay(1500); // сначала диагностика, сеть потом
+            _update = await Update.Updater.CheckAsync();
+            if (_update == null) return;
+            var notes = _update.Notes.Replace("\r", "").Trim();
+            if (notes.Length > 600) notes = notes.Substring(0, 600).TrimEnd() + "…";
+            UpdateTitle.Text = L.T($"Вышла версия {_update.Name}", $"{_update.Name} is out");
+            UpdateNotes.Text = notes;
+            UpdateButton.Content = L.T("Обновить", "Update"); // коротко: в шапке мало места, версия — в подсказке
+            UpdateButton.Visibility = Visibility.Visible;
+        }
+
+        async void OnUpdate(object sender, RoutedEventArgs e)
+        {
+            if (_update == null || _updating) return;
+            _updating = true;
+            try
+            {
+                var progress = new Progress<double>(p => UpdateButton.Content = L.T($"Скачиваю {p:P0}", $"Downloading {p:P0}"));
+                var file = await Update.Updater.DownloadAsync(_update, progress);
+                UpdateButton.Content = L.T("Перезапускаю…", "Restarting…");
+                Update.Updater.InstallAndRestart(file);
+            }
+            catch (Exception ex)
+            {
+                App.Log(ex);
+                // скачать вручную со страницы релиза
+                UpdateButton.Content = L.T("Не вышло — открыть страницу", "Failed — open the page");
+                UpdateButton.Click -= OnUpdate;
+                UpdateButton.Click += (s, a) => Process.Start(new ProcessStartInfo(_update.Url) { UseShellExecute = true });
+            }
         }
 
         // ---------- меню ----------

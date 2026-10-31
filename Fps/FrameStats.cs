@@ -23,7 +23,7 @@ namespace WinOpti.Fps
         public static FrameStats From(double[] frameMs)
         {
             var ms = frameMs.Where(x => x > 0 && x < 5000).ToArray();
-            if (ms.Length < 30) throw new InvalidOperationException("Слишком мало кадров для замера: игра была свёрнута или не запущена.");
+            if (ms.Length < 30) throw new InvalidOperationException(L.T("Слишком мало кадров для замера: игра была свёрнута или не запущена.", "Too few frames to measure: the game was minimized or not running."));
             double total = ms.Sum();
             var sorted = (double[])ms.Clone();
             Array.Sort(sorted);

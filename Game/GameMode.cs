@@ -56,16 +56,27 @@ namespace WinOpti.Game
             if (!self.Equals(InstalledExe, StringComparison.OrdinalIgnoreCase)) File.Copy(self, InstalledExe, true);
             var (code, output) = SysInfo.Run("schtasks.exe",
                 $"/Create /TN \"{TaskName}\" /TR \"\\\"{InstalledExe}\\\" --gamemode\" /SC ONLOGON /RL HIGHEST /F");
-            if (code != 0) throw new InvalidOperationException("Не удалось создать задачу: " + output.Trim());
+            if (code != 0) throw new InvalidOperationException(L.T("Не удалось создать задачу: ", "Couldn’t create the task: ") + output.Trim());
             SysInfo.Run("schtasks.exe", $"/Run /TN \"{TaskName}\"");
-            TweakEngine.LogEntry("gamemode", "Авто-игровой режим включён", "on");
+            TweakEngine.LogEntry("gamemode", L.T("Авто-игровой режим включён", "Auto game mode turned on"), "on");
+        }
+
+        /// <summary>После обновления WinOpti: заменить копию в своей папке на новую и перезапустить режим. Если режим не включён — ничего.</summary>
+        public static void RefreshCopy()
+        {
+            var self = Process.GetCurrentProcess().MainModule.FileName;
+            if (!File.Exists(InstalledExe) || self.Equals(InstalledExe, StringComparison.OrdinalIgnoreCase)) return;
+            if (SysInfo.Run("schtasks.exe", $"/Query /TN \"{TaskName}\"").code != 0) return;
+            StopRunning();
+            File.Copy(self, InstalledExe, true);
+            SysInfo.Run("schtasks.exe", $"/Run /TN \"{TaskName}\"");
         }
 
         public static void Disable()
         {
             StopRunning();
             SysInfo.Run("schtasks.exe", $"/Delete /TN \"{TaskName}\" /F");
-            TweakEngine.LogEntry("gamemode", "Авто-игровой режим выключен", "off");
+            TweakEngine.LogEntry("gamemode", L.T("Авто-игровой режим выключен", "Auto game mode turned off"), "off");
         }
 
         /// <summary>Попросить работающий режим вернуть всё и выйти.</summary>
@@ -244,7 +255,7 @@ namespace WinOpti.Game
                 try { File.Delete(StateFile); } catch { }
                 var minutes = (DateTime.UtcNow - _started).TotalMinutes;
                 Log($"игра {Game} закрыта через {minutes:0} мин, всё возвращено");
-                if (minutes >= 1) TweakEngine.LogEntry("gamemode:" + Game, $"Игровой режим: {Game}, {minutes:0} мин", "gamemode");
+                if (minutes >= 1) TweakEngine.LogEntry("gamemode:" + Game, L.T($"Игровой режим: {Game}, {minutes:0} мин", $"Game mode: {Game}, {minutes:0} min"), "gamemode");
             }
         }
     }

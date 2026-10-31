@@ -47,9 +47,9 @@ namespace WinOpti.UI
         public string HintText => Item.HintText == null ? null : char.ToUpper(Item.HintText[0]) + Item.HintText.Substring(1) + ".";
         public bool Running => Item.Processes > 0;
         public string Usage => !Running ? null
-            : $"Сейчас занимает {Cleaner.Format(Item.RamBytes)} памяти"
-              + (Item.Processes > 1 ? $" · {Item.Processes} {Plural(Item.Processes, "процесс", "процесса", "процессов")}" : "")
-              + (Item.CpuTime.TotalSeconds >= 10 ? $" · {CpuText(Item.CpuTime)} процессора с момента запуска" : "");
+            : L.T($"Сейчас занимает {Cleaner.Format(Item.RamBytes)} памяти", $"Using {Cleaner.Format(Item.RamBytes)} of RAM now")
+              + (Item.Processes > 1 ? " · " + L.N(Item.Processes, "процесс", "процесса", "процессов", "process", "processes") : "")
+              + (Item.CpuTime.TotalSeconds >= 10 ? L.T($" · {CpuText(Item.CpuTime)} процессора с момента запуска", $" · {CpuText(Item.CpuTime)} of CPU time since start") : "");
         public string Message { get => _message; private set { _message = value; Changed(); Changed(nameof(HasMessage)); Changed(nameof(MessageBrush)); } }
         public bool HasMessage => !string.IsNullOrEmpty(_message);
         public Brush MessageBrush => (Brush)Application.Current.FindResource(_error ? "Red" : "Muted");
@@ -60,12 +60,6 @@ namespace WinOpti.UI
         public string Glyph => IsService ? "" : "";
         public ImageSource Icon => _icon;
         public bool HasIcon => _icon != null;
-
-        static string Plural(int n, string one, string few, string many)
-        {
-            int m10 = n % 10, m100 = n % 100;
-            return m10 == 1 && m100 != 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
-        }
 
         [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
         static extern uint ExtractIconEx(string file, int index, IntPtr[] large, IntPtr[] small, uint count);
@@ -90,7 +84,7 @@ namespace WinOpti.UI
             return img;
         }
 
-        static string CpuText(TimeSpan t) => t.TotalMinutes >= 1 ? $"{(int)t.TotalMinutes} мин" : $"{(int)t.TotalSeconds} с";
+        static string CpuText(TimeSpan t) => t.TotalMinutes >= 1 ? L.T($"{(int)t.TotalMinutes} мин", $"{(int)t.TotalMinutes} min") : L.T($"{(int)t.TotalSeconds} с", $"{(int)t.TotalSeconds} s");
 
         static readonly ConcurrentDictionary<string, ImageSource> IconCache = new ConcurrentDictionary<string, ImageSource>(StringComparer.OrdinalIgnoreCase);
 
@@ -133,13 +127,13 @@ namespace WinOpti.UI
             {
                 await Task.Run(() => StartupManager.SetEnabled(Item, enable));
                 Item.Enabled = await Task.Run(() => StartupManager.IsEnabled(Item));
-                if (!enable && Running) Message = "Выключено. Сейчас программа ещё работает — со следующего включения ПК запускаться не будет.";
+                if (!enable && Running) Message = L.T("Выключено. Сейчас программа ещё работает — со следующего включения ПК запускаться не будет.", "Turned off. The app is still running now, but it won’t start with the PC next time.");
             }
             catch (Exception e)
             {
                 App.Log(e);
                 _error = true;
-                Message = "Не получилось: " + e.Message;
+                Message = L.T("Не получилось: ", "Failed: ") + e.Message;
             }
             Changed(nameof(IsOn));
             Busy = false;

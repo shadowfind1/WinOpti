@@ -37,7 +37,7 @@ namespace WinOpti.UI
         public string Category => TweaksPage.Cats.FirstOrDefault(c => c.id == T.Category).name ?? "";
         public bool Done => _done;
         public bool CanRevert => _admin && !_busy && !_done;
-        public string ButtonText => _done ? "Откачено" : _busy ? "Откатываю…" : "Откатить";
+        public string ButtonText => _done ? L.T("Откачено", "Reverted") : _busy ? L.T("Откатываю…", "Reverting…") : L.T("Откатить", "Revert");
         public string Message { get => _message; private set { _message = value; Changed(); Changed(nameof(HasMessage)); Changed(nameof(MessageBrush)); } }
         public bool HasMessage => !string.IsNullOrEmpty(_message);
         public Brush MessageBrush => (Brush)Application.Current.FindResource(_error ? "Red" : "Muted");
@@ -59,7 +59,7 @@ namespace WinOpti.UI
             {
                 App.Log(e);
                 _error = true;
-                Message = "Не получилось: " + e.Message;
+                Message = L.T("Не получилось: ", "Failed: ") + e.Message;
             }
             _busy = false;
             Refresh();
@@ -129,7 +129,7 @@ namespace WinOpti.UI
         void UpdateApplied()
         {
             int n = _applied.Count(v => !v.Done);
-            AppliedTotal.Text = n == 0 ? "Ничего не изменено" : $"{n} {Plural(n, "твик включён", "твика включено", "твиков включено")}";
+            AppliedTotal.Text = n == 0 ? L.T("Ничего не изменено", "Nothing changed") : L.N(n, "твик включён", "твика включено", "твиков включено", "tweak on", "tweaks on");
             RevertAllButton.IsEnabled = _admin && n > 0;
             AppliedToggle.Visibility = _applied.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             ShowAppliedList(_appliedOpen);
@@ -141,7 +141,7 @@ namespace WinOpti.UI
         {
             _appliedOpen = open && _applied.Count > 0;
             AppliedList.Visibility = _appliedOpen ? Visibility.Visible : Visibility.Collapsed;
-            AppliedToggle.Content = _appliedOpen ? "Скрыть список" : $"Показать список ({_applied.Count})";
+            AppliedToggle.Content = _appliedOpen ? L.T("Скрыть список", "Hide list") : L.T($"Показать список ({_applied.Count})", $"Show list ({_applied.Count})");
         }
 
         void OnAppliedToggle(object sender, RoutedEventArgs e) => ShowAppliedList(!_appliedOpen);
@@ -151,17 +151,17 @@ namespace WinOpti.UI
             var left = _applied.Where(v => !v.Done).ToList();
             if (left.Count == 0) return;
             var answer = MessageBox.Show(Window.GetWindow(this),
-                $"Откатить все {left.Count} {Plural(left.Count, "твик", "твика", "твиков")}? Вернутся настройки, которые были до WinOpti.",
+                L.T("Откатить все ", "Revert all ") + L.N(left.Count, "твик", "твика", "твиков", "tweak", "tweaks") + L.T("? Вернутся настройки, которые были до WinOpti.", "? The settings from before WinOpti come back."),
                 "WinOpti", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (answer != MessageBoxResult.Yes) return;
             RevertAllButton.IsEnabled = false;
             int i = 0;
             foreach (var vm in left)
             {
-                RevertAllText.Text = $"Откатываю {++i} из {left.Count}…";
+                RevertAllText.Text = L.T($"Откатываю {++i} из {left.Count}…", $"Reverting {++i} of {left.Count}…");
                 await vm.RevertAsync();
             }
-            RevertAllText.Text = "Откатить всё";
+            RevertAllText.Text = L.T("Откатить всё", "Revert all");
             UpdateApplied();
         }
 
@@ -171,7 +171,7 @@ namespace WinOpti.UI
         {
             bool on = TweakEngine.ProtectionOn;
             CreatePoint.IsEnabled = _admin;
-            CreatePointText.Text = on ? "Создать точку" : "Включить защиту";
+            CreatePointText.Text = on ? L.T("Создать точку", "Create point") : L.T("Включить защиту", "Turn on protection");
             if (!_admin)
             {
                 PointsList.ItemsSource = null;
@@ -192,8 +192,8 @@ namespace WinOpti.UI
                 points = new List<PointRow>();
             }
             PointsList.ItemsSource = points;
-            if (!on) ShowPointsMessage("Защита системы выключена — Windows не создаёт точки восстановления. Нажми «Включить защиту»: WinOpti включит её для диска C: и сразу создаст точку.", "Orange");
-            else if (points.Count == 0) ShowPointsMessage("Точек восстановления пока нет. Создай первую — это займёт около минуты.", "Muted");
+            if (!on) ShowPointsMessage(L.T("Защита системы выключена — Windows не создаёт точки восстановления. Нажми «Включить защиту»: WinOpti включит её для диска C: и сразу создаст точку.", "System Protection is off, so Windows doesn’t create restore points. Press Turn on protection: WinOpti enables it for drive C: and creates a point right away."), "Orange");
+            else if (points.Count == 0) ShowPointsMessage(L.T("Точек восстановления пока нет. Создай первую — это займёт около минуты.", "No restore points yet. Create the first one, it takes about a minute."), "Muted");
         }
 
         void ShowPointsMessage(string text, string brush)
@@ -207,23 +207,23 @@ namespace WinOpti.UI
         {
             CreatePoint.IsEnabled = false;
             bool on = TweakEngine.ProtectionOn;
-            CreatePointText.Text = on ? "Создаю…" : "Включаю…";
-            ShowPointsMessage("Windows делает снимок системы, обычно это меньше минуты. Компьютер в это время может немного притормаживать.", "Muted");
+            CreatePointText.Text = on ? L.T("Создаю…", "Creating…") : L.T("Включаю…", "Turning on…");
+            ShowPointsMessage(L.T("Windows делает снимок системы, обычно это меньше минуты. Компьютер в это время может немного притормаживать.", "Windows is taking a system snapshot, usually under a minute. The PC may slow down a bit meanwhile."), "Muted");
             string err = null;
             if (!on)
             {
                 var (code, output) = await Task.Run(() => SysInfo.Run("powershell", $"-NoProfile -Command \"$ErrorActionPreference='Stop'; Enable-ComputerRestore -Drive '{Environment.GetEnvironmentVariable("SystemDrive")}\\'\""));
-                if (code != 0) err = "Не удалось включить защиту системы: " + output.Trim().Split('\n')[0];
+                if (code != 0) err = L.T("Не удалось включить защиту системы: ", "Couldn’t turn on System Protection: ") + output.Trim().Split('\n')[0];
             }
             if (err == null)
             {
-                CreatePointText.Text = "Создаю…";
-                var e2 = await Task.Run(() => TweakEngine.CreateRestorePoint("WinOpti — вручную"));
-                if (e2 != null) err = "Точка не создана: " + e2;
+                CreatePointText.Text = L.T("Создаю…", "Creating…");
+                var e2 = await Task.Run(() => TweakEngine.CreateRestorePoint(L.T("WinOpti — вручную", "WinOpti, manual")));
+                if (e2 != null) err = L.T("Точка не создана: ", "Point not created: ") + e2;
             }
-            if (err == null) TweakEngine.LogEntry("restore_point", "Создана точка восстановления", "restore_point");
+            if (err == null) TweakEngine.LogEntry("restore_point", L.T("Создана точка восстановления", "Restore point created"), "restore_point");
             await LoadPointsAsync();
-            ShowPointsMessage(err ?? "Готово: точка восстановления создана.", err == null ? "Green" : "Red");
+            ShowPointsMessage(err ?? L.T("Готово: точка восстановления создана.", "Done: restore point created."), err == null ? "Green" : "Red");
             LoadHistory();
         }
 
@@ -231,7 +231,7 @@ namespace WinOpti.UI
         {
             // сам откат к точке делает мастер Windows: он покажет, какие программы затронет, и перезагрузит ПК
             try { Process.Start(new ProcessStartInfo("rstrui.exe") { UseShellExecute = true }); }
-            catch (Exception ex) { ShowPointsMessage("Не удалось открыть восстановление системы: " + ex.Message, "Red"); }
+            catch (Exception ex) { ShowPointsMessage(L.T("Не удалось открыть восстановление системы: ", "Couldn’t open System Restore: ") + ex.Message, "Red"); }
         }
 
         // ---------- журнал ----------
@@ -240,7 +240,16 @@ namespace WinOpti.UI
 
         void LoadHistory()
         {
-            _history = TweakEngine.History().Select(h => Row(h.time, h.name, h.action)).ToList();
+            // в журнале имя записано на языке, который был тогда; твики переводим по id, остальное — по известным фразам
+            var names = Tweak.LoadAll().ToDictionary(t => t.Id, t => t.Name);
+            _history = TweakEngine.History()
+                .Select(h =>
+                {
+                    bool tweak = h.id != null && names.ContainsKey(h.id);
+                    // «on»/«off» пишет и авто-игровой режим — это не твик, показываем как есть
+                    var action = (h.action == "on" || h.action == "off") && !tweak ? "note" : h.action;
+                    return Row(h.time, tweak ? names[h.id] : Localize(h.name), action);
+                }).ToList();
             HistoryEmpty.Visibility = _history.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             ShowHistory(HistoryList.Tag is bool all && all);
         }
@@ -250,7 +259,7 @@ namespace WinOpti.UI
             HistoryList.Tag = all;
             HistoryList.ItemsSource = all ? _history : _history.Take(HistoryShown).ToList();
             HistoryMore.Visibility = !all && _history.Count > HistoryShown ? Visibility.Visible : Visibility.Collapsed;
-            HistoryMore.Content = $"Показать всё ({_history.Count})";
+            HistoryMore.Content = L.T($"Показать всё ({_history.Count})", $"Show all ({_history.Count})");
         }
 
         void OnHistoryMore(object sender, RoutedEventArgs e) => ShowHistory(true);
@@ -260,18 +269,40 @@ namespace WinOpti.UI
             string text, glyph, color;
             switch (action)
             {
-                case "on": text = "Включён твик «" + name + "»"; glyph = ""; color = "Green"; break;
-                case "off": text = "Откачен твик «" + name + "»"; glyph = ""; color = "Blue"; break;
+                case "on": text = L.T("Включён твик «", "Tweak on: “") + name + L.T("»", "”"); glyph = ""; color = "Green"; break;
+                case "off": text = L.T("Откачен твик «", "Tweak reverted: “") + name + L.T("»", "”"); glyph = ""; color = "Blue"; break;
                 case "clean": text = name; glyph = ""; color = "Accent"; break;
-                case "startup_off": text = "Убрано из автозагрузки: " + Strip(name); glyph = ""; color = "Orange"; break;
-                case "startup_on": text = "Возвращено в автозагрузку: " + Strip(name); glyph = ""; color = "Green"; break;
+                case "startup_off": text = L.T("Убрано из автозагрузки: ", "Removed from startup: ") + Strip(name); glyph = ""; color = "Orange"; break;
+                case "startup_on": text = L.T("Возвращено в автозагрузку: ", "Back in startup: ") + Strip(name); glyph = ""; color = "Green"; break;
                 case "restore_point": text = name; glyph = ""; color = "Blue"; break;
                 default: text = name; glyph = ""; color = "Muted"; break;
             }
             return new HistoryRow { When = When(time), Text = text, Glyph = glyph, Brush = (Brush)FindResource(color), Soft = Soft(color) };
         }
 
-        static string Strip(string name) => name.StartsWith("Автозагрузка: ") ? name.Substring("Автозагрузка: ".Length) : name;
+        static readonly (string ru, string en)[] Phrases =
+        {
+            ("Очистка диска: освобождено ", "Disk cleanup: freed "),
+            ("Авто-игровой режим включён", "Auto game mode turned on"),
+            ("Авто-игровой режим выключен", "Auto game mode turned off"),
+            ("Игровой режим: ", "Game mode: "),
+            ("Создана точка восстановления", "Restore point created"),
+            ("Игра на мощной видеокарте: ", "Game on powerful GPU: "),
+            ("Исключение Защитника: ", "Defender exclusion: "),
+            ("NVIDIA: максимальная производительность", "NVIDIA: maximum performance"),
+            ("NVIDIA: режим низкой задержки", "NVIDIA: low latency mode"),
+            (" ГБ", " GB"), (" МБ", " MB"), (" КБ", " KB"), (" мин", " min"),
+        };
+
+        static string Localize(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return name;
+            foreach (var (ru, en) in Phrases)
+                name = L.En ? name.Replace(ru, en) : name.Replace(en, ru);
+            return name;
+        }
+
+        static string Strip(string name) => name.StartsWith("Автозагрузка: ") ? name.Substring("Автозагрузка: ".Length) : name.StartsWith("Startup: ") ? name.Substring("Startup: ".Length) : name;
 
         Brush Soft(string color)
         {
@@ -283,15 +314,9 @@ namespace WinOpti.UI
         static string When(string time)
         {
             if (!DateTime.TryParseExact(time, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var t)) return time;
-            if (t.Date == DateTime.Today) return "сегодня, " + t.ToString("HH:mm");
-            if (t.Date == DateTime.Today.AddDays(-1)) return "вчера, " + t.ToString("HH:mm");
-            return t.ToString(t.Year == DateTime.Today.Year ? "d MMMM, HH:mm" : "d MMMM yyyy", Ru);
-        }
-
-        static string Plural(int n, string one, string few, string many)
-        {
-            int m10 = n % 10, m100 = n % 100;
-            return m10 == 1 && m100 != 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
+            if (t.Date == DateTime.Today) return L.T("сегодня, ", "today, ") + t.ToString("HH:mm");
+            if (t.Date == DateTime.Today.AddDays(-1)) return L.T("вчера, ", "yesterday, ") + t.ToString("HH:mm");
+            return t.ToString(t.Year == DateTime.Today.Year ? L.T("d MMMM, HH:mm", "MMMM d, HH:mm") : L.T("d MMMM yyyy", "MMMM d, yyyy"), L.En ? CultureInfo.InvariantCulture : Ru);
         }
     }
 }

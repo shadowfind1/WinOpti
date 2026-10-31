@@ -54,7 +54,7 @@ namespace WinOpti.Tests
                 // мышь: usage page 1, usage 2; без RIDEV_INPUTSINK — нужно только пока окно WinOpti активно
                 var dev = new[] { new RAWINPUTDEVICE { UsagePage = 1, Usage = 2, Flags = 0, Target = _source.Handle } };
                 if (!RegisterRawInputDevices(dev, 1, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE))))
-                    throw new InvalidOperationException("Windows не дала читать мышь напрямую (Raw Input).");
+                    throw new InvalidOperationException(L.T("Windows не дала читать мышь напрямую (Raw Input).", "Windows didn’t allow reading the mouse directly (Raw Input)."));
                 _source.AddHook(Hook);
                 _on = true;
             }

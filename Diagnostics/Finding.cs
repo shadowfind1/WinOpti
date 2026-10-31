@@ -15,7 +15,7 @@ namespace WinOpti.Diagnostics
         public string Impact;
         /// <summary>Исправление в один клик. Возвращает текст результата. null — автоисправления нет.</summary>
         public Func<string> Fix;
-        public string FixLabel = "Исправить";
+        public string FixLabel = L.T("Исправить", "Fix");
         public bool FixNeedsAdmin;
         public bool FixNeedsReboot;
         /// <summary>Пошаговая инструкция, если исправить можно только руками (BIOS, железо).</summary>

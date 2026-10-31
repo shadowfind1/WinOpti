@@ -31,16 +31,16 @@ namespace WinOpti.UI
 
         public string Name => T.Name;
         public string Description => T.Description;
-        public string After => string.IsNullOrEmpty(T.After) ? null : "После включения: " + T.After.TrimEnd('.').ToLowerInvariant() + ".";
+        public string After => string.IsNullOrEmpty(T.After) ? null : L.T("После включения: ", "After enabling: ") + char.ToLowerInvariant(T.After[0]) + T.After.TrimEnd('.').Substring(1) + ".";
         public bool HasAfter => !string.IsNullOrEmpty(T.After);
-        public string RiskText => T.Risk switch { "high" => "высокий риск", "medium" => "средний риск", _ => "низкий риск" };
-        static readonly Brush Green = Freeze("#3ECF8E"), Orange = Freeze("#FFB547"), Red = Freeze("#FF5D6C");
-        static readonly Brush GreenSoft = Freeze("#10231A"), OrangeSoft = Freeze("#2A2112"), RedSoft = Freeze("#2A1519");
+        public string RiskText => T.Risk switch { "high" => L.T("высокий риск", "high risk"), "medium" => L.T("средний риск", "medium risk"), _ => L.T("низкий риск", "low risk") };
+        static readonly Brush Green = Freeze("#4ADE80"), Orange = Freeze("#FFB347"), Red = Freeze("#FF5D6C");
+        static readonly Brush GreenSoft = Freeze("#0E2419"), OrangeSoft = Freeze("#2A1F10"), RedSoft = Freeze("#2A121A");
         static Brush Freeze(string hex) { var b = (Brush)new BrushConverter().ConvertFrom(hex); b.Freeze(); return b; }
         public Brush RiskBrush => T.Risk switch { "high" => Red, "medium" => Orange, _ => Green };
         public Brush RiskSoft => T.Risk switch { "high" => RedSoft, "medium" => OrangeSoft, _ => GreenSoft };
         public bool Unsupported => !T.Supported;
-        public string UnsupportedText => "только Windows " + string.Join(" и ", T.Windows);
+        public string UnsupportedText => L.T("только Windows ", "Windows ") + string.Join(L.T(" и ", " and "), T.Windows) + L.T("", " only");
 
         public TweakState State { get => _state; private set { _state = value; Changed(); Changed(nameof(IsOn)); Changed(nameof(IsPartial)); } }
         public bool IsOn => _state == TweakState.On;
@@ -50,7 +50,7 @@ namespace WinOpti.UI
         public bool CanToggle => _admin && T.Supported && _loaded && !_busy;
         public string Message { get => _message; private set { _message = value; Changed(); Changed(nameof(HasMessage)); Changed(nameof(MessageBrush)); } }
         public bool HasMessage => !string.IsNullOrEmpty(_message);
-        public Brush MessageBrush => _error ? Red : Freeze("#8B9099");
+        public Brush MessageBrush => _error ? Red : Freeze("#8A93A6");
         public ICommand ToggleCommand { get; }
 
         /// <summary>Поиск по названию, описанию и ключевым словам.</summary>
@@ -61,7 +61,7 @@ namespace WinOpti.UI
         {
             if (!T.Supported) { Loaded = true; return; }
             try { State = await Task.Run(() => TweakEngine.GetState(T)); }
-            catch (Exception e) { App.Log(e); _error = true; Message = "Не удалось прочитать состояние: " + e.Message; }
+            catch (Exception e) { App.Log(e); _error = true; Message = L.T("Не удалось прочитать состояние: ", "Couldn’t read the state: ") + e.Message; }
             Loaded = true;
         }
 
@@ -77,7 +77,7 @@ namespace WinOpti.UI
                 string pre = turnOn && BeforeApply != null ? await BeforeApply() : null;
                 string warn = await Task.Run(() => turnOn ? TweakEngine.Apply(T) : TweakEngine.Revert(T));
                 State = await Task.Run(() => TweakEngine.GetState(T));
-                var parts = new[] { pre, warn, turnOn && HasAfter ? "Готово. " + T.After.TrimEnd('.') + "." : null };
+                var parts = new[] { pre, warn, turnOn && HasAfter ? L.T("Готово. ", "Done. ") + T.After.TrimEnd('.') + "." : null };
                 Message = string.Join(" ", Array.FindAll(parts, p => !string.IsNullOrEmpty(p)));
             }
             catch (Exception e)
@@ -85,8 +85,8 @@ namespace WinOpti.UI
                 App.Log(e);
                 _error = true;
                 Message = e is UnauthorizedAccessException || e is System.Security.SecurityException
-                    ? "Windows не дала изменить настройку: нужны права администратора."
-                    : "Ошибка: " + e.Message;
+                    ? L.T("Windows не дала изменить настройку: нужны права администратора.", "Windows blocked the change: administrator rights needed.")
+                    : L.T("Ошибка: ", "Error: ") + e.Message;
                 try { State = await Task.Run(() => TweakEngine.GetState(T)); } catch { }
             }
             finally

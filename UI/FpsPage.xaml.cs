@@ -27,11 +27,11 @@ namespace WinOpti.UI
             Delete = new RelayCommand(() => delete(run));
         }
         public string Game => Run.Game;
-        public string When => Run.When.ToString("dd.MM.yyyy HH:mm") + $" · {Run.Stats.Seconds:0} с" + (Run.Passes?.Count > 1 ? $" · {Run.Passes.Count} прохода" : "");
+        public string When => Run.When.ToString("dd.MM.yyyy HH:mm") + L.T($" · {Run.Stats.Seconds:0} с", $" · {Run.Stats.Seconds:0} s") + (Run.Passes?.Count > 1 ? " · " + L.N(Run.Passes.Count, "проход", "прохода", "проходов", "pass", "passes") : "");
         public string Avg => $"{Run.Stats.AvgFps:0}";
         public string Low1 => $"{Run.Stats.Low1:0}";
         public string Stutters => Run.Stats.Stutters.ToString();
-        public string Label => Run.Label;
+        public string Label => Run.Label == "До" ? L.T("До", "Before") : Run.Label == "После" ? L.T("После", "After") : Run.Label;
         public bool HasLabel => !string.IsNullOrEmpty(Run.Label);
         public Brush LabelBrush => (Brush)Application.Current.FindResource(Run.Label == "После" ? "Accent" : "CardAlt");
         public Brush LabelForeground => (Brush)Application.Current.FindResource(Run.Label == "После" ? "OnAccent" : "Text");
@@ -78,12 +78,12 @@ namespace WinOpti.UI
             Message.Visibility = Visibility.Collapsed;
             if (Source == null)
             {
-                ShowMessage("Модуль замера кадров ещё подключается — эта часть появится в следующей сборке.");
+                ShowMessage(L.T("Модуль замера кадров ещё подключается — эта часть появится в следующей сборке.", "The frame capture module isn’t connected yet; this part comes in the next build."));
                 return;
             }
             if (!Sys.SysInfo.IsAdmin)
             {
-                ShowMessage("Для замера FPS нужны права администратора: Windows отдаёт данные о кадрах только им. Запусти WinOpti от имени администратора.");
+                ShowMessage(L.T("Для замера FPS нужны права администратора: Windows отдаёт данные о кадрах только им. Запусти WinOpti от имени администратора.", "The FPS test needs administrator rights: Windows only gives frame data to admins. Run WinOpti as administrator."));
                 return;
             }
             _cancel = new CancellationTokenSource();
@@ -93,8 +93,8 @@ namespace WinOpti.UI
             int duration = DurationSeconds;
             try
             {
-                Phase.Text = "Запускай игру";
-                PhaseText.Text = "Не торопись: замер начнётся сам, когда игра откроется на весь экран. Окно WinOpti можно свернуть.";
+                Phase.Text = L.T("Запускай игру", "Launch your game");
+                PhaseText.Text = L.T("Не торопись: замер начнётся сам, когда игра откроется на весь экран. Окно WinOpti можно свернуть.", "No rush: the test starts by itself when the game goes fullscreen. You can minimize WinOpti.");
                 RunFill.BeginAnimation(WidthProperty, null);
                 RunFill.Width = 0;
                 Timer.Text = "…";
@@ -109,13 +109,13 @@ namespace WinOpti.UI
                     else { game = now; stable = now != null ? 1 : 0; }
                     if (game != null)
                     {
-                        Phase.Text = $"Нашли игру: {game}";
-                        PhaseText.Text = "Замер начнётся через пару секунд.";
+                        Phase.Text = L.T($"Нашли игру: {game}", $"Found the game: {game}");
+                        PhaseText.Text = L.T("Замер начнётся через пару секунд.", "The test starts in a couple of seconds.");
                     }
                     else
                     {
-                        Phase.Text = "Запускай игру";
-                        PhaseText.Text = "Не торопись: замер начнётся сам, когда игра откроется на весь экран. Окно WinOpti можно свернуть.";
+                        Phase.Text = L.T("Запускай игру", "Launch your game");
+                        PhaseText.Text = L.T("Не торопись: замер начнётся сам, когда игра откроется на весь экран. Окно WinOpti можно свернуть.", "No rush: the test starts by itself when the game goes fullscreen. You can minimize WinOpti.");
                     }
                 }
                 SystemSounds.Asterisk.Play();
@@ -134,8 +134,8 @@ namespace WinOpti.UI
                 {
                     for (int i = 0; i < passes; i++)
                     {
-                        Phase.Text = passes > 1 ? $"Идёт замер · проход {i + 1} из {passes}" : "Идёт замер";
-                        PhaseText.Text = $"Играй как обычно. Через {total} с прозвучит сигнал.";
+                        Phase.Text = passes > 1 ? L.T($"Идёт замер · проход {i + 1} из {passes}", $"Testing · pass {i + 1} of {passes}") : L.T("Идёт замер", "Testing");
+                        PhaseText.Text = L.T($"Играй как обычно. Через {total} с прозвучит сигнал.", $"Play as usual. A beep sounds in {total} s.");
                         double offset = monitor.Now;
                         caps.Add((await Task.Run(() => Source.Capture(TimeSpan.FromSeconds(duration), token), token), offset));
                     }
@@ -157,14 +157,14 @@ namespace WinOpti.UI
                         merged.Times[kv.Key].AddRange(cap.Times[kv.Key].Select(t => t < 0 ? -1 : t + offset));
                     }
                 game = GamePicker.Pick(merged.Frames, game);
-                if (game == null) throw new InvalidOperationException("Не нашли игру: ни одна программа не выдавала кадры. Игра должна быть открыта на экране во время замера.");
+                if (game == null) throw new InvalidOperationException(L.T("Не нашли игру: ни одна программа не выдавала кадры. Игра должна быть открыта на экране во время замера.", "No game found: nothing was rendering frames. The game has to be on screen during the test."));
                 var run = new FpsRun { Game = game, When = DateTime.Now, Stats = FrameStats.From(merged.Frames[game].ToArray()) };
                 if (passes > 1)
                     run.Passes = caps.Where(c => c.cap.Frames.TryGetValue(game, out var f) && f.Count >= 30)
                                      .Select(c => Math.Round(FrameStats.From(c.cap.Frames[game].ToArray()).AvgFps, 1)).ToList();
 
-                Phase.Text = "Смотрим, что мешало игре…";
-                PhaseText.Text = "Пара секунд.";
+                Phase.Text = L.T("Смотрим, что мешало игре…", "Checking what hurt your game…");
+                PhaseText.Text = L.T("Пара секунд.", "A couple of seconds.");
                 Timer.Text = "…";
                 var g = game;
                 try { run.Thieves = await Task.Run(() => FpsThieves.Analyze(samples, g, merged.Frames[g], merged.Times[g], caps[0].offset + PresentMonSource.WarmupSeconds)); }
@@ -258,13 +258,13 @@ namespace WinOpti.UI
             }
             ComparePanel.Visibility = Visibility.Visible;
             ShareResult.Visibility = Visibility.Collapsed;
-            CompareTitle.Text = $"{before.Game}: до и после";
+            CompareTitle.Text = L.T($"{before.Game}: до и после", $"{before.Game}: before and after");
             CompareSub.Text = $"{before.When:dd.MM HH:mm} → {after.When:dd.MM HH:mm}";
             CompareGrid.Children.Clear();
-            CompareGrid.Children.Add(Tile("Средний FPS", before.Stats.AvgFps, after.Stats.AvgFps, true));
+            CompareGrid.Children.Add(Tile(L.T("Средний FPS", "Average FPS"), before.Stats.AvgFps, after.Stats.AvgFps, true));
             CompareGrid.Children.Add(Tile("1% low", before.Stats.Low1, after.Stats.Low1, true));
             CompareGrid.Children.Add(Tile("0.1% low", before.Stats.Low01, after.Stats.Low01, true));
-            CompareGrid.Children.Add(Tile("Фризы", before.Stats.Stutters, after.Stats.Stutters, false));
+            CompareGrid.Children.Add(Tile(L.T("Фризы", "Stutters"), before.Stats.Stutters, after.Stats.Stutters, false));
         }
 
         // ---------- твой ПК против похожих ----------
@@ -273,17 +273,17 @@ namespace WinOpti.UI
         {
             if (!Community.Available || run == null) { CommunityPanel.Visibility = Visibility.Collapsed; return; }
             CommunityPanel.Visibility = Visibility.Visible;
-            CommunityNote.Text = "Отправляем только игру, модели процессора и видеокарты, объём памяти, разрешение экрана и FPS — ничего личного. " +
-                                 "Настройки графики у всех разные, поэтому сравнение примерное.";
+            CommunityNote.Text = L.T("Отправляем только игру, модели процессора и видеокарты, объём памяти, разрешение экрана и FPS — ничего личного. ", "We send only the game, CPU and GPU models, RAM size, screen resolution and FPS. Nothing personal. ") +
+                                 L.T("Настройки графики у всех разные, поэтому сравнение примерное.", "Graphics settings differ between players, so the comparison is approximate.");
             if (!Community.Consent)
             {
-                CommunityText.Text = $"Узнай, сколько FPS в {run.Game} выдают такие же ПК, как твой, — и есть ли куда расти.";
+                CommunityText.Text = L.T($"Узнай, сколько FPS в {run.Game} выдают такие же ПК, как твой, — и есть ли куда расти.", $"See how many FPS PCs like yours get in {run.Game}, and whether there’s room to grow.");
                 CommunityText.Foreground = (Brush)FindResource("Muted");
                 CommunityButton.Visibility = Visibility.Visible;
                 return;
             }
             CommunityButton.Visibility = Visibility.Collapsed;
-            CommunityText.Text = "Сравниваем…";
+            CommunityText.Text = L.T("Сравниваем…", "Comparing…");
             CommunityText.Foreground = (Brush)FindResource("Muted");
             try
             {
@@ -298,22 +298,22 @@ namespace WinOpti.UI
                 var sim = same.Avg.HasValue ? same : sameGpu.Avg.HasValue ? sameGpu : null;
                 if (sim == null)
                 {
-                    CommunityText.Text = $"Похожих замеров {run.Game} пока мало ({Math.Max(same.Count, sameGpu.Count)}) — сравнение появится, когда их наберётся хотя бы 5. Твой замер уже в базе.";
+                    CommunityText.Text = L.T($"Похожих замеров {run.Game} пока мало ({Math.Max(same.Count, sameGpu.Count)}) — сравнение появится, когда их наберётся хотя бы 5. Твой замер уже в базе.", $"Not enough similar {run.Game} runs yet ({Math.Max(same.Count, sameGpu.Count)}). The comparison appears once there are at least 5. Your run is already in.");
                     return;
                 }
-                var label = sim == same ? $"{spec.Gpu} + {spec.Cpu}, {spec.Res.Replace("x", "×")}" : $"{spec.Gpu} с любым процессором, {spec.Res.Replace("x", "×")}";
+                var label = sim == same ? $"{spec.Gpu} + {spec.Cpu}, {spec.Res.Replace("x", "×")}" : L.T($"{spec.Gpu} с любым процессором, {spec.Res.Replace("x", "×")}", $"{spec.Gpu} with any CPU, {spec.Res.Replace("x", "×")}");
                 double diff = Delta(sim.Avg.Value, run.Stats.AvgFps);
                 var verdict = diff >= -5
-                    ? "Твой ПК выдаёт столько же или больше, чем похожие, — он в отличной форме."
-                    : $"Твой ПК отстаёт на {Math.Abs(diff):0}% — значит, есть что улучшать. Посмотри «Что мешало игре» выше и «Диагностику».";
-                CommunityText.Text = $"Похожие ПК ({label}), {sim.Count} {Plural(sim.Count, "замер", "замера", "замеров")}: в среднем {sim.Avg:0} FPS, 1% low {sim.Low1:0}.\n" +
-                                     $"Твой: {run.Stats.AvgFps:0} FPS, 1% low {run.Stats.Low1:0}. {verdict}";
+                    ? L.T("Твой ПК выдаёт столько же или больше, чем похожие, — он в отличной форме.", "Your PC does as well as similar ones or better: it’s in great shape.")
+                    : L.T($"Твой ПК отстаёт на {Math.Abs(diff):0}% — значит, есть что улучшать. Посмотри «Что мешало игре» выше и «Диагностику».", $"Your PC is {Math.Abs(diff):0}% behind, so there’s something to improve. Check “What hurt your game” above and Diagnostics.");
+                CommunityText.Text = L.T($"Похожие ПК ({label}), ", $"Similar PCs ({label}), ") + L.N(sim.Count, "замер", "замера", "замеров", "run", "runs") + L.T($": в среднем {sim.Avg:0} FPS, 1% low {sim.Low1:0}.\n", $": average {sim.Avg:0} FPS, 1% low {sim.Low1:0}.\n") +
+                                     L.T($"Твой: {run.Stats.AvgFps:0} FPS, 1% low {run.Stats.Low1:0}. {verdict}", $"Yours: {run.Stats.AvgFps:0} FPS, 1% low {run.Stats.Low1:0}. {verdict}");
                 CommunityText.Foreground = (Brush)FindResource(diff >= -5 ? "Text" : "Orange");
             }
             catch (Exception ex)
             {
                 App.Log(ex);
-                CommunityText.Text = "Сервер сравнения сейчас недоступен. Попробуем при следующем замере.";
+                CommunityText.Text = L.T("Сервер сравнения сейчас недоступен. Попробуем при следующем замере.", "The comparison server is unavailable right now. We’ll try again on the next run.");
             }
         }
 
@@ -332,21 +332,21 @@ namespace WinOpti.UI
             ThievesPanel.Visibility = Visibility.Visible;
             FixAllResult.Visibility = Visibility.Collapsed;
             UpdateFixAll(run);
-            var sub = $"{run.Game}, замер {run.When:dd.MM HH:mm}.";
+            var sub = L.T($"{run.Game}, замер {run.When:dd.MM HH:mm}.", $"{run.Game}, run at {run.When:dd.MM HH:mm}.");
             if (run.Passes?.Count > 1)
             {
                 var spread = run.Spread;
-                sub += $" Проходы: {string.Join(" · ", run.Passes.Select(p => p.ToString("0")))} FPS, разброс {spread:0}% — "
-                       + (spread <= 5 ? "цифрам можно верить." : "результаты скачут, сравнивай осторожно: замеряй в одном и том же месте игры.");
+                sub += L.T($" Проходы: {string.Join(" · ", run.Passes.Select(p => p.ToString("0")))} FPS, разброс {spread:0}% — ", $" Passes: {string.Join(" · ", run.Passes.Select(p => p.ToString("0")))} FPS, spread {spread:0}%: ")
+                       + (spread <= 5 ? L.T("цифрам можно верить.", "the numbers are reliable.") : L.T("результаты скачут, сравнивай осторожно: замеряй в одном и том же месте игры.", "results jump around, compare with care: test at the same spot in the game."));
             }
             foreach (var t in run.Thieves.Where(x => x.Good)) ThievesList.Children.Add(ThiefRow(t));
             if (run.Thieves.All(x => x.Good))
             {
-                ThievesTitle.Text = "Игре ничего не мешало";
-                ThievesSub.Text = sub + " Фоновые программы почти не тратили процессор и видеокарту, а во время фризов никто не просыпался.";
+                ThievesTitle.Text = L.T("Игре ничего не мешало", "Nothing hurt your game");
+                ThievesSub.Text = sub + L.T(" Фоновые программы почти не тратили процессор и видеокарту, а во время фризов никто не просыпался.", " Background apps barely used the CPU and GPU, and nothing woke up during stutters.");
                 return;
             }
-            ThievesTitle.Text = "Что мешало игре";
+            ThievesTitle.Text = L.T("Что мешало игре", "What hurt your game");
             ThievesSub.Text = sub;
             ThievesList.Children.Clear();
             foreach (var t in run.Thieves) ThievesList.Children.Add(ThiefRow(t));
@@ -358,7 +358,7 @@ namespace WinOpti.UI
             // «открыть Центр обновления» — не исправление, его в «Исправить всё» не берём
             int n = run?.Thieves?.Count(t => t.Action != null && !t.Action.StartsWith("open:")) ?? 0;
             FixAllButton.Visibility = n > 0 ? Visibility.Visible : Visibility.Collapsed;
-            FixAllText.Text = $"Исправить всё ({n}) и замерить снова";
+            FixAllText.Text = L.T($"Исправить всё ({n}) и замерить снова", $"Fix all ({n}) and test again");
         }
 
         /// <summary>Все исправления из карточки разом, затем сразу новый замер — он станет «После», и видно разницу.</summary>
@@ -367,12 +367,12 @@ namespace WinOpti.UI
             var run = _runs.FirstOrDefault();
             var todo = run?.Thieves?.Where(t => t.Action != null && !t.Action.StartsWith("open:")).ToList();
             if (todo == null || todo.Count == 0) return;
-            var closing = todo.Where(t => t.Action.StartsWith("close:")).Select(t => "«" + t.Title + "»").ToList();
+            var closing = todo.Where(t => t.Action.StartsWith("close:")).Select(t => L.T("«", "“") + t.Title + L.T("»", "”")).ToList();
             if (closing.Count > 0 &&
-                MessageBox.Show(Window.GetWindow(this), $"Будут закрыты: {string.Join(", ", closing)}. Несохранённые данные в них пропадут. Продолжить?", "WinOpti",
+                MessageBox.Show(Window.GetWindow(this), L.T($"Будут закрыты: {string.Join(", ", closing)}. Несохранённые данные в них пропадут. Продолжить?", $"These will be closed: {string.Join(", ", closing)}. Unsaved data in them will be lost. Continue?"), "WinOpti",
                                 MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
             FixAllButton.IsEnabled = RetestButton.IsEnabled = false;
-            FixAllText.Text = "Исправляю…";
+            FixAllText.Text = L.T("Исправляю…", "Fixing…");
             var done = new List<string>();
             var failed = new List<string>();
             foreach (var t in todo)
@@ -394,8 +394,8 @@ namespace WinOpti.UI
             // этот замер — «До», следующий станет «После»: сравнение покажет эффект именно этих исправлений
             Mark(run, "До");
             FixAllButton.IsEnabled = RetestButton.IsEnabled = true;
-            FixAllResult.Text = $"Исправлено: {string.Join(", ", done)}." + (failed.Count > 0 ? " Не получилось — " + string.Join("; ", failed) + "." : "") +
-                                " Начинаем новый замер — зайди в игру в то же место.";
+            FixAllResult.Text = L.T($"Исправлено: {string.Join(", ", done)}.", $"Fixed: {string.Join(", ", done)}.") + (failed.Count > 0 ? L.T(" Не получилось — ", " Failed: ") + string.Join("; ", failed) + "." : "") +
+                                L.T(" Начинаем новый замер — зайди в игру в то же место.", " Starting a new test: go back to the same spot in the game.");
             FixAllResult.Foreground = (Brush)FindResource(failed.Count == 0 ? "Green" : "Orange");
             FixAllResult.Visibility = Visibility.Visible;
             RenderThieves(run);
@@ -412,18 +412,18 @@ namespace WinOpti.UI
             text.Children.Add(new TextBlock { Text = t.Title, FontSize = 14.5, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap });
 
             var load = new List<string>();
-            if (t.Cpu >= 0.5) load.Add($"{t.Cpu:0.#}% процессора");
-            if (t.Gpu >= 0.5) load.Add($"{t.Gpu:0.#}% видеокарты");
+            if (t.Cpu >= 0.5) load.Add(L.T($"{t.Cpu:0.#}% процессора", $"{t.Cpu:0.#}% CPU"));
+            if (t.Gpu >= 0.5) load.Add(L.T($"{t.Gpu:0.#}% видеокарты", $"{t.Gpu:0.#}% GPU"));
             if (load.Count > 0)
-                text.Children.Add(new TextBlock { Text = "В среднем занимал " + string.Join(" и ", load), FontSize = 12.5, Foreground = (Brush)FindResource("Text"), Margin = new Thickness(0, 3, 0, 0) });
+                text.Children.Add(new TextBlock { Text = L.T("В среднем занимал ", "Used on average ") + string.Join(L.T(" и ", " and "), load), FontSize = 12.5, Foreground = (Brush)FindResource("Text"), Margin = new Thickness(0, 3, 0, 0) });
             if (t.Detail != null)
                 text.Children.Add(new TextBlock { Text = t.Detail, FontSize = 12.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource(t.Good ? "Green" : "Red"), Margin = new Thickness(0, 3, 0, 0), TextWrapping = TextWrapping.Wrap });
             if (t.StutterHits > 0)
                 text.Children.Add(new TextBlock
                 {
-                    Text = t.Hardware ? $"Совпало с {t.StutterHits} {Plural(t.StutterHits, "фризом", "фризами", "фризами")}"
-                         : t.StutterHits == 1 ? $"Проснулся ровно в момент фриза на {t.FirstStutterAt:0}-й секунде"
-                                              : $"Просыпался в моменты {t.StutterHits} {Plural(t.StutterHits, "фриза", "фризов", "фризов")}, первый — на {t.FirstStutterAt:0}-й секунде",
+                    Text = t.Hardware ? L.T("Совпало с ", "Matched ") + L.N(t.StutterHits, "фризом", "фризами", "фризами", "stutter", "stutters")
+                         : t.StutterHits == 1 ? L.T($"Проснулся ровно в момент фриза на {t.FirstStutterAt:0}-й секунде", $"Woke up exactly at a stutter, at second {t.FirstStutterAt:0}")
+                                              : L.T("Просыпался в моменты ", "Woke up during ") + L.N(t.StutterHits, "фриза", "фризов", "фризов", "stutter", "stutters") + L.T($", первый — на {t.FirstStutterAt:0}-й секунде", $", first at second {t.FirstStutterAt:0}"),
                     FontSize = 12.5, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("Orange"), Margin = new Thickness(0, 3, 0, 0), TextWrapping = TextWrapping.Wrap,
                 });
             var advice = new TextBlock { Text = t.Advice, FontSize = 12.5, Foreground = (Brush)FindResource("Muted"), Margin = new Thickness(0, 5, 0, 0), TextWrapping = TextWrapping.Wrap };
@@ -437,7 +437,7 @@ namespace WinOpti.UI
                 button.Click += async (s, e) =>
                 {
                     if (t.Action.StartsWith("close:") &&
-                        MessageBox.Show(Window.GetWindow(this), $"Закрыть «{t.Title}»? Несохранённые данные в этой программе пропадут.", "WinOpti",
+                        MessageBox.Show(Window.GetWindow(this), L.T($"Закрыть «{t.Title}»? Несохранённые данные в этой программе пропадут.", $"Close “{t.Title}”? Unsaved data in this app will be lost."), "WinOpti",
                                         MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
                     button.IsEnabled = false;
                     try
@@ -455,7 +455,7 @@ namespace WinOpti.UI
                     catch (Exception ex)
                     {
                         App.Log(ex);
-                        advice.Text = "Не получилось: " + ex.Message;
+                        advice.Text = L.T("Не получилось: ", "Failed: ") + ex.Message;
                         advice.Foreground = (Brush)FindResource("Red");
                         button.IsEnabled = true;
                     }
@@ -463,12 +463,6 @@ namespace WinOpti.UI
                 row.Children.Add(button);
             }
             return row;
-        }
-
-        static string Plural(int n, string one, string few, string many)
-        {
-            int m10 = n % 10, m100 = n % 100;
-            return m10 == 1 && m100 != 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
         }
 
         public static double Delta(double a, double b) => a <= 0 ? 0 : (b / a - 1) * 100;
@@ -479,7 +473,7 @@ namespace WinOpti.UI
             if (count)
             {
                 int diff = (int)Math.Round(b - a);
-                return diff == 0 ? "без изменений" : (diff > 0 ? "+" : "−") + Math.Abs(diff);
+                return diff == 0 ? L.T("без изменений", "no change") : (diff > 0 ? "+" : "−") + Math.Abs(diff);
             }
             double d = Delta(a, b);
             return Math.Abs(d) < 0.5 ? "0%" : $"{(d > 0 ? "+" : "−")}{Math.Abs(d):0}%";
@@ -528,13 +522,13 @@ namespace WinOpti.UI
                 var file = Path.Combine(dir, $"winopti_{before.Game}_{DateTime.Now:yyyyMMdd_HHmm}.png");
                 ShareCard.SavePng(bmp, file);
                 Clipboard.SetImage(bmp);
-                ShareResult.Text = $"Картинка скопирована — вставь в Telegram или Discord (Ctrl+V). Файл: Изображения\\WinOpti\\{Path.GetFileName(file)}";
+                ShareResult.Text = L.T($"Картинка скопирована — вставь в Telegram или Discord (Ctrl+V). Файл: Изображения\\WinOpti\\{Path.GetFileName(file)}", $"Image copied: paste it into Telegram or Discord (Ctrl+V). File: Pictures\\WinOpti\\{Path.GetFileName(file)}");
                 ShareResult.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
                 App.Log(ex);
-                ShowMessage("Не получилось сохранить картинку: " + ex.Message);
+                ShowMessage(L.T("Не получилось сохранить картинку: ", "Couldn’t save the image: ") + ex.Message);
             }
             finally { ShareButton.IsEnabled = true; }
         }
@@ -558,18 +552,18 @@ namespace WinOpti.UI
                     Passes = new List<double> { 271, 277, 274 },
                     Thieves = new List<Thief>
                     {
-                        new Thief { Process = "hw:gpu-heat", Title = "Видеокарта перегревалась и сбрасывала частоту", StutterHits = 3,
-                                    Detail = "До 87°, частота падала с 1911 до 1607 МГц (−16%), впервые на 41-й секунде",
-                                    Advice = "Почисти видеокарту и корпус от пыли, проверь, что корпусные вентиляторы выдувают горячий воздух, или подними обороты вентиляторов видеокарты (MSI Afterburner). Нормально в игре — до 80–83°." },
-                        new Thief { Process = "MsMpEng", Title = "Защитник Windows", Cpu = 3.2, StutterHits = 4, FirstStutterAt = 23,
-                                    Advice = "Проверял файлы, которые читала игра. Можно добавить папку игры в исключения: Защитник перестанет сканировать её файлы, а остальной компьютер будет защищать как раньше.",
-                                    Action = @"defender:D:\Steam\steamapps\common\Counter-Strike Global Offensive", ActionText = "Добавить игру в исключения" },
+                        new Thief { Process = "hw:gpu-heat", Title = L.T("Видеокарта перегревалась и сбрасывала частоту", "The GPU overheated and dropped its clock"), StutterHits = 3,
+                                    Detail = L.T("До 87°, частота падала с 1911 до 1607 МГц (−16%), впервые на 41-й секунде", "Up to 87°, clock fell from 1911 to 1607 MHz (−16%), first at second 41"),
+                                    Advice = L.T("Почисти видеокарту и корпус от пыли, проверь, что корпусные вентиляторы выдувают горячий воздух, или подними обороты вентиляторов видеокарты (MSI Afterburner). Нормально в игре — до 80–83°.", "Clean the dust out of the GPU and case, make sure the case fans exhaust hot air, or raise the GPU fan speed (MSI Afterburner). Up to 80–83° is normal in games.") },
+                        new Thief { Process = "MsMpEng", Title = L.T("Защитник Windows", "Windows Defender"), Cpu = 3.2, StutterHits = 4, FirstStutterAt = 23,
+                                    Advice = L.T("Проверял файлы, которые читала игра. Можно добавить папку игры в исключения: Защитник перестанет сканировать её файлы, а остальной компьютер будет защищать как раньше.", "Scanned the files the game was reading. You can add the game folder to exclusions: Defender stops scanning its files and keeps protecting the rest of the PC as before."),
+                                    Action = @"defender:D:\Steam\steamapps\common\Counter-Strike Global Offensive", ActionText = L.T("Добавить игру в исключения", "Add game to exclusions") },
                         new Thief { Process = "chrome", Title = "Google Chrome", Cpu = 14.1, Gpu = 6.3,
-                                    Advice = "Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто.", Action = "close:chrome", ActionText = "Закрыть" },
-                        new Thief { Process = "SearchIndexer", Title = "Индексация поиска", Cpu = 2.1, StutterHits = 1, FirstStutterAt = 41,
-                                    Advice = "Windows перебирала файлы, чтобы поиск работал быстрее. Если пользуешься поиском редко, индексацию можно выключить.",
-                                    Action = "tweak:disable_search_indexing", ActionText = "Включить твик" },
-                        new Thief { Process = "hw:cpu-ok", Title = "Процессор держал частоту", Detail = "Под нагрузкой — 118% от базовой частоты (работал турбо-режим)", Advice = "Перегрева и ограничения питания не было." },
+                                    Advice = L.T("Вкладки браузера (особенно видео и стримы) тратят процессор и видеокарту, даже когда окно свёрнуто.", "Browser tabs (especially video and streams) use CPU and GPU even when the window is minimized."), Action = "close:chrome", ActionText = L.T("Закрыть", "Close") },
+                        new Thief { Process = "SearchIndexer", Title = L.T("Индексация поиска", "Search indexing"), Cpu = 2.1, StutterHits = 1, FirstStutterAt = 41,
+                                    Advice = L.T("Windows перебирала файлы, чтобы поиск работал быстрее. Если пользуешься поиском редко, индексацию можно выключить.", "Windows was going through files to speed up search. If you rarely use search, indexing can be turned off."),
+                                    Action = "tweak:disable_search_indexing", ActionText = L.T("Включить твик", "Enable tweak") },
+                        new Thief { Process = "hw:cpu-ok", Title = L.T("Процессор держал частоту", "The CPU held its clock"), Detail = L.T("Под нагрузкой — 118% от базовой частоты (работал турбо-режим)", "Under load: 118% of base clock (turbo was working)"), Advice = L.T("Перегрева и ограничения питания не было.", "No overheating or power limits.") },
                     },
                 },
                 new FpsRun { Game = "cs2", When = DateTime.Now.AddMinutes(-25), Label = "До", Stats = FrameStats.From(Frames(4.3, 1.4, 60)) },
